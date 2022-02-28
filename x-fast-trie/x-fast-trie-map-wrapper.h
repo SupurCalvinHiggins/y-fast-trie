@@ -12,4 +12,5 @@ public:
 	size_t size() { return map_.size(); }
 	bool empty() { return map_.empty(); }
 	V at(K key) { return map_.at(key); }
+	std::unordered_map<K, V> data() { return map_; }
 };

@@ -23,6 +23,7 @@ private:
 	XFastTrieNode<T>* successor_node(T key);
 public:
 	XFastTrie();
+	~XFastTrie();
 	bool contains(T key);
 	std::optional<T> predecessor(T key);
 	std::optional<T> successor(T key);
@@ -41,6 +42,15 @@ XFastTrie<T>::XFastTrie() : limit_(std::numeric_limits<T>::digits) {
 	this->lss.reserve(max_bits_);
 	for (size_t i = 0; i < (max_bits_ + 1); ++i) {
 		this->lss.push_back(map_wrapper<T, XFastTrieNode<T>*>());
+	}
+}
+
+template <typename T>
+XFastTrie<T>::~XFastTrie() {
+	for (auto m : this->lss) {
+		for (auto x : m.data()) {
+			delete x.second;
+		}
 	}
 }
 
