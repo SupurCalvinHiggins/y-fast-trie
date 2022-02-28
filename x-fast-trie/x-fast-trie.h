@@ -1,28 +1,22 @@
 #pragma once
+#include "x-fast-trie-node.h"
+#include "x-fast-trie-map-wrapper.h"
+#include <optional>
 
-template <typename T>
-class XFastTrieNode {
-public:
-	XFastTrieNode(T key, XFastTrieNode<T>* left, XFastTrieNode<T>* right);
-	T key;
-	XFastTrieNode<T>* children[2];
-}
-
-template <typename T>
-XFastTrieNode<T>::XFastTrieNode(T key, XFastTrieNode<T>* left, XFastTrieNode<T>* right) {
-	this->key = key;
-	this->children[0] = left;
-	this->children[1] = right;
-}
+#define LEFT 0
+#define RIGHT 1
 
 template <typename T>
 class XFastTrie {
 private:
-	size_t max_bits;
-	std::vector<std::unordered_map<T, XFastTrieNode<T>*>> lss;
+	size_t max_bits_;
+	size_t size_;
+	std::vector<map_wrapper<T, XFastTrieNode<T>*>> lss;
 	T prefix(T key, T level);
 	T get_highest_level(T key);
 	T get_closest_key(T key);
+	XFastTrieNode<T>* predecessor_node(T key);
+	XFastTrieNode<T>* successor_node(T key);
 public:
 	XFastTrie();
 	bool contains(T key);
@@ -30,34 +24,36 @@ public:
 	std::optional<T> successor(T key);
 	std::optional<T> min();
 	std::optional<T> max();
-	size_t size();
+	size_t size() { return size_; };
 	void insert(T key);
-	void remove(T key);
+	void remove(T key) {};
 };
 
 template <typename T>
 XFastTrie<T>::XFastTrie() {
-	max_bits = std::numeric_limits<T>::digits;
-	this->lss.reserve(max_bits);
-	for (size_t i = 0; i < (max_bits + 1); ++i) {
-		this->lss.push_back(std::unordered_map<T, Node<T>*>());
+	size_ = 0;
+	max_bits_ = std::numeric_limits<T>::digits;
+	this->lss.reserve(max_bits_);
+	for (size_t i = 0; i < (max_bits_ + 1); ++i) {
+		this->lss.push_back(map_wrapper<T, XFastTrieNode<T>*>());
 	}
 }
 
 template <typename T>
 T XFastTrie<T>::prefix(T key, T level) {
-	return key >> (this->max_bits - level);
+	return key >> (this->max_bits_ - level);
 }
 
 template <typename T>
 T XFastTrie<T>::get_highest_level(T key) {
 	T low_level = 0;
-	T high_level = this->max_bits;
+	T high_level = this->max_bits_;
 
+	// TODO: branchless?
 	while (low_level <= high_level) {
 		T mid_level = (low_level + high_level) >> 1;
 		T prefix = this->prefix(key, mid_level);
-		if (this->lss[mid_level].count(prefix)) {
+		if (this->lss[mid_level].contains(prefix)) {
 			low_level = mid_level + 1;
 		}
 		else {
@@ -72,44 +68,39 @@ template <typename T>
 T XFastTrie<T>::get_closest_key(T key) {
 	T highest_level = this->get_highest_level(key);
 	T prefix = this->prefix(key, highest_level);
-	Node<T>* node = this->lss[highest_level].at(prefix);
+	XFastTrieNode<T>* node = this->lss[highest_level].at(prefix);
 
-	if (highest_level == this->max_bits) {
-		//std::cout << "shortcut: " << key << '\n';
+	if (highest_level == this->max_bits_) {
 		return node->key;
 	}
 
 	std::vector<T> closest_keys;
 	closest_keys.reserve(3);
 
-	if (this->lss.back().count(node->left->key) && (this->lss.back().at(node->left->key) == node->left)) {
-		//std::cout << int(node->left->key) << '\n';
-		closest_keys.push_back(node->left->key);
-		if (node->left->left) closest_keys.push_back(node->left->left->key);
-		if (node->left->right) closest_keys.push_back(node->left->right->key);
+	if (this->lss.back().contains(node->children[LEFT]->key) && (this->lss.back().at(node->children[LEFT]->key) == node->children[LEFT])) {
+		closest_keys.push_back(node->children[LEFT]->key);
+		if (node->children[LEFT]->children[LEFT]) closest_keys.push_back(node->children[LEFT]->children[LEFT]->key);
+		if (node->children[LEFT]->children[RIGHT]) closest_keys.push_back(node->children[LEFT]->children[RIGHT]->key);
 	}
-	if (this->lss.back().count(node->right->key) && (this->lss.back().at(node->right->key) == node->right)) {
-		//std::cout << int(node->right->key) << '\n';
-		closest_keys.push_back(node->right->key);
-		if (node->right->left) closest_keys.push_back(node->right->left->key);
-		if (node->right->right) closest_keys.push_back(node->right->right->key);
+	if (this->lss.back().contains(node->children[RIGHT]->key) && (this->lss.back().at(node->children[RIGHT]->key) == node->children[RIGHT])) {
+		closest_keys.push_back(node->children[RIGHT]->key);
+		if (node->children[RIGHT]->children[LEFT]) closest_keys.push_back(node->children[RIGHT]->children[LEFT]->key);
+		if (node->children[RIGHT]->children[RIGHT]) closest_keys.push_back(node->children[RIGHT]->children[RIGHT]->key);
 	}
-	
-	if (closest_keys.size() == 0) {
-		assert(false && "bad node");
-	}
+
+	if (closest_keys.size() == 0) assert(false);
 
 	return *std::min_element(std::begin(closest_keys), std::end(closest_keys),
 		[&key](T a, T b) -> T { return (a > key ? a - key : key - a) < (b > key ? b - key : key - b); });
 }
 
 template <typename T>
-Node<T>* XFastTrie<T>::predecessor(T key) {
+XFastTrieNode<T>* XFastTrie<T>::predecessor_node(T key) {
 	if (this->lss.back().empty()) return nullptr;
 
 	T closest_key = this->get_closest_key(key);
-	if (key < closest_key) {
-		return this->lss.back().at(closest_key)->left;
+	if (key <= closest_key) {
+		return this->lss.back().at(closest_key)->children[LEFT];
 	}
 	else {
 		return this->lss.back().at(closest_key);
@@ -117,199 +108,104 @@ Node<T>* XFastTrie<T>::predecessor(T key) {
 }
 
 template <typename T>
-Node<T>* XFastTrie<T>::successor(T key) {
+XFastTrieNode<T>* XFastTrie<T>::successor_node(T key) {
 	if (this->lss.back().empty()) return nullptr;
 
 	T closest_key = this->get_closest_key(key);
-	if (key > closest_key) {
-		return this->lss.back().at(closest_key)->right;
+	if (key >= closest_key) {
+		return this->lss.back().at(closest_key)->children[RIGHT];
 	}
 	else {
 		return this->lss.back().at(closest_key);
-	}
-}
-
-template <typename T>
-void XFastTrie<T>::validate() {
-	if (this->lss.back().empty()) return;
-
-	std::vector<T> keys;
-
-	for (auto p : this->lss.back()) {
-		keys.push_back(p.first);
-	}
-
-	std::sort(std::begin(keys), std::end(keys));
-
-	// validate LL forwards
-	Node<T>* cur = this->lss.back().at(keys[0]);
-	int idx = 0;
-	while (cur) {
-		assert(cur->key == keys[idx]);
-		cur = cur->right;
-		idx += 1;
-	}
-	assert(idx == keys.size());
-
-	// validate LL backwards
-	cur = this->lss.back().at(keys.back());
-	idx = keys.size() - 1;
-	while (cur) {
-		assert(cur->key == keys[idx]);
-		cur = cur->left;
-		idx -= 1;
-	}
-	assert(idx == -1);
-
-	// validate existance of structure
-	for (T key : keys) {
-		for (T level = 0; level <= this->max_bits; ++level) {
-			T prefix = this->prefix(key, level);
-			assert(this->lss[level].count(prefix));
-		}
-	}
-
-	// ensure there are no excess nodes
-	for (T level = 0; level <= this->max_bits; ++level) {
-		std::vector<Node<T>*> nodes;
-
-		for (auto p : this->lss[level]) {
-			nodes.push_back(p.second);
-		}
-
-		for (T key : keys) {
-			T prefix = this->prefix(key, level);
-			auto node = this->lss[level].at(prefix);
-			assert(std::count(std::begin(nodes), std::end(nodes), node) == 1);
-		}
-	}
-
-	// validate 1 chains
-	for (T key : keys) {
-		for (T level = this->max_bits; level <= 1; --level) {
-			T prefix = this->prefix(key, level);
-			T next_prefix = this->prefix(key, level - 1);
-			if (next_prefix & 1) {
-				assert(this->lss[level].at(prefix)->right == this->lss[level - 1].at(next_prefix));
-			}
-			else {
-				assert(this->lss[level].at(prefix)->left == this->lss[level - 1].at(next_prefix));
-			}
-		}
-	}
-
-	// validate closest key invarient
-	for (auto other_key : keys) {
-		//std::cout << int(other_key) << ' ';
-	}
-	//std::cout << '\n';
-	for (int key = 0; key < 256; ++key) {
-		std::vector<T> dists;
-		for (auto other_key : keys) {
-			dists.push_back(std::abs(int(key) - int(other_key)));
-		}
-		auto closest = this->get_closest_key(key);
-		auto closest_dist = std::abs(int(closest) - int(key));
-		//std::cout << "Testing: " << key << '\n';
-		assert(closest_dist == *std::min_element(std::begin(dists), std::end(dists)));
-	}
-
-
-	// validate pred and succ invarient
-	for (int key = 0; key < 256; ++key) {
-		auto succ = this->successor(key);
-		auto pred = this->predecessor(key);
-		auto clos = this->get_closest_key(key);
-		assert(!succ || (succ->key >= key));
-		assert(!pred || (pred->key <= key));
 	}
 }
 
 template <typename T>
 void XFastTrie<T>::insert(T key) {
-	if (this->lss.back().count(key)) return;
-	
-	if (false && !this->lss.back().empty()) {
-		Node<T>* n = this->lss.back().at(this->get_closest_key(0));
-		//std::cout << "Forwards LL: ";
-		Node<T>* last = nullptr;
-		while (n) {
-			//std::cout << int(n->key) << ' ';
-			last = n;
-			n = n->right;
-		}
-		//std::cout << '\n';
+	if (this->lss.back().contains(key)) return;
 
-		//assert(this->get_closest_key(255) == last->key);
+	this->size_ += 1;
 
-		n = last;
-		last = nullptr;
-		//std::cout << "Backward LL: ";
-		while (n) {
-			//std::cout << int(n->key) << ' ';
-			last = n;
-			n = n->left;
-		}
-		//std::cout << '\n';
+	XFastTrieNode<T>* pred = this->predecessor_node(key);
+	XFastTrieNode<T>* succ = this->successor_node(key);
+	XFastTrieNode<T>* children[2] = { pred, succ };
+	XFastTrieNode<T>* node = new XFastTrieNode<T>(key, children);
 
-		//assert(this->get_closest_key(0) == last->key);
-	}
-	//std::cout << '\n';
-	//this->validate();
+	this->lss.back().insert(key, node);
 
-	Node<T>* pred = this->predecessor(key);
-	assert(!pred || pred->key <= key);
-	Node<T>* succ = this->successor(key);
-	assert(!succ || succ->key >= key);
-	Node<T>* node = new Node<T>(key, pred, succ);
+	if (pred != nullptr) pred->children[RIGHT] = node;
+	if (succ != nullptr) succ->children[LEFT] = node;
 
-	this->lss.back()[key] = node;
-
-	if (pred != nullptr) pred->right = node;
-	if (succ != nullptr) succ->left = node;
-
-	Node<T>* pre = node;
-	for (int level = this->max_bits - 1; level >= 0; --level) {
+	XFastTrieNode<T>* pre = node;
+	for (int level = this->max_bits_ - 1; level >= 0; --level) {
 		T prefix = this->prefix(key, level);
-		if (this->lss[level].count(prefix)) {
-			Node<T>* cur = this->lss[level].at(prefix);
+		if (this->lss[level].contains(prefix)) {
+			XFastTrieNode<T>* cur = this->lss[level].at(prefix);
 
 			T left_child_prefix = prefix << 1;
 			T right_child_prefix = (prefix << 1) + 1;
 
-			if (this->lss[level + 1].count(left_child_prefix)) {
-				cur->left = this->lss[level + 1].at(left_child_prefix);
+			if (this->lss[level + 1].contains(left_child_prefix)) {
+				cur->children[LEFT] = this->lss[level + 1].at(left_child_prefix);
 			}
-			else if (key < cur->left->key) {
-				cur->left = node;
+			else if (key < cur->children[LEFT]->key) {
+				cur->children[LEFT] = node;
 			}
 
-			if (this->lss[level + 1].count(right_child_prefix)) {
-				cur->right = this->lss[level + 1].at(right_child_prefix);
+			if (this->lss[level + 1].contains(right_child_prefix)) {
+				cur->children[RIGHT] = this->lss[level + 1].at(right_child_prefix);
 			}
-			else if (key > cur->right->key) {
-				cur->right = node;
+			else if (key > cur->children[RIGHT]->key) {
+				cur->children[RIGHT] = node;
 			}
 		}
 		else {
-			Node<T>* left_child = pre;
-			Node<T>* right_child = pre;
+			XFastTrieNode<T>* children[2] = {pre, pre};
 
-			if ((pre->key & 1) == 0) {
-				while (this->lss.back().count(right_child->key) ?
-					this->lss.back().at(right_child->key) != right_child : true) {
-					right_child = right_child->right;
-				}
-			}
-			else {
-				while (this->lss.back().count(left_child->key) ?
-					this->lss.back().at(left_child->key) != left_child : true) {
-					left_child = left_child->left;
-				}
+			T is_left = pre->key & 1 ? 0 : 1;
+			while (this->lss.back().contains(children[is_left]->key) ?
+				this->lss.back().at(children[is_left]->key) != children[is_left] : true) {
+				children[is_left] = children[is_left]->children[is_left];
 			}
 
-			this->lss[level][prefix] = new Node<T>(prefix, left_child, right_child);
-			pre = this->lss[level][prefix];
-		}
+			XFastTrieNode<T>* to_insert = new XFastTrieNode<T>(prefix, children);
+			this->lss[level].insert(prefix, to_insert);
+			pre = to_insert;
+		}		
 	}
+}
+
+template <typename T>
+std::optional<T> XFastTrie<T>::predecessor(T key) {
+	XFastTrieNode<T>* node = this->predecessor_node(key);
+	if (node) return std::optional<T>(node->key);
+	return std::nullopt;
+}
+
+template <typename T>
+std::optional<T> XFastTrie<T>::successor(T key) {
+	XFastTrieNode<T>* node = this->successor_node(key);
+	if (node) return std::optional<T>(node->key);
+	return std::nullopt;
+}
+
+template <typename T>
+bool XFastTrie<T>::contains(T key) {
+	return this->lss.back().contains(key);
+}
+
+template <typename T>
+std::optional<T> XFastTrie<T>::max() {
+	if (size_ == 0) return std::nullopt;
+	if (this->lss.back().contains(-1)) return std::optional<T>(-1);
+	XFastTrieNode<T>* node = this->predecessor_node(-1);
+	return std::optional<T>(node->key);
+}
+
+template <typename T>
+std::optional<T> XFastTrie<T>::min() {
+	if (size_ == 0) return std::nullopt;
+	if (this->lss.back().contains(0)) return std::optional<T>(0);
+	XFastTrieNode<T>* node = this->successor_node(0);
+	return std::optional<T>(node->key);
 }
