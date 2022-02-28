@@ -2,6 +2,9 @@
 #include "x-fast-trie-node.h"
 #include "x-fast-trie-map-wrapper.h"
 #include <optional>
+#include <vector>
+#include <assert.h>
+#include <algorithm>
 
 #define LEFT 0
 #define RIGHT 1
@@ -9,6 +12,7 @@
 template <typename T>
 class XFastTrie {
 private:
+	const size_t limit_;
 	size_t max_bits_;
 	size_t size_;
 	std::vector<map_wrapper<T, XFastTrieNode<T>*>> lss;
@@ -25,12 +29,13 @@ public:
 	std::optional<T> min();
 	std::optional<T> max();
 	size_t size() { return size_; };
+	const size_t limit() { return limit_; }
 	void insert(T key);
 	void remove(T key) {};
 };
 
 template <typename T>
-XFastTrie<T>::XFastTrie() {
+XFastTrie<T>::XFastTrie() : limit_(std::numeric_limits<T>::digits) {
 	size_ = 0;
 	max_bits_ = std::numeric_limits<T>::digits;
 	this->lss.reserve(max_bits_);
