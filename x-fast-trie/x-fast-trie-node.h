@@ -1,6 +1,7 @@
 #pragma once
 #include "x-fast-trie.h"
 
+// TODO: friend class
 template <typename T>
 class XFastTrieNode {
 public:
