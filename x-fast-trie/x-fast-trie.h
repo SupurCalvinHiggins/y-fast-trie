@@ -5,6 +5,8 @@
 #include <vector>
 #include <assert.h>
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 #define LEFT 0
 #define RIGHT 1
@@ -33,6 +35,7 @@ public:
 	const size_t limit() { return limit_; }
 	void insert(T key);
 	void remove(T key);
+	std::string to_dot();
 };
 
 template <typename T>
@@ -225,7 +228,7 @@ void XFastTrie<T>::remove(T key) {
 				node = node->children[dir];
 			}
 
-			this->lss[level].at(prefix)->children[right_child_exists] = node;
+			this->lss[level].at(prefix)->children[dir] = node;
 		}
 	}
 }
@@ -264,3 +267,33 @@ std::optional<T> XFastTrie<T>::min() {
 	XFastTrieNode<T>* node = this->successor_node(0);
 	return std::optional<T>(node->key);
 }
+
+std::string ptstr(void* x) {
+	std::ostringstream ss;
+	ss << x;
+	return std::string(ss.str());
+}
+
+template <typename T>
+std::string XFastTrie<T>::to_dot() {
+	std::vector<std::string> levels;
+	std::string ss;
+	ss += "digraph {\n";
+	for (auto m : this->lss) {
+		std::string level("{rank = same; ");
+		for (auto x : m.data()) {
+			if (x.second->children[0] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[0])) + "\n";
+			if (x.second->children[1] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[1])) + "\n";
+			ss += "\tn" + ptstr((void*)(x.second)) + " [label=\"" + std::to_string(int(x.first)) + "\"]\n";
+			level += "n" + ptstr((void*)(x.second)) + "; ";
+			
+		}
+		levels.push_back(level + "}");
+	}
+	for (auto s : levels) {
+		ss += "\t" + s + "\n"; 
+	}
+	ss += "}";
+	return std::string(ss);
+}
+

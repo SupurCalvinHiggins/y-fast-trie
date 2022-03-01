@@ -1,6 +1,8 @@
 #include <benchmark/benchmark.h>
 #include "x-fast-trie.h"
 
+// g++ x-fast-trie.bench.cpp -std=c++17 -isystem benchmark/include -Lbenchmark/build/src -lbenchmark -lpthread
+
 static void seed(const benchmark::State& state) {
 	std::srand(0);
 }
