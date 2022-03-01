@@ -32,7 +32,7 @@ public:
 	size_t size() { return size_; };
 	const size_t limit() { return limit_; }
 	void insert(T key);
-	void remove(T key) {};
+	void remove(T key);
 };
 
 template <typename T>
@@ -187,6 +187,46 @@ void XFastTrie<T>::insert(T key) {
 			this->lss[level].insert(prefix, to_insert);
 			pre = to_insert;
 		}		
+	}
+}
+
+template <typename T>
+void XFastTrie<T>::remove(T key) {
+	if (!this->lss.back().contains(key)) return;
+
+	this->size_ -= 1;
+
+	XFastTrieNode<T>* pred = this->predecessor_node(key);
+	XFastTrieNode<T>* succ = this->successor_node(key);
+	XFastTrieNode<T>* node = this->lss.back().at(key);
+	// delete node;
+	this->lss.back().remove(key);
+
+	if (pred != nullptr) pred->children[RIGHT] = succ;
+	if (succ != nullptr) succ->children[LEFT] = pred;
+
+
+	for (int level = this->max_bits_ - 1; level >= 0; --level) {
+		T prefix = this->prefix(key, level);
+		T left_child_prefix = prefix	<< 1;
+		T right_child_prefix = (prefix << 1) | 1;
+
+		if (!this->lss[level + 1].contains(left_child_prefix) &&
+			!this->lss[level + 1].contains(right_child_prefix)) {
+			this->lss[level].remove(prefix);
+		} else {
+			auto right_child_exists = this->lss[level+1].contains(right_child_prefix);
+			auto node_prefix = right_child_exists ? right_child_prefix : left_child_prefix;
+			auto dir = right_child_exists ? LEFT : RIGHT;
+			auto node = this->lss[level+1].at(node_prefix);
+
+			while (this->lss.back().contains(node->key) ?
+				this->lss.back().at(node->key) != node : true) {
+				node = node->children[dir];
+			}
+
+			this->lss[level].at(prefix)->children[right_child_exists] = node;
+		}
 	}
 }
 

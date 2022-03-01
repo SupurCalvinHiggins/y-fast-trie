@@ -1,6 +1,6 @@
-#pragma once
 #include <assert.h>
 #include <algorithm>
+#include <cstdint>
 #include "x-fast-trie.h"
 
 int main() {
@@ -24,7 +24,8 @@ int main() {
 	assert(trie.size() == 0);
 
 	// test contains and insert
-	std::vector<uint8_t> values{12, 14, 13, 3, 17, 4, 9, 27, 30, 33, 1};
+	// std::vector<uint8_t> values{12, 14, 13, 3, 17, 4, 9, 27, 30, 33, 1};
+	std::vector<uint8_t> values{2, 1, 3};
 	for (auto x : values) {
 		assert(trie.contains(x) == false);
 		trie.insert(x);
@@ -42,7 +43,6 @@ int main() {
 	assert(trie.size() == values.size());
 	assert(trie.min().value() == *std::min_element(values.begin(), values.end()));
 	assert(trie.max().value() == *std::max_element(values.begin(), values.end()));
-	return 0;
 
 	// test remove
 	for (auto x : values) {

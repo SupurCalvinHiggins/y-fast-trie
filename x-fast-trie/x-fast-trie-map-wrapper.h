@@ -8,7 +8,7 @@ private:
 public:
 	bool contains(K key) { return map_.count(key) != 0; }
 	void insert(K key, V val) { map_.insert({key, val}); }
-	// void remove(T key);
+	void remove(K key) { map_.erase(map_.find(key)); };
 	size_t size() { return map_.size(); }
 	bool empty() { return map_.empty(); }
 	V at(K key) { return map_.at(key); }
