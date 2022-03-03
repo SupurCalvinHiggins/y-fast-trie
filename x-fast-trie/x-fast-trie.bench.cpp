@@ -1,4 +1,5 @@
 #include <benchmark/benchmark.h>
+#include <cstdint>
 #include "x-fast-trie.h"
 
 // g++ x-fast-trie.bench.cpp -std=c++17 -isystem benchmark/include -Lbenchmark/build/src -lbenchmark -lpthread

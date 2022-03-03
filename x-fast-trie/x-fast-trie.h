@@ -32,10 +32,10 @@ public:
 	std::optional<T> min();
 	std::optional<T> max();
 	size_t size() { return size_; };
-	const size_t limit() { return limit_; }
+	const T limit() { return -1; }
 	void insert(T key);
 	void remove(T key);
-	std::string to_dot();
+	// std::string to_dot();
 };
 
 template <typename T>
@@ -59,6 +59,7 @@ XFastTrie<T>::~XFastTrie() {
 
 template <typename T>
 T XFastTrie<T>::prefix(T key, T level) {
+	if (level == 0) return 0;
 	return key >> (this->max_bits_ - level);
 }
 
@@ -69,7 +70,7 @@ T XFastTrie<T>::get_highest_level(T key) {
 
 	// TODO: branchless?
 	while (low_level <= high_level) {
-		T mid_level = (low_level + high_level) >> 1;
+		T mid_level = low_level + ((high_level - low_level) / 2);
 		T prefix = this->prefix(key, mid_level);
 		if (this->lss[mid_level].contains(prefix)) {
 			low_level = mid_level + 1;
@@ -157,7 +158,10 @@ void XFastTrie<T>::insert(T key) {
 	XFastTrieNode<T>* pre = node;
 	for (int level = this->max_bits_ - 1; level >= 0; --level) {
 		T prefix = this->prefix(key, level);
+		assert((level != 0) || (level == 0 && prefix == 0));
 		if (this->lss[level].contains(prefix)) {
+			// assert(false && "first path");
+
 			XFastTrieNode<T>* cur = this->lss[level].at(prefix);
 
 			T left_child_prefix = prefix << 1;
@@ -178,6 +182,8 @@ void XFastTrie<T>::insert(T key) {
 			}
 		}
 		else {
+			// if (level == this->max_bits_ - 50) assert(false);
+
 			XFastTrieNode<T>* children[2] = {pre, pre};
 
 			T is_left = pre->key & 1 ? 0 : 1;
@@ -185,10 +191,11 @@ void XFastTrie<T>::insert(T key) {
 				this->lss.back().at(children[is_left]->key) != children[is_left] : true) {
 				children[is_left] = children[is_left]->children[is_left];
 			}
-
 			XFastTrieNode<T>* to_insert = new XFastTrieNode<T>(prefix, children);
 			this->lss[level].insert(prefix, to_insert);
 			pre = to_insert;
+			// assert(false && "second path");
+
 		}		
 	}
 }
@@ -218,10 +225,10 @@ void XFastTrie<T>::remove(T key) {
 			!this->lss[level + 1].contains(right_child_prefix)) {
 			this->lss[level].remove(prefix);
 		} else {
-			auto right_child_exists = this->lss[level+1].contains(right_child_prefix);
-			auto node_prefix = right_child_exists ? right_child_prefix : left_child_prefix;
-			auto dir = right_child_exists ? LEFT : RIGHT;
-			auto node = this->lss[level+1].at(node_prefix);
+			bool right_child_exists = this->lss[level+1].contains(right_child_prefix);
+			T node_prefix = right_child_exists ? right_child_prefix : left_child_prefix;
+			bool dir = right_child_exists ? LEFT : RIGHT;
+			XFastTrieNode<T>* node = this->lss[level+1].at(node_prefix);
 
 			while (this->lss.back().contains(node->key) ?
 				this->lss.back().at(node->key) != node : true) {
@@ -274,26 +281,31 @@ std::string ptstr(void* x) {
 	return std::string(ss.str());
 }
 
-template <typename T>
-std::string XFastTrie<T>::to_dot() {
-	std::vector<std::string> levels;
-	std::string ss;
-	ss += "digraph {\n";
-	for (auto m : this->lss) {
-		std::string level("{rank = same; ");
-		for (auto x : m.data()) {
-			if (x.second->children[0] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[0])) + "\n";
-			if (x.second->children[1] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[1])) + "\n";
-			ss += "\tn" + ptstr((void*)(x.second)) + " [label=\"" + std::to_string(int(x.first)) + "\"]\n";
-			level += "n" + ptstr((void*)(x.second)) + "; ";
+// template <typename T>
+// std::string XFastTrie<T>::to_dot() {
+// 	std::vector<std::string> levels;
+// 	std::string ss;
+// 	ss += "digraph {\n";
+// 	for (auto m : this->lss) {
+// 		std::string level("{rank = same; ");
+// 		std::vector<T> data;
+// 		for (auto x : m.data()) {
+// 			data.push_back(x);
+// 		}
+// 		std::sort(data.begin(), data.end(), std::greater<T>());
+// 		for (auto x : data) {
+// 			if (x.second->children[0] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[0])) + "\n";
+// 			if (x.second->children[1] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[1])) + "\n";
+// 			ss += "\tn" + ptstr((void*)(x.second)) + " [label=\"" + std::to_string(int(x.first)) + "\"]\n";
+// 			level += "n" + ptstr((void*)(x.second)) + "; ";
 			
-		}
-		levels.push_back(level + "}");
-	}
-	for (auto s : levels) {
-		ss += "\t" + s + "\n"; 
-	}
-	ss += "}";
-	return std::string(ss);
-}
+// 		}
+// 		levels.push_back(level + "}");
+// 	}
+// 	for (auto s : levels) {
+// 		ss += "\t" + s + "\n"; 
+// 	}
+// 	ss += "}";
+// 	return std::string(ss);
+// }
 
