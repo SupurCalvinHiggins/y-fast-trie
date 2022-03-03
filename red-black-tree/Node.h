@@ -19,7 +19,7 @@ public:
 	void key(T key);
 	
 private:
-	Node** children_;
+	Node* children_[2];
 	Node* parent_;
 	T key_;
 	//0 means black, 1 means red
@@ -27,24 +27,24 @@ private:
 };
 
 template <typename T> Node<T>::Node(void) {
-	Node* children[2] = { nullptr , nullptr };
-	children_ = children;
+	children_[0] = nullptr;
+	children_[1] = nullptr;
 	parent_ = nullptr;
 	key_ = T();
 	color_ = 1;
 };
 
 template <typename T> Node<T>::Node(T key, bool color) {
-	Node* children[2] = { nullptr , nullptr };
-	children_ = children;
+	children_[0] = nullptr;
+	children_[1] = nullptr;
 	parent_ = nullptr;
 	key_ = key;
 	color_ = color;
 };
 
 template <typename T> Node<T>::Node(T key, bool color, Node* left, Node* right, Node* parent) {
-	Node* children[2] = { left , right };
-	children_ = children;
+	children_[0] = left;
+	children_[1] = right;
 	parent_ = parent;
 	key_ = key;
 	color_ = color;
