@@ -3,10 +3,7 @@
 #include "x-fast-trie-map-wrapper.h"
 #include <optional>
 #include <vector>
-#include <assert.h>
 #include <algorithm>
-#include <string>
-#include <sstream>
 
 #define LEFT 0
 #define RIGHT 1
@@ -14,11 +11,10 @@
 template <typename T>
 class XFastTrie {
 private:
-	const size_t limit_;
-	size_t max_bits_;
+	size_t bits_;
 	size_t size_;
 	std::vector<map_wrapper<T, XFastTrieNode<T>*>> lss;
-	T prefix(T key, T level);
+	T get_prefix(T key, T level);
 	T get_highest_level(T key);
 	T get_closest_key(T key);
 	XFastTrieNode<T>* predecessor_node(T key);
@@ -32,18 +28,17 @@ public:
 	std::optional<T> min();
 	std::optional<T> max();
 	size_t size() { return size_; };
-	const size_t limit() { return limit_; }
+	const T limit() { return -1; }
 	void insert(T key);
 	void remove(T key);
-	std::string to_dot();
 };
 
 template <typename T>
-XFastTrie<T>::XFastTrie() : limit_(std::numeric_limits<T>::digits) {
+XFastTrie<T>::XFastTrie() {
 	size_ = 0;
-	max_bits_ = std::numeric_limits<T>::digits;
-	this->lss.reserve(max_bits_);
-	for (size_t i = 0; i < (max_bits_ + 1); ++i) {
+	bits_ = std::numeric_limits<T>::digits;
+	this->lss.reserve(bits_);
+	for (size_t i = 0; i < (bits_ + 1); ++i) {
 		this->lss.push_back(map_wrapper<T, XFastTrieNode<T>*>());
 	}
 }
@@ -58,25 +53,23 @@ XFastTrie<T>::~XFastTrie() {
 }
 
 template <typename T>
-T XFastTrie<T>::prefix(T key, T level) {
-	return key >> (this->max_bits_ - level);
+T XFastTrie<T>::get_prefix(T key, T level) {
+	if (level == 0) return 0;
+	return key >> (this->bits_ - level);
 }
 
 template <typename T>
 T XFastTrie<T>::get_highest_level(T key) {
 	T low_level = 0;
-	T high_level = this->max_bits_;
+	T high_level = bits_;
 
-	// TODO: branchless?
 	while (low_level <= high_level) {
-		T mid_level = (low_level + high_level) >> 1;
-		T prefix = this->prefix(key, mid_level);
-		if (this->lss[mid_level].contains(prefix)) {
+		T mid_level = low_level + ((high_level - low_level) >> 1);
+		T prefix = get_prefix(key, mid_level);
+		if (lss[mid_level].contains(prefix)) 
 			low_level = mid_level + 1;
-		}
-		else {
+		else 
 			high_level = mid_level - 1;
-		}
 	}
 
 	return low_level - 1;
@@ -85,10 +78,10 @@ T XFastTrie<T>::get_highest_level(T key) {
 template <typename T>
 T XFastTrie<T>::get_closest_key(T key) {
 	T highest_level = this->get_highest_level(key);
-	T prefix = this->prefix(key, highest_level);
+	T prefix = get_prefix(key, highest_level);
 	XFastTrieNode<T>* node = this->lss[highest_level].at(prefix);
 
-	if (highest_level == this->max_bits_) {
+	if (highest_level == this->bits_) {
 		return node->key;
 	}
 
@@ -105,8 +98,6 @@ T XFastTrie<T>::get_closest_key(T key) {
 		if (node->children[RIGHT]->children[LEFT]) closest_keys.push_back(node->children[RIGHT]->children[LEFT]->key);
 		if (node->children[RIGHT]->children[RIGHT]) closest_keys.push_back(node->children[RIGHT]->children[RIGHT]->key);
 	}
-
-	if (closest_keys.size() == 0) assert(false);
 
 	return *std::min_element(std::begin(closest_keys), std::end(closest_keys),
 		[&key](T a, T b) -> T { return (a > key ? a - key : key - a) < (b > key ? b - key : key - b); });
@@ -155,8 +146,8 @@ void XFastTrie<T>::insert(T key) {
 	if (succ != nullptr) succ->children[LEFT] = node;
 
 	XFastTrieNode<T>* pre = node;
-	for (int level = this->max_bits_ - 1; level >= 0; --level) {
-		T prefix = this->prefix(key, level);
+	for (int level = this->bits_ - 1; level >= 0; --level) {
+		T prefix = get_prefix(key, level);
 		if (this->lss[level].contains(prefix)) {
 			XFastTrieNode<T>* cur = this->lss[level].at(prefix);
 
@@ -185,7 +176,6 @@ void XFastTrie<T>::insert(T key) {
 				this->lss.back().at(children[is_left]->key) != children[is_left] : true) {
 				children[is_left] = children[is_left]->children[is_left];
 			}
-
 			XFastTrieNode<T>* to_insert = new XFastTrieNode<T>(prefix, children);
 			this->lss[level].insert(prefix, to_insert);
 			pre = to_insert;
@@ -209,8 +199,8 @@ void XFastTrie<T>::remove(T key) {
 	if (succ != nullptr) succ->children[LEFT] = pred;
 
 
-	for (int level = this->max_bits_ - 1; level >= 0; --level) {
-		T prefix = this->prefix(key, level);
+	for (int level = this->bits_ - 1; level >= 0; --level) {
+		T prefix = get_prefix(key, level);
 		T left_child_prefix = prefix	<< 1;
 		T right_child_prefix = (prefix << 1) | 1;
 
@@ -218,10 +208,10 @@ void XFastTrie<T>::remove(T key) {
 			!this->lss[level + 1].contains(right_child_prefix)) {
 			this->lss[level].remove(prefix);
 		} else {
-			auto right_child_exists = this->lss[level+1].contains(right_child_prefix);
-			auto node_prefix = right_child_exists ? right_child_prefix : left_child_prefix;
-			auto dir = right_child_exists ? LEFT : RIGHT;
-			auto node = this->lss[level+1].at(node_prefix);
+			bool right_child_exists = this->lss[level+1].contains(right_child_prefix);
+			T node_prefix = right_child_exists ? right_child_prefix : left_child_prefix;
+			bool dir = right_child_exists ? LEFT : RIGHT;
+			XFastTrieNode<T>* node = this->lss[level+1].at(node_prefix);
 
 			while (this->lss.back().contains(node->key) ?
 				this->lss.back().at(node->key) != node : true) {
@@ -267,33 +257,3 @@ std::optional<T> XFastTrie<T>::min() {
 	XFastTrieNode<T>* node = this->successor_node(0);
 	return std::optional<T>(node->key);
 }
-
-std::string ptstr(void* x) {
-	std::ostringstream ss;
-	ss << x;
-	return std::string(ss.str());
-}
-
-template <typename T>
-std::string XFastTrie<T>::to_dot() {
-	std::vector<std::string> levels;
-	std::string ss;
-	ss += "digraph {\n";
-	for (auto m : this->lss) {
-		std::string level("{rank = same; ");
-		for (auto x : m.data()) {
-			if (x.second->children[0] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[0])) + "\n";
-			if (x.second->children[1] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[1])) + "\n";
-			ss += "\tn" + ptstr((void*)(x.second)) + " [label=\"" + std::to_string(int(x.first)) + "\"]\n";
-			level += "n" + ptstr((void*)(x.second)) + "; ";
-			
-		}
-		levels.push_back(level + "}");
-	}
-	for (auto s : levels) {
-		ss += "\t" + s + "\n"; 
-	}
-	ss += "}";
-	return std::string(ss);
-}
-
