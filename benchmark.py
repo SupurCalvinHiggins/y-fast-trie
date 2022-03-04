@@ -18,9 +18,7 @@ if __name__ == "__main__":
 		if os.path.exists("benchmark"):
 			print(colored("*** RUNNING ***", "green"))
 			subprocess.run(["./benchmark"])
+			os.remove("benchmark")
 		else:
 			print(colored("*** WARNING ***", "yellow"))
-			print(f"{fname} failed to compile")
-	
-	if os.path.exists("benchmark"):
-		os.remove("benchmark")
+			print(f"{fname} failed to compile")		
