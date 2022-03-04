@@ -1,5 +1,6 @@
 import os
 import glob
+import argparse
 import subprocess
 
 try:
@@ -10,7 +11,18 @@ except:
 	colored = lambda x : x
 
 if __name__ == "__main__":
-	for fname in glob.glob("**/*.benchmark.cpp"):
+	parser = argparse.ArgumentParser(description="Run benchmarks.")
+	parser.add_argument("file", nargs="*")
+	fnames = parser.parse_args().file
+
+	if not fnames:
+		fnames = glob.glob("**/*.benchmark.cpp")
+
+	print(colored("*** FILES ***", "green"))
+	for fname in fnames:
+		print(fname)
+
+	for fname in fnames:
 		print(colored("*** CURRENT FILE ***", "green"))
 		print(fname)
 		print(colored("*** COMPILING ***", "green"))
