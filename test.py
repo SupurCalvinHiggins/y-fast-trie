@@ -22,3 +22,6 @@ if __name__ == "__main__":
 		else:
 			print(colored("*** WARNING ***", "yellow"))
 			print(f"{fname} failed to compile")
+
+	if os.path.exists("test"):
+		os.remove("test")

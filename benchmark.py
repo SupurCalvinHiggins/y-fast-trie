@@ -10,7 +10,7 @@ except:
 	colored = lambda x : x
 
 if __name__ == "__main__":
-	for fname in glob.glob("**/*.bench.cpp"):
+	for fname in glob.glob("**/*.benchmark.cpp"):
 		print(colored("*** CURRENT FILE ***", "green"))
 		print(fname)
 		print(colored("*** COMPILING ***", "green"))
@@ -21,3 +21,6 @@ if __name__ == "__main__":
 		else:
 			print(colored("*** WARNING ***", "yellow"))
 			print(f"{fname} failed to compile")
+	
+	if os.path.exists("benchmark"):
+		os.remove("benchmark")
