@@ -14,7 +14,7 @@ if __name__ == "__main__":
 		print(colored("*** CURRENT FILE ***", "green"))
 		print(fname)
 		print(colored("*** COMPILING ***", "green"))
-		subprocess.run(["g++", fname, "-std=c++17", "-lbenchmark", "-lpthread", "-o", "benchmark"])
+		subprocess.run(["g++", fname, "-std=c++17", "-O3", "-lbenchmark", "-lpthread", "-o", "benchmark"])
 		if os.path.exists("benchmark"):
 			print(colored("*** RUNNING ***", "green"))
 			subprocess.run(["./benchmark"])
