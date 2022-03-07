@@ -4,6 +4,9 @@
 #include <optional>
 #include <vector>
 #include <algorithm>
+#include <assert.h>
+#include <string>
+#include <sstream>
 
 #define LEFT 0
 #define RIGHT 1
@@ -31,6 +34,7 @@ public:
 	const T limit() { return -1; }
 	void insert(T key);
 	void remove(T key);
+	std::string to_dot();
 };
 
 template <typename T>
@@ -46,7 +50,7 @@ XFastTrie<T>::XFastTrie() {
 template <typename T>
 XFastTrie<T>::~XFastTrie() {
 	for (auto m : this->lss) {
-		for (auto x : m.data()) {
+		for (auto x : m) {
 			delete x.second;
 		}
 	}
@@ -140,7 +144,7 @@ void XFastTrie<T>::insert(T key) {
 	XFastTrieNode<T>* children[2] = { pred, succ };
 	XFastTrieNode<T>* node = new XFastTrieNode<T>(key, children);
 
-	this->lss.back().insert(key, node);
+	this->lss.back()[key] = node;
 
 	if (pred != nullptr) pred->children[RIGHT] = node;
 	if (succ != nullptr) succ->children[LEFT] = node;
@@ -167,6 +171,9 @@ void XFastTrie<T>::insert(T key) {
 			else if (key > cur->children[RIGHT]->key) {
 				cur->children[RIGHT] = node;
 			}
+
+			assert(cur->children[0] != nullptr);
+			assert(cur->children[1] != nullptr);
 		}
 		else {
 			XFastTrieNode<T>* children[2] = {pre, pre};
@@ -176,8 +183,10 @@ void XFastTrie<T>::insert(T key) {
 				this->lss.back().at(children[is_left]->key) != children[is_left] : true) {
 				children[is_left] = children[is_left]->children[is_left];
 			}
+			assert(children[0] != nullptr);
+			assert(children[1] != nullptr);
 			XFastTrieNode<T>* to_insert = new XFastTrieNode<T>(prefix, children);
-			this->lss[level].insert(prefix, to_insert);
+			this->lss[level][prefix] = to_insert;
 			pre = to_insert;
 		}		
 	}
@@ -192,33 +201,51 @@ void XFastTrie<T>::remove(T key) {
 	XFastTrieNode<T>* pred = this->predecessor_node(key);
 	XFastTrieNode<T>* succ = this->successor_node(key);
 	XFastTrieNode<T>* node = this->lss.back().at(key);
+	// rewire parent
+	// XFastTrieNode<T>* parent = this->lss[this->bits_ - 1].at(key >> 1);
+	// if (parent->children[0] == node) parent->children[0] = nullptr;
+	// if (parent->children[1] == node) parent->children[1] = nullptr;
 	// delete node;
 	this->lss.back().remove(key);
+	delete node;
 
 	if (pred != nullptr) pred->children[RIGHT] = succ;
 	if (succ != nullptr) succ->children[LEFT] = pred;
 
-
 	for (int level = this->bits_ - 1; level >= 0; --level) {
 		T prefix = get_prefix(key, level);
-		T left_child_prefix = prefix	<< 1;
+		T left_child_prefix = prefix << 1;
 		T right_child_prefix = (prefix << 1) | 1;
+		bool left_child_exists = this->lss[level + 1].contains(left_child_prefix);
+		bool right_child_exists = this->lss[level + 1].contains(right_child_prefix);
 
-		if (!this->lss[level + 1].contains(left_child_prefix) &&
-			!this->lss[level + 1].contains(right_child_prefix)) {
+		if (!left_child_exists && !right_child_exists) {
+			node = this->lss[level].at(prefix);	
+			// rewire parent
+			// parent = this->lss[level - 1].at(prefix >> 1);
+			// if (parent->children[0] == node) parent->children[0] = nullptr;
+			// if (parent->children[1] == node) parent->children[1] = nullptr;
+			// delete node
+			delete node;
 			this->lss[level].remove(prefix);
 		} else {
-			bool right_child_exists = this->lss[level+1].contains(right_child_prefix);
+			if (left_child_exists == true && right_child_exists == true) continue;
+			assert(left_child_exists || right_child_exists);
+
 			T node_prefix = right_child_exists ? right_child_prefix : left_child_prefix;
+			node = this->lss[level + 1].at(node_prefix);
 			bool dir = right_child_exists ? LEFT : RIGHT;
-			XFastTrieNode<T>* node = this->lss[level+1].at(node_prefix);
 
 			while (this->lss.back().contains(node->key) ?
 				this->lss.back().at(node->key) != node : true) {
 				node = node->children[dir];
 			}
-
-			this->lss[level].at(prefix)->children[dir] = node;
+			
+			if (right_child_exists && dir == LEFT)
+				this->lss[level].at(prefix)->children[dir] = node;
+			
+			if (left_child_exists && dir == RIGHT)
+				this->lss[level].at(prefix)->children[dir] = node;
 		}
 	}
 }
@@ -256,4 +283,33 @@ std::optional<T> XFastTrie<T>::min() {
 	if (this->lss.back().contains(0)) return std::optional<T>(0);
 	XFastTrieNode<T>* node = this->successor_node(0);
 	return std::optional<T>(node->key);
+}
+
+std::string ptstr(void* x) {
+	std::ostringstream ss;
+	ss << x;
+	return std::string(ss.str());
+}
+
+template <typename T>
+std::string XFastTrie<T>::to_dot() {
+	std::vector<std::string> levels;
+	std::string ss;
+	ss += "digraph {\n";
+	for (auto m : this->lss) {
+		std::string level("{rank = same; ");
+		for (auto x : m) {
+			if (x.second->children[0] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[0])) + "\n";
+			if (x.second->children[1] != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->children[1])) + "\n";
+			ss += "\tn" + ptstr((void*)(x.second)) + " [label=\"" + std::to_string(int(x.first)) + "\"]\n";
+			level += "n" + ptstr((void*)(x.second)) + "; ";
+			
+		}
+		levels.push_back(level + "}");
+	}
+	for (auto s : levels) {
+		ss += "\t" + s + "\n"; 
+	}
+	ss += "}";
+	return std::string(ss);
 }

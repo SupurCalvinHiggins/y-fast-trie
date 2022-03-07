@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <random>
 
-const size_t KEY_COUNT = 10;
+const size_t KEY_COUNT = 1000;
 
 template <typename T>
 class XFastTrieTest : public ::testing::Test {
