@@ -1,6 +1,5 @@
 #include <benchmark/benchmark.h>
 #include <cstdint>
-#include <iostream>
 #include "x-fast-trie.h"
 
 template <typename T>
