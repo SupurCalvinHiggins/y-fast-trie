@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <random>
 
-const size_t KEY_COUNT = 10;
+const size_t KEY_COUNT = 1000;
 
 template <typename T>
 class XFastTrieTest : public ::testing::Test {
@@ -136,4 +136,19 @@ TYPED_TEST(XFastTrieTest, TestPredecessorAndSuccessor) {
 	ASSERT_EQ(predecessor.has_value(), true);
 	EXPECT_EQ(predecessor.value(), (*this->keys_ptr)[(*this->keys_ptr).size() - 2]);
 	EXPECT_EQ(successor.has_value(), false);
+}
+
+TYPED_TEST(XFastTrieTest, InsertAndRemoveValuedTrie) {
+	for (const auto key : (*this->keys_ptr))
+		this->trie.insert(key);
+	
+	for (const auto key : (*this->keys_ptr)) {
+		auto new_key = this->trie.limit() - key;
+		this->trie.remove(new_key);
+		EXPECT_EQ(this->trie.contains(new_key), false);
+		this->trie.insert(new_key);
+		EXPECT_EQ(this->trie.contains(new_key), true);
+		this->trie.remove(new_key);
+		EXPECT_EQ(this->trie.contains(new_key), false);
+	}
 }

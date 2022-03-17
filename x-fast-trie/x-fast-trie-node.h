@@ -1,13 +1,14 @@
 #pragma once
 #include "x-fast-trie.h"
 
-// TODO: friend class
 template <typename T>
 class XFastTrieNode {
-public:
-	XFastTrieNode(T key, XFastTrieNode<T>* children[2]);
+private:
 	T key;
 	XFastTrieNode<T>* children[2];
+public:
+	XFastTrieNode(T key, XFastTrieNode<T>* children[2]);
+	template <typename> friend class XFastTrie;
 };
 
 template <typename T>
