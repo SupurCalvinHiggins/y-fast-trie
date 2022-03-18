@@ -1,3 +1,4 @@
+//red-black-tree.h
 #pragma once
 #include "red-black-tree-node.h"
 #include <vector>
@@ -9,24 +10,38 @@ class RedBlackTree {
     friend Node<T>;
 public:
 	RedBlackTree();
+    ~RedBlackTree();
 	Node<T>* rotate(Node<T>* root, bool side);
 	Node<T>* left_rotate(Node<T>* root);
 	Node<T>* right_rotate(Node<T>* root);
+    Node<T>* find(T key);
+    Node<T>* successor(T key);
+    Node<T>* successor(Node<T>* node);
+    Node<T>* predecessor(T key);
+    Node<T>* predecessor(Node<T>* node);
+
 	void recolor_tree();
 	void insert_check(Node<T>* node);
 	void insert(T key);
-	Node<T>* find(T key);
-    bool contains(T key);
-    void remove_check(Node<T>* parent, bool color, bool dir);
+	void remove_check(Node<T>* parent, bool color, bool dir);
 	void remove(T key);
-	std::string show_color(Node<T>* node);
+    void destroy();
     void show(Node<T>* node, int depth = 0);
+
+    bool contains(T key);
     bool check_balance();
+
+    int size();
+    int limit() {return (1 << (sizeof(T)*8)) - 1};
+
+	std::string show_color(Node<T>* node);
+    
+
 
     Node<T>* root();
     void root(Node<T>* node);
 
-    int size();
+    
 private:
     Node<T>* root_;
 	int size_;
@@ -36,6 +51,10 @@ private:
 template <typename T> RedBlackTree<T>::RedBlackTree() {
     root_ = nullptr;
     size_ = 0;
+};
+
+template <typename T> RedBlackTree<T>::~RedBlackTree() {
+    destroy();
 };
 
 template <typename T> Node<T>* RedBlackTree<T>::rotate(Node<T>* root, bool side) {
@@ -116,6 +135,31 @@ template <typename T> void RedBlackTree<T>::recolor_tree() {
     }
 };
 
+template <typename T> void RedBlackTree<T>::destroy() {
+    std::vector<Node<T>*> layer1({root_});
+    std::vector<Node<T>*> layer2();
+    int width = 1;
+    while (width < size_){
+        width *= 2;
+        layer2.reserve(width);
+        
+        for (Node<T>* node: layer1) {
+            if (node->children_[0] != nullptr) {
+                layer2.push_back(node->children_[0])
+            }
+            if (node->children_[1] != nullptr) {
+                layer2.push_back(node->children_[1])
+            }
+            delete node;
+        }
+        layer1 = layer2; 
+    }
+    for (Node<T>* node: layer1) {
+        delete node;
+    }
+
+};
+
 template <typename T> void RedBlackTree<T>::insert_check(Node<T>* node) {
     Node<T>* parent = node->parent_;
     if (parent == nullptr || !parent->color_) {
@@ -193,6 +237,46 @@ template <typename T> Node<T>* RedBlackTree<T>::find(T key) {
     return target_node;
 };
 
+template <typename T> Node<T>* RedBlackTree<T>::successor(T key) {
+    Node<T>* node = find(key);
+    if (node == nullptr){
+        return nullptr;
+    }
+    Node<T>* succ = node->children_[1];
+    if (succ == nullptr) {
+        return nullptr;
+    }
+    while (succ->children_[0] != nullptr) {
+        succ = succ->children_[0];
+    }
+    return succ;
+};
+
+template <typename T> Node<T>* RedBlackTree<T>::successor(Node<T>* node) {
+    Node<T>* succ = node->children_[1];
+    while (succ->children_[0] != nullptr) {
+        succ = succ->children_[0];
+    }
+    return succ;
+};
+
+template <typename T> Node<T>* RedBlackTree<T>::predecessor(T key) {
+    Node<T>* node = find(key);
+    Node<T>* pred = node->children_[0];
+    while (pred->children_[1] != nullptr) {
+        pred = pred->children_[1];
+    }
+    return pred;
+};
+
+template <typename T> Node<T>* RedBlackTree<T>::predecessor(Node<T>* node) {
+    Node<T>* pred = node->children_[0];
+    while (pred->children_[1] != nullptr) {
+        pred = pred->children_[1];
+    }
+    return pred;
+};
+
 template <typename T> bool RedBlackTree<T>::contains(T key) {
     return find(key) != nullptr;
 };
@@ -251,7 +335,7 @@ template <typename T> void RedBlackTree<T>::remove(T key) {
         remove_check(parent, color, dir);
     }
     else {
-        Node<T>* succ = node->children_[1];
+        Node<T>* succ = successor(node);
         if (succ == nullptr) {
             root_ = node->children_[0];
             if (root_ != nullptr) {
@@ -262,9 +346,7 @@ template <typename T> void RedBlackTree<T>::remove(T key) {
             delete node;
         }
         else {
-            while (succ->children_[0] != nullptr) {
-                succ = succ->children_[0];
-            }
+            
             node->key_ = succ->key_;
 
             succ->parent_->children_[succ->parent_->children_[1] == succ] = succ->children_[1];

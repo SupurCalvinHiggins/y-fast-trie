@@ -4,7 +4,8 @@
 template <typename T> 
 class Node {
 public:
-	Node(void);
+	Node();
+	~Node();
 	Node(T key, bool color);
 	Node(T key, bool color, Node* left, Node* right, Node* parent);
 	Node* left();
@@ -27,12 +28,16 @@ private:
 	
 };
 
-template <typename T> Node<T>::Node(void) {
+template <typename T> Node<T>::Node() {
 	children_[0] = nullptr;
 	children_[1] = nullptr;
 	parent_ = nullptr;
 	key_ = T();
 	color_ = 1;
+};
+
+template <typename T> Node<T>::~Node() {
+
 };
 
 template <typename T> Node<T>::Node(T key, bool color) {
