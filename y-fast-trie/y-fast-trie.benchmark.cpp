@@ -7,6 +7,7 @@ class YFastTrieFixture: public benchmark::Fixture {
 protected:
 	void SetUp(const benchmark::State& state) {
 		std::srand(0);
+		trie.reserve(state.range(0));
 		for (int i = 0; i < state.range(0); ++i) {
 			auto val = std::rand() % trie.limit();
 			trie.insert(val);
