@@ -9,6 +9,7 @@ private:
 public:
 	BinarySearchTreeNode(T key);
 	BinarySearchTreeNode(T key, BinarySearchTreeNode<T>* children[2]);
+	T getKey() { return key; };
 	template <typename> friend class BinarySearchTree;
 };
 

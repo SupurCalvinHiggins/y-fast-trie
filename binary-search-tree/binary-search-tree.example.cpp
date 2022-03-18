@@ -3,33 +3,20 @@
 #include <cstdint>
 
 int main() {
-    BinarySearchTree<int> tree;
-
-	tree.insert(9);
-    if(tree.contains(9))
-        std::cout << "9 is in the tree" << std::endl;
+    BinarySearchTree<uint32_t> tree;
     
-    tree.remove(9);
-    if (!tree.contains(9))
-        std::cout << "9 is not in the tree" << std::endl;
-    
-    tree.remove(9);
-    if (!tree.contains(9))
-        std::cout << "9 can not be removed from the tree" << std::endl;
-   
-    tree.insert(1);
-    if(tree.contains(1))
-        std::cout << "1 is in the tree" << std::endl;
+    tree.insert(10);
     tree.insert(5);
-    if(tree.contains(5))
-        std::cout << "5 is in the tree" << std::endl;
+    tree.insert(7);
+    tree.insert(8);
     tree.insert(11);
-    if(tree.contains(11))
-        std::cout << "11 is in the tree" << std::endl;
-    tree.insert(16);
-    if(tree.contains(16))
-        std::cout << "16 is in the tree" << std::endl;
-    
-    std::cout << "Tree Size: " << tree.size() << std::endl;
+    tree.insert(15);
+    tree.insert(18);
 
+    std::cout << "Tree Size: " << tree.size() << std::endl;
+    
+    std::cout << "ROOT: " << tree.getRoot()->getKey();
+
+    std::cout << "\nTree: ";
+    tree.printInOrder(tree.getRoot());
 }
