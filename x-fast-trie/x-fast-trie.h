@@ -34,6 +34,7 @@ public:
 	const T limit() { return -1; }
 	void insert(T key);
 	void remove(T key);
+	void reserve(size_t size);
 };
 
 template <typename T>
@@ -266,4 +267,11 @@ std::optional<T> XFastTrie<T>::min() {
 	if (this->lss.back().contains(0)) return std::optional<T>(0);
 	XFastTrieNode<T>* node = this->successor_node(0);
 	return std::optional<T>(node->key);
+}
+
+template <typename T>
+void XFastTrie<T>::reserve(size_t size) {
+	for (size_t level = 0; level <= this->bits_; ++level) {
+		this->lss[level].reserve(this->get_prefix(size, level));
+	}
 }
