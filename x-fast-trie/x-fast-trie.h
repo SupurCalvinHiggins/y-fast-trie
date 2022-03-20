@@ -174,12 +174,8 @@ void XFastTrie<T>::insert(T key) {
 		}
 		else {
 			XFastTrieNode<T>* children[2] = {pre, pre};
-
 			T is_left = pre->key & 1 ? 0 : 1;
-			while (lss_.back().contains(children[is_left]->key) ?
-				lss_.back().at(children[is_left]->key) != children[is_left] : true) {
-				children[is_left] = children[is_left]->children[is_left];
-			}
+			children[is_left] = node;
 			XFastTrieNode<T>* to_insert = new XFastTrieNode<T>(prefix, children);
 			lss_[level][prefix] = to_insert;
 			pre = to_insert;
@@ -195,9 +191,8 @@ void XFastTrie<T>::remove(T key) {
 
 	XFastTrieNode<T>* pred = predecessor_node(key);
 	XFastTrieNode<T>* succ = successor_node(key);
-	XFastTrieNode<T>* node = lss_.back().at(key);
+	XFastTrieNode<T>* end_node = lss_.back().at(key);
 	lss_.back().remove(key);
-	delete node;
 
 	if (pred != nullptr) pred->children[RIGHT] = succ;
 	if (succ != nullptr) succ->children[LEFT] = pred;
@@ -210,29 +205,57 @@ void XFastTrie<T>::remove(T key) {
 		bool right_child_exists = lss_[level + 1].contains(right_child_prefix);
 
 		if (!left_child_exists && !right_child_exists) {
-			node = lss_[level].at(prefix);	
+			auto node = lss_[level].at(prefix);	
 			delete node;
 			lss_[level].remove(prefix);
 		} else {
 			if (left_child_exists == true && right_child_exists == true) continue;
 
 			T node_prefix = right_child_exists ? right_child_prefix : left_child_prefix;
-			node = lss_[level + 1].at(node_prefix);
+			auto node = lss_[level + 1].at(node_prefix);
 			bool dir = right_child_exists ? LEFT : RIGHT;
 
-			while (lss_.back().contains(node->key) ?
-				lss_.back().at(node->key) != node : true) {
-				node = node->children[dir];
+			// while (lss_.back().contains(node->key) ?
+			// 	lss_.back().at(node->key) != node : true) {
+			// 	node = node->children[dir];
+			// }
+			
+			auto child = lss_[level].at(prefix)->children[dir];
+			if (right_child_exists && !(lss_.back().contains(child->key) && lss_.back().at(child->key) == child)) {
+				// assert(node == succ || node == lss_[level].at(prefix)->children[dir]);
+				// if (node == lss_[level].at(prefix)->children[dir]) {
+				// 	if (lss_.back().contains(child->key)) {
+				// 		assert(child == lss_.back().at(child->key));
+				// 	} else {
+				// 		assert(false);
+				// 	}
+				// }
+				lss_[level].at(prefix)->children[dir] = succ;
 			}
 			
-			if (right_child_exists && dir == LEFT)
-				lss_[level].at(prefix)->children[dir] = node;
-			
-			if (left_child_exists && dir == RIGHT)
-				lss_[level].at(prefix)->children[dir] = node;
+			if (left_child_exists && !(lss_.back().contains(child->key) && lss_.back().at(child->key) == child)) {
+				// assert(node == pred || node == lss_[level].at(prefix)->children[dir]);
+				// if (node == lss_[level].at(prefix)->children[dir]) {
+				// 	auto child = lss_[level].at(prefix)->children[dir];
+				// 	if (lss_.back().contains(child->key)) {
+				// 		assert(child == lss_.back().at(child->key));
+				// 	} else {
+				// 		assert(false);
+				// 	}
+				// }
+				lss_[level].at(prefix)->children[dir] = pred;
+			}
+
+			// auto cur = lss_[level].at(prefix);
+			// if (cur->children[LEFT] == end_node)
+			// 	cur->children[LEFT] = succ;
+			// else if (cur->children[RIGHT] == end_node)
+			// 	cur->children[RIGHT] = pred;
 			
 		}
 	}
+
+	delete end_node;
 }
 
 template <typename T>
