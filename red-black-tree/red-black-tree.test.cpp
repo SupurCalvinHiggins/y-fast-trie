@@ -45,10 +45,6 @@ TYPED_TEST(RedBlackTreeTest, IsEmptyOnCreation) {
 	EXPECT_EQ(this->tree.size(), 0);
 }
 
-TYPED_TEST(RedBlackTreeTest, HasCorrectLimit) {
-	EXPECT_EQ(this->tree.limit(), std::numeric_limits<TypeParam>::max());
-}
-
 TYPED_TEST(RedBlackTreeTest, ContainsWorksOnEmpty) {
 	for (const auto key : (*this->keys_ptr))
 		EXPECT_EQ(this->tree.contains(key), false);
@@ -59,14 +55,6 @@ TYPED_TEST(RedBlackTreeTest, RemoveWorksOnEmpty) {
 		this->tree.remove(key);
 		EXPECT_EQ(this->tree.size(), 0);
 	}
-}
-
-TYPED_TEST(RedBlackTreeTest, MinWorksOnEmpty) {
-	EXPECT_EQ(this->tree.min().has_value(), false);
-}
-
-TYPED_TEST(RedBlackTreeTest, MaxWorksOnEmpty) {
-	EXPECT_EQ(this->tree.max().has_value(), false);
 }
 
 TYPED_TEST(RedBlackTreeTest, PredecessorWorksOnEmpty) {
@@ -138,74 +126,17 @@ TYPED_TEST(RedBlackTreeTest, TestPredecessorAndSuccessor) {
 	EXPECT_EQ(successor.has_value(), false);
 }
 
-TYPED_TEST(RedBlackTreeTest, TestPredecessorAndSuccessor) {
+TYPED_TEST(RedBlackTreeTest, InsertAndRemoveValuedTrie) {
 	for (const auto key : (*this->keys_ptr))
 		this->tree.insert(key);
 	
-	std::sort(std::begin((*this->keys_ptr)), std::end((*this->keys_ptr)));
-
-	ASSERT_EQ(tree.check_balance(),true);
+	for (const auto key : (*this->keys_ptr)) {
+		auto new_key = this->tree.limit() - key;
+		this->tree.remove(new_key);
+		EXPECT_EQ(this->tree.contains(new_key), false);
+		this->tree.insert(new_key);
+		EXPECT_EQ(this->tree.contains(new_key), true);
+		this->tree.remove(new_key);
+		EXPECT_EQ(this->tree.contains(new_key), false);
+	}
 }
-
-TYPED_TEST(RedBlackTreeTest, TestBalance) {
-	for (const auto key : (*this->keys_ptr))
-		this->tree.insert(key);
-	
-	std::sort(std::begin((*this->keys_ptr)), std::end((*this->keys_ptr)));
-
-	ASSERT_EQ(tree.check_balance(),true);
-}
-
-TYPED_TEST(RedBlackTreeTest, TestEqualBlackInPaths) {
-	for (const auto key : (*this->keys_ptr))
-		this->tree.insert(key);
-	
-	std::sort(std::begin((*this->keys_ptr)), std::end((*this->keys_ptr)));
-
-	std::vector<Node<T>*> bottom = tree.get_layer(tree.height() - 1);
-    Node<T>* node = bottom[1];
-    unsigned int black_height = 0;
-
-    while (node != nullptr) {
-        if (node->color_ == 0) {
-            black_height++;
-        }
-        node = node->parent_;
-    }
-
-    for (int i = 1; i < bottom.size(); i++){
-        unsigned int black_nodes = 0;
-        node = bottom[i];
-        while (node != nullptr) {
-            if (node->color_ == 0) {
-                black_nodes++;
-            }
-        }
-        node = node->parent_;
-        ASSERT_EQ(black_nodes, black_height);
-    }
-
-}
-
-TYPED_TEST(RedBlackTreeTest, TestNoConsequetiveReds) {
-	for (const auto key : (*this->keys_ptr))
-		this->tree.insert(key);
-	
-	std::sort(std::begin((*this->keys_ptr)), std::end((*this->keys_ptr)));
-
-	std::vector<std::vector<Node<T>*> layers = tree.make_2d_vector();
-    
-    for (std::vector<Node<T>* layer : layers) {
-        for(Node<T> node : layer) {
-            if (node->color_) {
-                EXPECT_EQ(node->parent_->color_, false);
-                EXPECT_EQ(node->children_[0]->color_, false);
-                EXPECT_EQ(node->children_[1]->color_, false);
-            } 
-        }
-    }
-
-}
-
-
-    

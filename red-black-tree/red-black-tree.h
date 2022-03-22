@@ -1,10 +1,11 @@
 //red-black-tree.h
-#pragma oncer
+#pragma once
 #include "red-black-tree-node.h"
 #include <vector>
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <optional>
 
 template <typename T>
 class RedBlackTree {
@@ -22,12 +23,12 @@ public:
     Node<T>* predecessor_node(T key);
     Node<T>* predecessor_node(Node<T>* node);
 
+    std::optional<T> predecessor(T key);
+	std::optional<T> successor(T key);
+
     std::vector<Node<T>*> get_layer(int layer);
 
     std::vector<std::vector<Node<T>*>> make_2d_vector();
-
-    T successor(T key);
-    T predecessor(T key);
 
 	void recolor_tree();
 	void insert_check(Node<T>* node);
@@ -41,7 +42,6 @@ public:
     bool check_balance();
 
     int size();
-    int limit() {return (1 << (sizeof(T)*8)) - 1;};
     int height() {return std::ceil(std::log2(size_));};
 
 	std::string show_color(Node<T>* node);
@@ -262,16 +262,6 @@ template <typename T> Node<T>* RedBlackTree<T>::successor_node(T key) {
     return succ;
 };
 
-
-template <typename T> T RedBlackTree<T>::successor(T key) {
-    return successor_node(key)->key_;
-};
-
-template <typename T> T RedBlackTree<T>::predecessor(T key) {
-    return predecessor_node(key)->key_;
-};
-
-
 template <typename T> Node<T>* RedBlackTree<T>::successor_node(Node<T>* node) {
     Node<T>* succ = node->children_[1];
     if (succ != nullptr){
@@ -304,6 +294,18 @@ template <typename T> Node<T>* RedBlackTree<T>::predecessor_node(Node<T>* node) 
     }
     return pred;
 };
+
+template <typename T> std::optional<T> RedBlackTree<T>::predecessor(T key) {
+	Node<T>* node = predecessor_node(key);
+	if (node) return std::optional<T>(node->key);
+	return std::nullopt;
+}
+
+template <typename T> std::optional<T> RedBlackTree<T>::successor(T key) {
+	Node<T>* node = successor_node(key);
+	if (node) return std::optional<T>(node->key);
+	return std::nullopt;
+}
 
 template <typename T> bool RedBlackTree<T>::contains(T key) {
     return find(key) != nullptr;
