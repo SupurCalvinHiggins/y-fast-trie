@@ -138,7 +138,7 @@ TYPED_TEST(YFastTrieTest, TestPredecessorAndSuccessor) {
 	EXPECT_EQ(successor.has_value(), false);
 }
 
-TYPED_TEST(YFastTrieTest, InsertAndRemoveValuedTrie) {
+TYPED_TEST(YFastTrieTest, InsertAndRemoveProbe) {
 	for (const auto key : (*this->keys_ptr))
 		this->trie.insert(key);
 	
