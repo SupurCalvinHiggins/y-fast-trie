@@ -19,9 +19,10 @@ private:
 	std::vector<map_wrapper<T, XFastTrieNode<T>*>> lss_;
 	T get_prefix(T key, size_t level);
 	size_t get_highest_level(T key);
-	T get_closest_key(T key);
+	XFastTrieNode<T>* get_closest_leaf(T key);
 	XFastTrieNode<T>* predecessor_node(T key);
 	XFastTrieNode<T>* successor_node(T key);
+	std::pair<XFastTrieNode<T>*, XFastTrieNode<T>*> predecessor_successor_node(T key);
 	constexpr size_t bits() { return std::numeric_limits<T>::digits; }
 public:
 	XFastTrie();
@@ -37,37 +38,6 @@ public:
 	void remove(T key);
 	void reserve(size_t size);
 	bool empty();
-	std::string ptstr(void* x) {
-		std::ostringstream ss;
-		ss << x;
-		return std::string(ss.str());
-	}
-	std::string to_dot() {
-	std::vector<std::string> levels;
-	std::string ss;
-	ss += "digraph {\n";
-	for (auto m : lss_) {
-		std::string level("{rank = same; ");
-		// std::vector<T> data;
-		// for (auto x : m) {
-		// 	data.push_back(x.first);
-		// }
-		// std::sort(data.begin(), data.end(), std::greater<T>());
-		for (auto x : m) {
-			if (x.second->get_left() != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->get_left())) + "\n";
-			if (x.second->get_right() != nullptr) ss +="\tn" + ptstr((void*)(x.second)) + " -> n" + ptstr((void*)(x.second->get_right())) + "\n";
-			ss += "\tn" + ptstr((void*)(x.second)) + " [label=\"" + std::to_string(int(x.first)) + "\"]\n";
-			level += "n" + ptstr((void*)(x.second)) + "; ";
-			
-		}
-		levels.push_back(level + "}");
-	}
-	for (auto s : levels) {
-		ss += "\t" + s + "\n"; 
-	}
-	ss += "}";
-	return std::string(ss);
-}
 };
 
 template <typename T>
@@ -112,13 +82,13 @@ size_t XFastTrie<T>::get_highest_level(T key) {
 }
 
 template <typename T>
-T XFastTrie<T>::get_closest_key(T key) {
+XFastTrieNode<T>* XFastTrie<T>::get_closest_leaf(T key) {
 	T highest_level = get_highest_level(key);
 	T prefix = get_prefix(key, highest_level);
 	XFastTrieNode<T>* node = lss_[highest_level].at(prefix);
 
 	if (highest_level == bits()) {
-		return node->key();
+		return node;
 	}
 
 	bool dir = get_prefix(key, highest_level + 1) & 1;
@@ -127,22 +97,36 @@ T XFastTrie<T>::get_closest_key(T key) {
 	if (des) {
 		auto cand = dir == RIGHT ? des->get_right() : des->get_left();;
 		if (cand == nullptr || ((cand->key() > key ? cand->key() - key : key - cand->key()) < (des->key() > key ? des->key() - key : key - des->key()))) {
-			return des->key();
+			return des;
 		} else {
-			return cand->key();
+			return cand;
 		}
 	}
 
-	return des->key();
+	return des;
+}
+
+template <typename T>
+std::pair<XFastTrieNode<T>*, XFastTrieNode<T>*> XFastTrie<T>::predecessor_successor_node(T key) {
+	if (empty()) return std::make_pair(nullptr, nullptr);
+
+	auto closest_leaf = get_closest_leaf(key);
+
+	if (key < closest_leaf->key())
+		return std::make_pair(closest_leaf->get_left(), closest_leaf);
+
+	if (key > closest_leaf->key())
+		return std::make_pair(closest_leaf, closest_leaf->get_right());
+	
+	// key == closest_leaf->key()
+	return std::make_pair(closest_leaf->get_left(), closest_leaf->get_right());
 }
 
 template <typename T>
 XFastTrieNode<T>* XFastTrie<T>::predecessor_node(T key) {
 	if (empty()) return nullptr;
-
-	T closest_key = get_closest_key(key);
-	auto node = lss_[bits()][closest_key];
-	if (key <= closest_key)
+	auto node = get_closest_leaf(key);
+	if (key <= node->key())
 		return node->get_left();
 	return node;
 }
@@ -150,9 +134,8 @@ XFastTrieNode<T>* XFastTrie<T>::predecessor_node(T key) {
 template <typename T>
 XFastTrieNode<T>* XFastTrie<T>::successor_node(T key) {
 	if (empty()) return nullptr;
-	T closest_key = get_closest_key(key);
-	auto node = lss_[bits()][closest_key];
-	if (key >= closest_key)
+	auto node = get_closest_leaf(key);
+	if (key >= node->key())
 		return node->get_right();
 	return node;
 }
@@ -161,8 +144,10 @@ template <typename T>
 void XFastTrie<T>::insert(T key) {
 	if (contains(key)) return;
 
-	auto pred = predecessor_node(key);
-	auto succ = successor_node(key);
+	auto pred_succ = predecessor_successor_node(key);
+	auto pred = pred_succ.first;
+	auto succ = pred_succ.second;
+
 	auto leaf = new XFastTrieNode<T>(key, pred, succ);
 
 	lss_[bits()][key] = leaf;
@@ -235,8 +220,10 @@ template <typename T>
 void XFastTrie<T>::remove(T key) {
 	if (!contains(key)) return;
 
-	auto pred = predecessor_node(key);
-	auto succ = successor_node(key);
+	auto pred_succ = predecessor_successor_node(key);
+	auto pred = pred_succ.first;
+	auto succ = pred_succ.second;
+
 	auto leaf = lss_[bits()][key];
 
 	lss_[bits()].remove(key);
