@@ -26,7 +26,13 @@ public:
     std::optional<T> predecessor(T key);
 	std::optional<T> successor(T key);
 
+    RedBlackTree<T>* merge(RedBlackTree<T> tree1, RedBlackTree<T> tree2);
+
+    RedBlackTree<T>** split(RedBlackTree<T> tree);
+
     std::vector<Node<T>*> get_layer(int layer);
+
+    std::vector<Node<T>*> nodes();
 
     std::vector<std::vector<Node<T>*>> make_2d_vector();
 
@@ -35,7 +41,7 @@ public:
 	void insert(T key);
 	void remove_check(Node<T>* parent, bool color, bool dir);
 	void remove(T key);
-    void destroy();
+    void clear();
     void show(Node<T>* node, int depth = 0);
 
     bool contains(T key);
@@ -46,7 +52,7 @@ public:
 
 	std::string show_color(Node<T>* node);
     
-
+    T limit() {return -1;};
 
     Node<T>* root();
     void root(Node<T>* node);
@@ -64,7 +70,7 @@ template <typename T> RedBlackTree<T>::RedBlackTree() {
 };
 
 template <typename T> RedBlackTree<T>::~RedBlackTree() {
-    destroy();
+    clear();
 };
 
 template <typename T> Node<T>* RedBlackTree<T>::rotate(Node<T>* root, bool side) {
@@ -134,7 +140,7 @@ template <typename T> void RedBlackTree<T>::recolor_tree() {
         layers.push_back(new_layer);
         layer += 1;
     }
-    bool layer_color = 0;
+
     for (int i = 0; i < layers.size() - 1; i++) {
         for (Node<T>* node : layers[i]) {
             node->color_ = 0;
@@ -145,8 +151,15 @@ template <typename T> void RedBlackTree<T>::recolor_tree() {
     }
 };
 
-template <typename T> void RedBlackTree<T>::destroy() {
-    std::vector<Node<T>*> layer1({root_});
+template <typename T> void RedBlackTree<T>::clear() {
+    for (Node<T>* node : nodes()) {
+        delete node;
+    }
+    root_ = nullptr;
+    size_ = 0;
+
+    /*
+    std::vector<Node<T>*> layer1{root_};
     std::vector<Node<T>*> layer2;
     int width = 1;
     while (width < size_){
@@ -167,7 +180,7 @@ template <typename T> void RedBlackTree<T>::destroy() {
     for (Node<T>* node: layer1) {
         delete node;
     }
-
+    */
 };
 
 template <typename T> void RedBlackTree<T>::insert_check(Node<T>* node) {
@@ -263,6 +276,9 @@ template <typename T> Node<T>* RedBlackTree<T>::successor_node(T key) {
 };
 
 template <typename T> Node<T>* RedBlackTree<T>::successor_node(Node<T>* node) {
+    if (node == nullptr) {
+        return nullptr;
+    }
     Node<T>* succ = node->children_[1];
     if (succ != nullptr){
         while (succ->children_[0] != nullptr) {
@@ -275,6 +291,9 @@ template <typename T> Node<T>* RedBlackTree<T>::successor_node(Node<T>* node) {
 
 template <typename T> Node<T>* RedBlackTree<T>::predecessor_node(T key) {
     Node<T>* node = find(key);
+    if (node == nullptr) {
+        return nullptr;
+    }
     Node<T>* pred = node->children_[0];
     if (pred != nullptr) {
         while (pred->children_[1] != nullptr) {
@@ -286,6 +305,9 @@ template <typename T> Node<T>* RedBlackTree<T>::predecessor_node(T key) {
 };
 
 template <typename T> Node<T>* RedBlackTree<T>::predecessor_node(Node<T>* node) {
+    if (node == nullptr) {
+        return nullptr;
+    }
     Node<T>* pred = node->children_[0];
     if (pred != nullptr) {
         while (pred->children_[1] != nullptr) {
@@ -297,13 +319,13 @@ template <typename T> Node<T>* RedBlackTree<T>::predecessor_node(Node<T>* node) 
 
 template <typename T> std::optional<T> RedBlackTree<T>::predecessor(T key) {
 	Node<T>* node = predecessor_node(key);
-	if (node) return std::optional<T>(node->key);
+	if (node) return std::optional<T>(node->key_);
 	return std::nullopt;
 }
 
 template <typename T> std::optional<T> RedBlackTree<T>::successor(T key) {
 	Node<T>* node = successor_node(key);
-	if (node) return std::optional<T>(node->key);
+	if (node) return std::optional<T>(node->key_);
 	return std::nullopt;
 }
 
@@ -531,6 +553,34 @@ template <typename T> std::vector<std::vector<Node<T>*>> RedBlackTree<T>::make_2
     return layers;
 }
 
+template <typename T> std::vector<Node<T>*> RedBlackTree<T>::nodes() {
+    std::vector<Node<T>*> current_nodes{root_};
+    std::vector<Node<T>*> nodes{root_};
+    nodes.reserve(size_);
+
+    unsigned int layer = 1;
+    while (nodes.size() < size_) {
+        std::vector<Node<T>*> new_layer(1 << layer);
+        for (Node<T>* node : current_nodes) {
+
+            if (node->left() != nullptr) {
+                new_layer.push_back(node->left());
+            }
+            if (node->right() != nullptr) {
+                new_layer.push_back(node->right());
+            }
+
+        }
+        current_nodes = new_layer;
+
+        for (Node<T>* node : new_layer) {
+            nodes.push_back(node);
+        }
+        layer += 1;
+    }
+    return nodes;
+}
+
 template <typename T> std::vector<Node<T>*> RedBlackTree<T>::get_layer(int layer) {
     std::vector<Node<T>*> layer1({root_});
     std::vector<Node<T>*> layer2();
@@ -553,3 +603,35 @@ template <typename T> std::vector<Node<T>*> RedBlackTree<T>::get_layer(int layer
 
     return layer2;
 }
+
+
+template <typename T> RedBlackTree<T>** RedBlackTree<T>::split(RedBlackTree<T> tree) {
+    RedBlackTree<T>** trees[2] = {new RedBlackTree<T>(), new RedBlackTree<T>()};
+    std::vector<Node<T>*> nodes = nodes();
+    
+    for (int i = 0; i < nodes.size()/2; i++) {
+        trees[0]->insert();
+    }
+
+    for (int i = nodes.size()/2; i < nodes.size(); i++) {
+        trees[1]->insert();
+    }
+
+    return trees; 
+};
+
+template <typename T> RedBlackTree<T>* RedBlackTree<T>::merge(RedBlackTree<T> tree1, RedBlackTree<T> tree2) {
+    std::vector<Node<T>*> nodes1 = tree1->nodes();
+    std::vector<Node<T>*> nodes2 = tree2->nodes();
+    RedBlackTree<T>* merged = new RedBlackTree();
+
+    for (Node<T> node: nodes1){
+        merged->insert(node->key);
+    }
+
+    for (Node<T> node: nodes2){
+        merged->insert(node->key);
+    }
+
+    return merged;
+};

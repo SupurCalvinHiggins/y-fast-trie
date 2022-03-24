@@ -1,8 +1,8 @@
 #include "red-black-tree.h"
 
-const int SEED = 0;
-const int TESTS = 100000;
-const int MAX = 10000;
+const int SEED = 69;
+const int TESTS = 42069;
+const int MAX = 100000;
 
 
 std::vector<int> get_keys() {

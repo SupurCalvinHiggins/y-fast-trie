@@ -26,8 +26,12 @@ protected:
 	}
 
 	static void TearDownTestSuite() {
-		delete keys_ptr;
-		keys_ptr = nullptr;
+		
+		if (keys_ptr != nullptr){
+			delete keys_ptr;
+			keys_ptr = nullptr;
+		}
+		
 	}
 
 	RedBlackTree<T> tree;
