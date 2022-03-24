@@ -2,8 +2,10 @@
 #include <gtest/gtest.h>
 #include <cstdint>
 #include <random>
+#include <string>
+#include <iostream>
 
-const size_t KEY_COUNT = 1000;
+const size_t KEY_COUNT = 256;
 
 template <typename T>
 class XFastTrieTest : public ::testing::Test {
