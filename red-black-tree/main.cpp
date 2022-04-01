@@ -1,7 +1,7 @@
 #include "red-black-tree.h"
 
 const int SEED = 69;
-const int TESTS = 42069;
+const int TESTS = 100;
 const int MAX = 100000;
 
 
@@ -51,4 +51,33 @@ int main(void) {
 	}
 	std::cout << tree.size() << std::endl; 
 	std::cout << '\n';
+
+	keys = get_keys();
+	tree = RedBlackTree<int>();
+	indices = keys.size();
+	for (unsigned int i = 0; i < indices; i++) {
+		std::cout << "Size: " << std::to_string(tree.size()) << '\n';
+		std::cout << "\nInserting " << std::to_string(keys[i]) << "\n\n";
+		tree.insert(keys[i]);
+		//tree.show(tree.root(), 0);
+		std::cout << '\n';
+		if (i == 99 ){
+			bool t = true;
+		}
+		if (!tree.check_balance()) {
+			std::cout << "Tree is unbalanced.Stopping tests" << '\n';
+			break;
+		}
+	}
+
+	std::vector<int> colors;
+	for (Node<int>* node : tree.nodes()){
+		colors.push_back(node->color());
+	}
+
+	std::pair<RedBlackTree<int>,RedBlackTree<int>> trees = tree.split(keys[0]);
+	int max1 = trees.first.max();
+	std::cout << trees.second.max();
+	trees.first.show();
+	trees.second.show();
 }
