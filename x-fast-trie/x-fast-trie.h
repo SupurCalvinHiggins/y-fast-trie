@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <string>
+#include "../y-fast-trie/y-fast-trie.h"
 #include <sstream>
 
 #define LEFT 0
@@ -38,6 +39,7 @@ public:
 	void remove(T key);
 	void reserve(size_t size);
 	bool empty();
+	template <typename> friend class YFastTrie;
 };
 
 template <typename T>
