@@ -1,5 +1,6 @@
 #pragma once 
 #include <optional>
+#include <assert.h>
 #include "../x-fast-trie/x-fast-trie.h"
 #include "../x-fast-trie/x-fast-trie-map-wrapper.h"
 #include "../red-black-tree/red-black-tree.h"
@@ -23,6 +24,7 @@ private:
 	map_wrapper<key_value, tree_ptr> subtrees;
 	size_t size_;
 	key_value max_subtree_size;
+	key_value min_subtree_size;
 
 	key_value get_representative(key_value key) {
 		key_value mask = xfast.bits() - 1;
@@ -52,20 +54,25 @@ private:
 			subtrees[rep] = new tree();
 		}
 
-		return tree_and_rep_node_ptrs(rep_node, subtrees[rep_node->key()]);
+		if (rep_node == nullptr) return std::make_pair(nullptr, nullptr);
+
+		return std::make_pair(subtrees.at(rep_node->key()), rep_node);
 	}
 public:
     YFastTrie() {
 		size_ = 0;
-		max_subtree_size = xfast.bits() - 1;
+		max_subtree_size = xfast.bits() * 2;
+		min_subtree_size = xfast.bits() / 2;
 	}
-	~YFastTrie();
+	// ~YFastTrie();
 	bool contains(key_value key) {
+		if (size_ == 0) return false;
 		auto subtree_and_rep_node = get_subtree(key);
 		auto subtree = subtree_and_rep_node.first;
 		return subtree != nullptr && subtree->contains(key);
 	}
 	optional_key_value predecessor(key_value key) {
+		if (size_ == 0) return std::nullopt;
 
 		// get the rep_node and subtree
 		auto subtree_and_rep_node = get_subtree(key);
@@ -78,13 +85,20 @@ public:
 		
 		// if the subtree does not contain the predecessor
 		// it must be in the next subtree to the left
-		if (subtree->min() >= key) {
-			subtree = subtrees[rep_node->get_left()->key()];
+		if (subtree->min().value() >= key) {
+			auto left_subtree_rep_node = rep_node->get_left();
+			if (left_subtree_rep_node == nullptr) return std::nullopt;
+			auto left_subtree_rep = left_subtree_rep_node->key();
+			if (subtrees.contains(left_subtree_rep))
+				subtree = subtrees.at(left_subtree_rep);
+			else
+				return std::nullopt;
 		}
 
 		return subtree->predecessor(key);
 	}
 	optional_key_value successor(key_value key) { 
+		if (size_ == 0) return std::nullopt;
 		// get the rep_node and subtree
 		auto subtree_and_rep_node = get_subtree(key);
 		auto subtree = subtree_and_rep_node.first;
@@ -96,19 +110,25 @@ public:
 
 		// if the subtree does not contain the successor
 		// it must be in the next subtree to the right
-		if (subtree->max() <= key) {
-			subtree = subtrees[rep_node->get_right()->key()];
+		if (subtree->max().value() <= key) {
+			auto right_subtree_rep_node = rep_node->get_right();
+			if (right_subtree_rep_node == nullptr) return std::nullopt;
+			auto right_subtree_rep = right_subtree_rep_node->key();
+			if (subtrees.contains(right_subtree_rep))
+				subtree = subtrees.at(right_subtree_rep);
+			else
+				return std::nullopt;
 		}
 
 		return subtree->successor(key);
 	}
 	optional_key_value min() { 
 		if (size_ == 0) return std::nullopt; 
-		return subtrees[xfast.min()]->min();
+		return subtrees.at(xfast.min().value())->min().value();
 	}
 	optional_key_value max() { 
 		if (size_ == 0) return std::nullopt;
-		return subtrees[xfast.max()]->max(); 
+		return subtrees.at(xfast.max().value())->max().value(); 
 	}
 	size_t size() { return size_; };
 	const key_value limit() { return -1; }
@@ -133,15 +153,26 @@ public:
 		if (subtree->size() > max_subtree_size) {
 
 			// delete the current subtree and representative
-			subtrees[rep] = nullptr;
+			subtrees.remove(rep);
 			xfast.remove(rep);
 
 			// split the subtree into two new subtrees
-			auto new_subtrees = subtree->split();
+			auto median = subtree->median();
+			auto pivot = get_representative(median);
+			auto nodes = subtree->nodes();
+			std::vector<T> keys;
+			for (auto n : nodes) {
+				keys.push_back(n->key());
+			}
+			auto new_subtrees = subtree->split(pivot);
+
+			// TEST to make sure 0 size after split is handled in tests
 
 			// insert the new subtrees and reps
 			for (auto new_subtree : new_subtrees) {
-				auto new_rep = get_representative(new_subtree->max());
+				// this should literally never fail...
+				assert(new_subtree->size() > 0);
+				auto new_rep = get_representative(new_subtree->max().value());
 				xfast.insert(new_rep);
 				subtrees[new_rep] = new_subtree;
 			}
@@ -150,19 +181,23 @@ public:
     	size_ += 1;
 	}
 	void remove(key_value key) { 
+		if (size_ == 0) return;
+
 		// get the rep_node and subtree
 		auto subtree_and_rep_node = get_subtree(key);
 		auto subtree = subtree_and_rep_node.first;
 		auto rep_node = subtree_and_rep_node.second;
-		auto rep = rep_node->key();
 
 		// break if the trie does not contain the key
 		if (subtree == nullptr || !subtree->contains(key)) return;
 
 		subtree->remove(key);
 
+		// need to add remove everything to the tests
+		// need to check edge cases with splitting on rep in the tests for insert
 		if (subtree->size() == 0) {
-
+			subtrees.remove(rep_node->key());
+			xfast.remove(rep_node->key());
 		} else if (subtree->size() < min_subtree_size && subtrees.size() > 1) {
 			rep_node_ptr left_rep = nullptr;
 			rep_node_ptr right_rep = nullptr;
@@ -173,9 +208,36 @@ public:
 				right_rep = rep_node;
 				left_rep = rep_node->get_right();
 			}
+
+			auto left_subtree = subtrees.at(left_rep->key());
+			auto right_subtree = subtrees.at(right_rep->key());
+			
+			subtrees.remove(left_rep->key());
+			subtrees.remove(right_rep->key());
+			xfast.remove(left_rep->key());
+			xfast.remove(right_rep->key());
+
+			auto merged_subtree = left_subtree->merge(left_subtree, right_subtree);
+			if (merged_subtree->size() > max_subtree_size) {
+				// split the subtree into two new subtrees
+				auto median = merged_subtree->median();
+				auto pivot = get_representative(median);
+				auto new_subtrees = merged_subtree->split(pivot);
+
+				// insert the new subtrees and reps
+				for (auto new_subtree : new_subtrees) {
+					auto new_rep = get_representative(new_subtree->max().value());
+					xfast.insert(new_rep);
+					subtrees[new_rep] = new_subtree;
+				}
+			} else {
+				auto new_rep = get_representative(merged_subtree->max().value());
+				xfast.insert(new_rep);
+				subtrees[new_rep] = merged_subtree;
+			}
 		}
 
-		return; 
+		size_ -= 1;
 	}
 };
 
