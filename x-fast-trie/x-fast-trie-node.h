@@ -17,6 +17,12 @@ public:
 		right_ = right;
 	}
 
+	XFastTrieNode(T key) {
+		key_ = key;
+		left_ = nullptr;
+		right_ = nullptr;
+	}
+
 	static constexpr uintptr_t ptr_mask = ~static_cast<uintptr_t>(1);
 	static constexpr uintptr_t bit_mask = static_cast<uintptr_t>(1);
 

@@ -27,7 +27,7 @@ private:
 	key_value min_subtree_size;
 
 	key_value get_representative(key_value key) {
-		key_value mask = xfast.bits() - 1;
+		key_value mask = xfast.bit_length_ - 1;
 		// largest value that could exist in the partition that key would belong to
 		return (key & ~mask) + mask;
 	}
@@ -41,7 +41,7 @@ private:
 		auto pred_key = key == 0 ? 0 : key - 1;
 
 		// find the rep_node for the given key
-		auto rep_node = xfast.successor_node(pred_key);
+		auto rep_node = xfast.get_successor_node(pred_key);
 
 		// if the rep_node is nullptr, the subtree does not exist
 		// when we are inserting, we want to create the subtree
@@ -50,7 +50,7 @@ private:
 			// create the new representative and subtree
 			auto rep = get_representative(key);
 			xfast.insert(rep);
-			rep_node = xfast.successor_node(rep - 1);
+			rep_node = xfast.get_successor_node(rep - 1);
 			subtrees[rep] = new tree();
 		}
 
@@ -61,8 +61,8 @@ private:
 public:
     YFastTrie() {
 		size_ = 0;
-		max_subtree_size = xfast.bits() * 2;
-		min_subtree_size = xfast.bits() / 2;
+		max_subtree_size = xfast.bit_length_ * 2;
+		min_subtree_size = xfast.bit_length_ / 2;
 	}
 	// ~YFastTrie();
 	bool contains(key_value key) {

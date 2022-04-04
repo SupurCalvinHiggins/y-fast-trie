@@ -48,7 +48,7 @@ TYPED_TEST(XFastTrieTest, IsEmptyOnCreation) {
 }
 
 TYPED_TEST(XFastTrieTest, HasCorrectLimit) {
-	EXPECT_EQ(this->trie.limit(), std::numeric_limits<TypeParam>::max());
+	EXPECT_EQ(this->trie.upper_bound(), std::numeric_limits<TypeParam>::max());
 }
 
 TYPED_TEST(XFastTrieTest, ContainsWorksOnEmpty) {
@@ -145,7 +145,7 @@ TYPED_TEST(XFastTrieTest, InsertAndRemoveValuedTrie) {
 		this->trie.insert(key);
 	
 	for (const auto key : (*this->keys_ptr)) {
-		auto new_key = this->trie.limit() - key;
+		auto new_key = this->trie.upper_bound() - key;
 		this->trie.remove(new_key);
 		EXPECT_EQ(this->trie.contains(new_key), false);
 		this->trie.insert(new_key);
