@@ -20,6 +20,9 @@ class YFastTrie {
 	using optional_key_value = std::optional<T>;
 
 private:
+	static_assert(std::is_unsigned<key_value>::value, "Key type must be an unsigned integer.");
+
+private:
 	trie xfast;
 	map_wrapper<key_value, tree_ptr> subtrees;
 	size_t size_;

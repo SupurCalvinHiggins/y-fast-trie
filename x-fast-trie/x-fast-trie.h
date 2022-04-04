@@ -3,20 +3,18 @@
 #include "x-fast-trie-map-wrapper.h"
 #include <optional>
 #include <vector>
-#include <array>
-#include <algorithm>
 #include <assert.h>
-#include <string>
-#include "../y-fast-trie/y-fast-trie.h"
-#include <sstream>
+#include <type_traits>
 
-#define LEFT 0
-#define RIGHT 1
-
-template <typename T>
+/**
+ * @brief Data structure for fast dynamic ordered set operations on a bounded universe.
+ * 
+ * @tparam Key_ is the key type.
+ */
+template <typename Key_>
 class XFastTrie {
 	
-	using key_value = T;
+	using key_value = Key_;
 	using some_key_value = std::optional<key_value>;
 	
 	using node_value = XFastTrieNode<key_value>;
@@ -27,17 +25,29 @@ class XFastTrie {
 	using lss_value = std::vector<level_value>;
 
 private:
+	static_assert(std::is_unsigned<key_value>::value, "Key type must be an unsigned integer.");
+
+private:
 	size_t size_;
 	lss_value lss_;
 
 private:
+	// The number of bits in the keys.
 	static constexpr size_t bit_length_ = std::numeric_limits<key_value>::digits;
+
+	// The maximum key value.
 	static constexpr key_value upper_bound_ = std::numeric_limits<key_value>::max();
+
+	// The minimum key value.
 	static constexpr key_value lower_bound_ = std::numeric_limits<key_value>::min();
 
-	static_assert(bit_length_ > 0);
-	static_assert(upper_bound_ >= 0);
-	static_assert(lower_bound_ == 0);
+	static_assert(bit_length_ > 0, "Keys must have more than 0 bits.");
+	static_assert(upper_bound_ >= 0, "Maximum possible key must be nonnegative.");
+	static_assert(lower_bound_ == 0, "Minimum possible key must be 0.");
+
+	// Directional constants.
+	static constexpr bool left_ = 0;
+	static constexpr bool right_ = 1;
 
 private:
 
@@ -48,9 +58,9 @@ private:
 	 * @param level to get the prefix on.
 	 * @return the prefix of the key on the level.
 	 */
-	inline key_value get_prefix(key_value key, size_t level_index) const noexcept {
-		if (level_index == 0) 
-			return 0;
+	inline key_value get_prefix(key_value key, size_t level_index) const noexcept(ex) {
+		assert((level_index >= 0) && (level_index <= bit_length_));
+		if (level_index == 0) return 0;
 		return key >> (bit_length_ - level_index);
 	}
 
@@ -59,7 +69,7 @@ private:
 	 * 
 	 * @return the direction from the prefix.
 	 */
-	inline bool get_direction(key_value prefix) const noexcept {
+	inline bool get_direction(key_value prefix) const noexcept(ex) {
 		return prefix & 1;
 	}
 
@@ -69,10 +79,12 @@ private:
 	 * @param key to find the longest matching prefix with.
 	 * @return level index of the longest matching prefix.
 	 */
-	size_t get_level_index_of_longest_matching_prefix(key_value key) {
+	size_t get_level_index_of_longest_matching_prefix(key_value key) const noexcept(ex) {
 		size_t low_level = 0;
 		size_t high_level = bit_length_;
 
+		// Binary search for the transition between levels 
+		// containing the prefix and not containing the prefix.
 		while (low_level <= high_level) {
 			size_t mid_level = (low_level + high_level) >> 1;
 			auto prefix = get_prefix(key, mid_level);
@@ -91,37 +103,46 @@ private:
 	 * @param key to get the closest leaf to.
 	 * @return closest leaf node to the key.
 	 */
-	node_ptr get_closest_leaf(key_value key) {
+	node_ptr get_closest_leaf(key_value key) const noexcept(ex) {
+		// If the key is in the bottom layer, look up the node and return.
+		if (contains(key)) return lss_.at(bit_length_).at(key);
+
+		// Otherwise, search for the longest matching prefix node.
 		auto level_index = get_level_index_of_longest_matching_prefix(key);
 		auto prefix = get_prefix(key, level_index);
 		auto node = lss_.at(level_index).at(prefix);
 
-		// TODO: clean this terrible code up...
-		if (level_index == bit_length_)
-			return node;
+		// Get the direction of the child.
+		auto child_prefix = get_prefix(key, level_index + 1);
+		bool direction = get_direction(child_prefix);
 
-		bool dir = get_prefix(key, level_index + 1) & 1;
-		auto des = dir == RIGHT ? node->get_right() : node->get_left();
+		// Compute the two possible leaves.
+		auto leaf = (direction == right_) ? node->get_right() : node->get_left();
+		auto other_leaf = (direction == right_) ? leaf->get_right() : leaf->get_left();
 
-		if (des) {
-			auto cand = dir == RIGHT ? des->get_right() : des->get_left();;
-			if (cand == nullptr || ((cand->key() > key ? cand->key() - key : key - cand->key()) < (des->key() > key ? des->key() - key : key - des->key()))) {
-				return des;
-			} else {
-				return cand;
-			}
-		}
+		// If the other leaf is nullptr, we can shortcut and return.
+		if (other_leaf == nullptr)
+			return leaf;
 
-		return des;
+		// Otherwise, compute the distance between the key and each leaf.
+		auto leaf_key = leaf->key();
+		auto leaf_dist = leaf_key > key ? leaf_key - key : key - leaf_key;
+		auto other_leaf_key = other_leaf->key();
+		auto other_leaf_dist = other_leaf_key > key ? other_leaf_key - key : key - other_leaf_key;
+
+		// Then, return the leaf that is closest to the key.
+		if (leaf_dist < other_leaf_dist)
+			return leaf;
+		return other_leaf;
 	}
 
-	/**level_index
+	/**
 	 * @brief Get the predecessor node of a given key.
 	 * 
 	 * @param key to get the predecessor node of.
 	 * @return the predecessor node.
 	 */
-	node_ptr get_predecessor_node(key_value key) {
+	node_ptr get_predecessor_node(key_value key) const noexcept(ex) {
 		if (empty()) return nullptr;
 		auto node = get_closest_leaf(key);
 		if (key <= node->key())
@@ -135,7 +156,7 @@ private:
 	 * @param key to get the successor node of.
 	 * @return the successor node.
 	 */
-	node_ptr get_successor_node(key_value key) {
+	node_ptr get_successor_node(key_value key) const noexcept(ex) {
 		if (empty()) return nullptr;
 		auto node = get_closest_leaf(key);
 		if (key >= node->key())
@@ -149,19 +170,23 @@ private:
 	 * @param key to get the predecessor and successor nodes of.
 	 * @return pair containing the predecessor and successor nodes of a given key. 
 	 */
-	node_ptr_pair_value get_predecessor_and_successor_nodes(key_value key) {
-		if (empty()) return std::make_pair(nullptr, nullptr);
+	node_ptr_pair_value get_predecessor_and_successor_nodes(key_value key) const noexcept(ex) {
+		if (empty()) return node_ptr_pair_value(nullptr, nullptr);
 		auto node = get_closest_leaf(key);
 		if (key < node->key())
-			return std::make_pair(node->get_left(), node);
+			return node_ptr_pair_value(node->get_left(), node);
 		if (key > node->key())
-			return std::make_pair(node, node->get_right());
-		return std::make_pair(node->get_left(), node->get_right());
+			return node_ptr_pair_value(node, node->get_right());
+		return node_ptr_pair_value(node->get_left(), node->get_right());
 	}
 
 public:
-	XFastTrie() {
-		size_ = 0;
+
+	/**
+	 * @brief Construct a new XFastTrie object.
+	 * 
+	 */
+	XFastTrie() : size_(0) {
 		lss_.reserve(bit_length_);
 		for (size_t i = 0; i <= bit_length_; ++i)
 			lss_.push_back(level_value());
@@ -172,7 +197,7 @@ public:
 	 * 
 	 * @return size_t number of keys in stored the trie.
 	 */
-	inline size_t size() const {
+	inline size_t size() const noexcept(ex) {
 		return size_;
 	}
 
@@ -182,7 +207,7 @@ public:
 	 * @return true if the trie contains no keys.
 	 * @return false if the trie contains some keys.
 	 */
-	inline bool empty() const {
+	inline bool empty() const noexcept(ex) {
 		return size() == 0;
 	}
 
@@ -191,7 +216,7 @@ public:
 	 *
 	 * @return key_value maximum possible key.
 	 */
-	key_value upper_bound() {
+	inline key_value upper_bound() const noexcept(ex) {
 		return upper_bound_;
 	}
 
@@ -200,7 +225,7 @@ public:
 	 * 
 	 * @return key_value mimimum possible key.
 	 */
-	key_value lower_bound() {
+	inline key_value lower_bound() const noexcept(ex) {
 		return lower_bound_;
 	}
 
@@ -211,7 +236,7 @@ public:
 	 * @return true if the trie contains the key.
 	 * @return false if the trie does not contain the key.
 	 */
-	inline bool contains(key_value key) const {
+	inline bool contains(key_value key) const noexcept(ex) {
 		return lss_.at(bit_length_).contains(key);
 	}
 
@@ -222,7 +247,7 @@ public:
 	 * @return some_key_value predecessor key if the predecessor exists. 
 	 * @return none_key_value if the predecessor does not exist.
 	 */
-	some_key_value predecessor(key_value key) {
+	some_key_value predecessor(key_value key) const noexcept(ex) {
 		auto node = get_predecessor_node(key);
 		if (node != nullptr) 
 			return some_key_value(node->key());
@@ -236,7 +261,7 @@ public:
 	 * @return some_key_value successor key if the successor exists.
 	 * @return none_key_value if the successor does not exist.
 	 */
-	some_key_value successor(key_value key) {
+	some_key_value successor(key_value key) const noexcept(ex) {
 		auto node = get_successor_node(key);
 		if (node != nullptr)
 			return some_key_value(node->key());
@@ -249,7 +274,7 @@ public:
 	 * @return some_key_value minimum key if trie is not empty.
 	 * @return none_key_value if the trie is empty.
 	 */
-	some_key_value min() {
+	some_key_value min() const noexcept(ex) {
 		if (contains(lower_bound()))
 			return lower_bound();
 		return successor(lower_bound());
@@ -261,7 +286,7 @@ public:
 	 * @return some_key_value maximum key if trie is not empty.
 	 * @return none_key_value if the trie is empty.
 	 */
-	some_key_value max() {
+	some_key_value max() const noexcept(ex) {
 		if (contains(upper_bound()))
 			return upper_bound();
 		return predecessor(upper_bound());
@@ -272,7 +297,7 @@ public:
 	 * 
 	 * @param key to insert into the trie.
 	 */
-	void insert(key_value key) {
+	void insert(key_value key) noexcept(ex) {
 		// Prevent double insertions.
 		if (contains(key)) return;
 
@@ -303,7 +328,7 @@ public:
 			auto prefix = get_prefix(key, level_index);
 			auto direction = get_direction(prefix);
 
-			if (direction == LEFT) {
+			if (direction == left_) {
 				// If the left pointer of the parent is nullptr or is a skip link,
 				// the left internal node does not exist so we insert a new internal node.
 				if (parent->get_left() == nullptr || parent->is_left_skip_link()) {
@@ -353,7 +378,7 @@ public:
 
 		// Link the last inserted node to the leaf nodes.
 		auto direction = get_direction(key);
-		if (direction == LEFT) {
+		if (direction == left_) {
 			parent->set_left(leaf);
 			if (parent->get_right() == nullptr)
 				parent->set_right(leaf);
@@ -371,49 +396,71 @@ public:
 	 * 
 	 * @param key to remove from the trie.
 	 */
-	void remove(key_value key) {
+	void remove(key_value key) noexcept(ex) {
+		// Prevent double removes.
 		if (!contains(key)) return;
 
-		auto pred_succ = get_predecessor_and_successor_nodes(key);
-		auto pred = pred_succ.first;
-		auto succ = pred_succ.second;
+		// Get the leaf node that we are removing as well as the predecessor and successor nodes.
+		auto leaf = lss_.at(bit_length_).at(key);
+		auto pred = leaf->get_left();
+		auto succ = leaf->get_right();
 
-		auto leaf = lss_[bit_length_][key];
-
-		lss_[bit_length_].remove(key);
+		// Remove the leaf node.
+		lss_.at(bit_length_).remove(key);
 		size_ -= 1;
 
-		if (pred) pred->set_right(succ);
-		if (succ) succ->set_left(pred);
+		// Update the linked list on the bottom layer.
+		if (pred != nullptr) 
+			pred->set_right(succ);
 
+		if (succ != nullptr) 
+			succ->set_left(pred);
+
+		// Remove internal nodes and update skip links.
+		// TODO: Include a parent pointer in the internal nodes to avoid hash table lookups.
 		for (int level = bit_length_ - 1; level >= 0; --level) {
-			T prefix = get_prefix(key, level);
-			T left_child_prefix = prefix << 1;
-			T right_child_prefix = (prefix << 1) | 1;
-			bool left_child_exists = lss_[level + 1].contains(left_child_prefix);
-			bool right_child_exists = lss_[level + 1].contains(right_child_prefix);
+			auto prefix = get_prefix(key, level);
 
+			// Compute the prefix of the left and right children.
+			auto left_child_prefix = prefix << 1;
+			auto right_child_prefix = (prefix << 1) | 1;
+
+			// Check if the children are in the level search structure.
+			bool left_child_exists = lss_.at(level + 1).contains(left_child_prefix);
+			bool right_child_exists = lss_.at(level + 1).contains(right_child_prefix);
+
+			// If neither child has changed, do not change the parent.
+			if (left_child_exists && right_child_exists)
+				continue;
+
+			// Compute the parent.
+			auto parent = lss_.at(level).at(prefix);	
+
+			// If neither child is in the level search structure, delete the parent.
 			if (!left_child_exists && !right_child_exists) {
-				auto node = lss_[level].at(prefix);	
-				delete node;
-				lss_[level].remove(prefix);
-			} else {
-				if (left_child_exists == true && right_child_exists == true) continue;
+				delete parent;
+				lss_.at(level).remove(prefix);
+			} 
 
-				auto parent = lss_[level].at(prefix);
-
+			// Otherwise, only one child has been removed, update the skip links.
+			else {
+				// If the left child was removed, update the skip link.
 				if (!left_child_exists && (parent->get_left() == leaf || !parent->is_left_skip_link())) {
 					parent->set_left_skip_link(succ);
 				}
+				// Otherwise, if the right child was removed, update the skip link.
 				else if (!right_child_exists && (parent->get_right() == leaf || !parent->is_right_skip_link())) {
 					parent->set_right_skip_link(pred);
 				}
 			}
 		}
-
 		delete leaf;
 	}
 
+	/**
+	 * @brief Destroy the XFastTrie object.
+	 * 
+	 */
 	~XFastTrie() {
 		for (auto level : lss_)
 			for (auto key_and_node : level)

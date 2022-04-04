@@ -7,6 +7,7 @@
 #include <cmath>
 #include <optional>
 #include <utility>
+#include <algorithm>
 
 template <typename T>
 class RedBlackTree {
