@@ -46,7 +46,7 @@ TYPED_TEST(YFastTrieTest, IsEmptyOnCreation) {
 }
 
 TYPED_TEST(YFastTrieTest, HasCorrectLimit) {
-	EXPECT_EQ(this->trie.limit(), std::numeric_limits<TypeParam>::max());
+	EXPECT_EQ(this->trie.upper_bound(), std::numeric_limits<TypeParam>::max());
 }
 
 TYPED_TEST(YFastTrieTest, ContainsWorksOnEmpty) {
@@ -143,7 +143,7 @@ TYPED_TEST(YFastTrieTest, InsertAndRemoveProbe) {
 		this->trie.insert(key);
 	
 	for (const auto key : (*this->keys_ptr)) {
-		auto new_key = this->trie.limit() - key;
+		auto new_key = this->trie.upper_bound() - key;
 		this->trie.remove(new_key);
 		EXPECT_EQ(this->trie.contains(new_key), false);
 		this->trie.insert(new_key);

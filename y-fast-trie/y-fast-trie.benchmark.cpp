@@ -8,14 +8,14 @@ protected:
 	void SetUp(const benchmark::State& state) {
 		std::srand(0);
 		for (int i = 0; i < state.range(0); ++i) {
-			auto val = std::rand() % trie.limit();
+			auto val = std::rand() % trie.upper_bound();
 			trie.insert(val);
 		}
 	}
 
 	virtual void BM_YFastTrie_insert(benchmark::State& state) {
 		for (auto _ : state) {
-			auto val = std::rand() % trie.limit();
+			auto val = std::rand() % trie.upper_bound();
 			benchmark::DoNotOptimize(trie);
 			state.PauseTiming();
 			auto contained = trie.contains(val);	
@@ -34,7 +34,7 @@ protected:
 
 	virtual void BM_YFastTrie_remove(benchmark::State& state) {
 		for (auto _ : state) {
-			auto val = std::rand() % trie.limit();
+			auto val = std::rand() % trie.upper_bound();
 			benchmark::DoNotOptimize(trie);
 			state.PauseTiming();
 			auto contained = trie.contains(val);
@@ -53,21 +53,21 @@ protected:
 
 	virtual void BM_YFastTrie_predecessor(benchmark::State& state) {
 		for (auto _ : state) {
-			auto val = std::rand() % trie.limit();
+			auto val = std::rand() % trie.upper_bound();
 			benchmark::DoNotOptimize(trie.predecessor(val));
 		}
 	}
 
 	virtual void BM_YFastTrie_successor(benchmark::State& state) {
 		for (auto _ : state) {
-			auto val = std::rand() % trie.limit();
+			auto val = std::rand() % trie.upper_bound();
 			benchmark::DoNotOptimize(trie.successor(val));
 		}
 	}
 
 	virtual void BM_YFastTrie_contains(benchmark::State& state) {
 		for (auto _ : state) {
-			auto val = std::rand() % trie.limit();
+			auto val = std::rand() % trie.upper_bound();
 			benchmark::DoNotOptimize(trie.contains(val));
 		}
 	}

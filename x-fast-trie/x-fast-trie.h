@@ -230,6 +230,15 @@ public:
 	}
 
 	/**
+	 * @brief Get the bit length of the keys.
+	 * 
+	 * @return bit length of the keys.
+	 */
+	inline size_t bit_length() const noexcept(ex) {
+		return bit_length_;
+	}
+
+	/**
 	 * @brief Check if the trie contains a key.
 	 * 
 	 * @param key to check if the trie contains.

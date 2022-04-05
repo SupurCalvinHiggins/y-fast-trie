@@ -65,6 +65,7 @@ public:
     Node<T>* root();
     void root(Node<T>* node);
 
+    bool empty() { return size_ == 0; } 
     
 private:
     Node<T>* root_;
