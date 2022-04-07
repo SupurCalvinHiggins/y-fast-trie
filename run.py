@@ -3,64 +3,203 @@ import glob
 import argparse
 import subprocess
 
+
+###############################################################################
+# Set up some pretty printing tools.                                          #
+###############################################################################
+
+
+colored = lambda x : x
+
+
+def ok(string):
+    '''Prints a ok string.'''
+    print(colored(string, 'green'))
+
+
+def warn(string):
+    '''Prints a warn string.'''
+    print(colored(string, 'yellow'))
+
+
+def error(string):
+    '''Prints a error string.'''
+    print(colored(string, 'red'))
+
+
+###############################################################################
+# Attempt to enable terminal colors.                                          #
+###############################################################################
+
+
 try:
     from termcolor import colored
 except:
-    print("*** WARNING ***")
-    print("termcolor module not installed")
-    print("*** INSTALLING TERMCOLOR ***")
-    subprocess.run(["pip3", "install", "termcolor"])
+    warn('*** WARNING ***')
+    print('termcolor module not installed')
+    ok('*** INSTALLING TERMCOLOR ***')
+    subprocess.run(['pip3', 'install', 'termcolor'])
     try:
         from termcolor import colored
+        ok('*** INSTALLED TERMCOLOR ***')
     except:
-        print("*** WARNING ***")
-        print("failed to install termcolor")
-        print("try running 'pip3 install termcolor'")
+        warn('*** WARNING ***')
+        print('failed to install termcolor')
+        print('try running "pip3 install termcolor"')
         colored = lambda x : x
 
-def assert_valid_path(path):
+
+###############################################################################
+# Attempt to enable performance mode.                                         #
+###############################################################################
+
+
+def enable_performance_mode():
+    '''Attempts to enable performance mode.'''
+    ok('*** ENABLING PERFORMANCE MODE ***')
+    try:
+        proc = subprocess.run(['sudo', 'cpupower', 'frequency-set', '-g', 'performance'])
+        error_code = proc.returncode
+    except Exception as e:
+        print(e)
+        error_code = 1
+
+    if error_code != 0:
+        warn("*** WARNING ***")
+        print('failed to enable performance mode')
+        print('try running with sudo and ensure cpupower is installed')
+    else:
+        ok('*** ENABLED PERFORMANCE MODE ***')
+
+
+###############################################################################
+# Set up some basic file operations.                                          #
+###############################################################################
+
+
+def assert_path_exists(path):
     '''Tests if a file path exists.'''
     if os.path.exists(path):
         return path
-    raise ValueError(f"invalid file path {path}")
+    raise ValueError(f'invalid file path {path}')
 
-if __name__ == "__main__":
-    # parse arguments
-    parser = argparse.ArgumentParser(description="Run test suites.")
-    parser.add_argument("mode", choices=["test", "benchmark"])
-    parser.add_argument("files", nargs="*", type=assert_valid_path)
+
+def is_test(fname):
+    '''Checks if a file is a test.'''
+    return '.test.cpp' in fname
+
+
+def is_benchmark(fname):
+    '''Checks if a file is a benchmark.'''
+    return '.benchmark.cpp' in fname
+
+
+def expand_directories(fnames):
+    '''Expands directories into cpp files.'''
+    new_fnames = []
+    for fname in fnames:
+        if os.path.isdir(fname):
+            search_path = os.path.join(fname, '**', '*.cpp')
+            search_results = glob.glob(search_path, recursive=True)
+            new_fnames.extend(search_results)
+        else:
+            new_fnames.append(fname)
+    return new_fnames
+
+
+def only_valid_fnames(fnames):
+    '''Filter out duplicates and only keep benchmarks and tests.'''
+    new_fnames = []
+    for fname in fnames:
+        if fname in new_fnames: continue
+        if is_benchmark(fname) or is_test(fname):
+            new_fnames.append(fname)
+    return new_fnames
+
+
+###############################################################################
+# Set up some compiler commands.                                              #
+###############################################################################
+
+
+def try_compile_test(fname):
+    '''Try to compile the file as a test.'''
+    if not is_test(fname): return
+    subprocess.run(['g++', fname, '-std=c++17', '-lgtest', '-lgtest_main', 
+                    '-lpthread', '-o', 'exec'])
+
+
+def try_compile_benchmark(fname):
+    '''Try to compile the file as a benchmark.'''
+    if not is_benchmark(fname): return
+    subprocess.run(['g++', fname, '-std=c++17', '-O3', '-lbenchmark', 
+                    '-lpthread', '-o', 'exec']) 
+
+
+def did_compile():
+    '''Tests if the file compiled.'''
+    return os.path.exists('exec')
+
+
+def clean_up():
+    '''Cleans up compiled files if they exist.'''
+    if did_compile():
+        os.remove('exec')
+
+
+def execute():
+    '''Executes compiled files and cleans them up. Returns a status code.'''
+    proc = subprocess.run([f'./exec'])
+    clean_up()
+    return proc.returncode
+
+
+###############################################################################
+# Parse the input files and execute them.                                     #
+###############################################################################
+
+
+if __name__ == '__main__':
+
+    # Attempt to enable performance mode.
+    enable_performance_mode()
+
+    # Get input files and directories from the user.
+    parser = argparse.ArgumentParser(description='Run test suites.')
+    parser.add_argument('paths', nargs='+', type=assert_path_exists)
     args = parser.parse_args()
 
-    mode = args.mode
-    fnames = args.files
+    # Clean up old files.
+    clean_up()
 
-    # glob all files if none are specified
-    if not fnames:
-        glob_regex = f"**/*.{mode}.cpp"
-        fnames = glob.glob(glob_regex)
+    # Compute unique valid files.
+    fnames = expand_directories(args.paths)
+    fnames = only_valid_fnames(fnames)
 
-    # display all of the files
-    print(colored("*** FILES ***", "green"))
+    # Display them.
+    ok('*** FILES ***')
     for fname in fnames:
         print(fname)
-
+    
+    # Run them.
     for fname in fnames:
-        # display the file
-        print(colored("*** CURRENT FILE ***", "green"))
+
+        # Display the current file.
+        ok('*** CURRENT FILE ***')
         print(fname)
 
-        # compile the file
-        print(colored("*** COMPILING ***", "green"))
-        if mode == "test":
-            subprocess.run(["g++", fname, "-std=c++17", "-lgtest", "-lgtest_main", "-lpthread", "-o", mode])
-        elif mode == "benchmark":
-            subprocess.run(["g++", fname, "-std=c++17", "-O3", "-lbenchmark", "-lpthread", "-o", mode]) 
+        # Compile the current file.
+        ok('*** COMPILING ***')
+        try_compile_test(fname)
+        try_compile_benchmark(fname)
 
-        # run the file
-        if os.path.exists(mode):
-            print(colored("*** RUNNING ***", "green"))
-            subprocess.run([f"./{mode}"])
-            os.remove(mode)
+        # Run the current file.
+        if did_compile():
+            ok('*** RUNNING ***')
+            error_code = execute()
+            if error_code != 0:
+                warn('*** WARNING ***')
+                print(f'benchmark crashed with error code {error_code}')
         else:
-            print(colored("*** WARNING ***", "yellow"))
-            print(f"{fname} failed to compile")
+            warn('*** WARNING ***')
+            print(f'{fname} failed to compile')

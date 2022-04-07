@@ -66,6 +66,7 @@ public:
     void root(Node<T>* node);
 
     bool empty() { return size_ == 0; } 
+    T upper_bound() { return -1; }
     
 private:
     Node<T>* root_;

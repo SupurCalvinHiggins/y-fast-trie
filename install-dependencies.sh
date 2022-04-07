@@ -2,13 +2,14 @@
 mkdir .temporary
 cd .temporary
 
-# Install make, cmake, git, python3, pip and build-essential
+# Install make, cmake, git, python3, pip, build-essential and cpupower
 sudo apt -y install make
 sudo apt -y install cmake
 sudo apt -y install git
 sudo apt -y install python3
 sudo apt -y install python3-pip
 sudo apt -y install build-essential
+sudo apt -y install cpupower
 
 # Install termcolor library
 sudo pip3 install termcolor

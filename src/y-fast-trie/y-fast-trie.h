@@ -199,6 +199,10 @@ public:
 		auto partition_and_node = get_partition_and_node(key);
 		auto partition = partition_and_node.first;
 		auto node = partition_and_node.second;
+
+		// TODO: For succ/pred, tests should hit this.
+		if (node == nullptr) return some_key_value();
+
 		auto rep_key = node->key();
 
 		// If the partition does not exist, then any key less than the given key cannot be in the
@@ -245,6 +249,9 @@ public:
 		auto partition_and_node = get_partition_and_node(key);
 		auto partition = partition_and_node.first;
 		auto node = partition_and_node.second;
+
+		if (node == nullptr) return some_key_value();
+
 		auto rep_key = node->key();
 
 		// TODO: == could possibly work instead of <=
