@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <benchmark/benchmark.h>
 
-//TODO: Benchmarks for split/merge
 template <typename T>
 class BinarySearchTreeFixture: public benchmark::Fixture {
 protected:
@@ -18,18 +17,19 @@ protected:
 		for (auto _ : state) {
 			auto val = std::rand() % tree.limit();
 			benchmark::DoNotOptimize(tree);
-			state.PauseTiming();
 			auto contained = tree.contains(val);	
 			benchmark::ClobberMemory();
 			tree.remove(val);
 			benchmark::ClobberMemory();
-			state.ResumeTiming();
+            auto start = std::chrono::high_resolution_clock::now();
+            benchmark::ClobberMemory();
 			tree.insert(val);
-			benchmark::ClobberMemory();
-			state.PauseTiming();
+            benchmark::ClobberMemory();
+            auto end = std::chrono::high_resolution_clock::now();
+            auto elapsed_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+            state.SetIterationTime(elapsed_seconds.count());
 			if (!contained) tree.remove(val);
 			benchmark::ClobberMemory();
-			state.ResumeTiming();
 		}
 	}
 
@@ -37,18 +37,19 @@ protected:
 		for (auto _ : state) {
 			auto val = std::rand() % tree.limit();
 			benchmark::DoNotOptimize(tree);
-			state.PauseTiming();
 			auto contained = tree.contains(val);
 			benchmark::ClobberMemory();
 			tree.insert(val);
 			benchmark::ClobberMemory();
-			state.ResumeTiming();
+            auto start = std::chrono::high_resolution_clock::now();
+            benchmark::ClobberMemory();
 			tree.remove(val);
-			benchmark::ClobberMemory();
-			state.PauseTiming();
+        	benchmark::ClobberMemory();
+            auto end = std::chrono::high_resolution_clock::now();
+            auto elapsed_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+            state.SetIterationTime(elapsed_seconds.count());
 			if (contained) tree.insert(val);
 			benchmark::ClobberMemory();
-			state.ResumeTiming();
 		}
 	}
 
