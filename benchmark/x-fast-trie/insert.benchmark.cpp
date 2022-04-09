@@ -1,5 +1,5 @@
-#include "../base.h"
+#include "../fixtures/fixtures.h"
 #include "../../src/x-fast-trie/x-fast-trie.h"
 
-REGISTER_INSERT_BENCHMARKS(XFastTrie);
+DEFINE_INSERT_BENCHMARKS(XFastTrie);
 BENCHMARK_MAIN();

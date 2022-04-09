@@ -1,5 +1,5 @@
-#include "../base.h"
+#include "../fixtures/fixtures.h"
 #include "../../src/red-black-tree/red-black-tree.h"
 
-REGISTER_SUCCESSOR_BENCHMARKS(RedBlackTree);
+DEFINE_SUCCESSOR_BENCHMARKS(RedBlackTree);
 BENCHMARK_MAIN();

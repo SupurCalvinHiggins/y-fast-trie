@@ -2,6 +2,8 @@
 #include "../x-fast-trie/x-fast-trie.h"
 #include "../x-fast-trie/x-fast-trie-map-wrapper.h"
 #include "../red-black-tree/red-black-tree.h"
+#include "../unsorted-bucket/unsorted-bucket.h"
+#include "../constants.h"
 #include <optional>
 #include <vector>
 #include <assert.h>
@@ -14,40 +16,37 @@
  */
 template <typename Key_>
 class YFastTrie {
+public:
+	using key_type = Key_;
+	static_assert(std::is_unsigned<key_type>::value, "Key type must be an unsigned integer.");
 
-	using key_value = Key_;
-	using some_key_value = std::optional<key_value>;
-
-	using index_value = XFastTrie<key_value>;
-	using node_ptr = typename index_value::node_ptr;
-
-	using partition_value = RedBlackTree<key_value>;
-	using partition_ptr = partition_value*;
-	using partition_ptr_pair_value = std::pair<partition_ptr, partition_ptr>;
-
-	using partition_and_node_ptr_pair_value = std::pair<partition_ptr, node_ptr>;
-
-	using partition_index_value = map_wrapper<key_value, partition_ptr>;
+	using some_key_type = std::optional<key_type>;
+	using size_type = size_t;
 
 private:
-	static_assert(std::is_unsigned<key_value>::value, "Key type must be an unsigned integer.");
+	using index_type = XFastTrie<key_type>;
+	using node_ptr = typename index_type::node_ptr;
+
+	using partition_type = RedBlackTree<key_type>;
+	using partition_ptr = partition_type*;
+	using partition_and_node_ptr_pair = std::pair<partition_ptr, node_ptr>;
+
+	using partition_index_type = map_wrapper<key_type, partition_ptr>;
 
 private:
-	index_value index_;
-	partition_index_value partitions_; 
-	size_t size_;
+	index_type index_;
+	partition_index_type partitions_; 
+	size_type size_;
 
 private:
-	// TODO: Should depend on the X-Fast Trie bit_length()
-	// TODO: Also, consider the methods invoking such X-Fast Trie methods.
 	// Mask for computing representatives.
-	static constexpr key_value partition_mask_ = std::numeric_limits<key_value>::digits - 1;
+	static constexpr key_type partition_mask_ = index_type::bit_length() - 1;
 	
 	// Maximum partition size.
-	static constexpr key_value max_partition_size_ = std::numeric_limits<key_value>::digits * 2;
+	static constexpr key_type max_partition_size_ = index_type::bit_length() * 2;
 	
 	// Minimum partition size.
-	static constexpr key_value min_partition_size_ = std::numeric_limits<key_value>::digits / 2;
+	static constexpr key_type min_partition_size_ = index_type::bit_length() / 2;
 
 private:
 
@@ -57,7 +56,7 @@ private:
 	 * @param key to get the representative of.
 	 * @return representative of the key.
 	 */
-	inline key_value get_representative(key_value key) const noexcept {
+	inline key_type get_representative(key_type key) const noexcept {
 		return (key & ~partition_mask_) + partition_mask_;
 	}
 
@@ -67,7 +66,7 @@ private:
 	 * @param key to get the partition and representative node of.
 	 * @return the partition and representative node.
 	 */
-	partition_and_node_ptr_pair_value get_partition_and_node(key_value key) const noexcept {
+	partition_and_node_ptr_pair get_partition_and_node(key_type key) const noexcept(NEX) {
 		// Since the index searches for strict successors, we need to subtract 1. However, we do not
 		// need to subtract 1 from 0 since the representative keys are strictly greater than zero.
 		auto pred_key = key == 0 ? 0 : key - 1;
@@ -77,12 +76,12 @@ private:
 		// the representative node belongs to. If the node does not exist, then the partition also
 		// does not exist.
 		if (node == nullptr)
-			return partition_and_node_ptr_pair_value(nullptr, nullptr);
+			return partition_and_node_ptr_pair(nullptr, nullptr);
 		
 		// Compute the partition.
 		auto partition = partitions_.at(node->key());
 
-		return partition_and_node_ptr_pair_value(partition, node);
+		return partition_and_node_ptr_pair(partition, node);
 	}
 
 	/**
@@ -91,7 +90,7 @@ private:
 	 * @param key to create the partition and representative node of.
 	 * @return the partition and representative node.
 	 */
-	partition_and_node_ptr_pair_value create_partition_and_node(key_value key) noexcept {
+	partition_and_node_ptr_pair create_partition_and_node(key_type key) noexcept(NEX) {
 		// Since the index searches for strict successors, we need to subtract 1. However, we do not
 		// need to subtract 1 from 0 since the representative keys are strictly greater than zero.
 		auto pred_key = key == 0 ? 0 : key - 1;
@@ -107,13 +106,41 @@ private:
 			// Compute the representative node.
 			node = index_.get_successor_node(rep_key - 1);
 			// Create the new partition.
-			partitions_[rep_key] = new partition_value();
+			partitions_[rep_key] = new partition_type();
 		}
 
 		// Compute the partition.
 		auto partition = partitions_.at(node->key());
 
-		return partition_and_node_ptr_pair_value(partition, node);
+		return partition_and_node_ptr_pair(partition, node);
+	}
+
+public:
+	/**
+	 * @brief Find the maximum possible key.
+	 *
+	 * @return key_type maximum possible key.
+	 */
+	static constexpr key_type upper_bound() noexcept {
+		return index_type::upper_bound();
+	}
+
+	/**
+	 * @brief Find the minimum possible key.
+	 * 
+	 * @return key_type mimimum possible key.
+	 */
+	static constexpr key_type lower_bound() noexcept {
+		return index_type::lower_bound();
+	}
+
+	/**
+	 * @brief Get the bit length of the keys.
+	 * 
+	 * @return bit length of the keys.
+	 */
+	static constexpr size_type bit_length() noexcept {
+		return index_type::bit_length();
 	}
 
 public:
@@ -126,9 +153,9 @@ public:
 	/**
 	 * @brief Get the number of keys stored in the trie.
 	 * 
-	 * @return size_t number of keys in stored the trie.
+	 * @return size_type number of keys in stored the trie.
 	 */
-	inline size_t size() const noexcept {
+	inline size_type size() const noexcept {
 		return size_;
 	}
 
@@ -143,40 +170,13 @@ public:
 	}
 
 	/**
-	 * @brief Find the maximum possible key.
-	 *
-	 * @return key_value maximum possible key.
-	 */
-	inline key_value upper_bound() const noexcept {
-		return index_.upper_bound();
-	}
-
-	/**
-	 * @brief Find the minimum possible key.
-	 * 
-	 * @return key_value mimimum possible key.
-	 */
-	inline key_value lower_bound() const noexcept {
-		return index_.lower_bound();
-	}
-
-	/**
-	 * @brief Get the bit length of the keys.
-	 * 
-	 * @return bit length of the keys.
-	 */
-	inline size_t bit_length() const noexcept {
-		return index_.bit_length();
-	}
-
-	/**
 	 * @brief Check if the trie contains a key.
 	 * 
 	 * @param key to check if the trie contains.
 	 * @return true if the trie contains the key.
 	 * @return false if the trie does not contain the key.
 	 */
-	bool contains(key_value key) const noexcept {
+	bool contains(key_type key) const noexcept(NEX) {
 		if (empty()) return false;
 		// Compute the partition that the key would belong to. If the partition exists and contains
 		// the key then the trie contains that key. Otherwise, the trie does not contain the key.
@@ -189,11 +189,11 @@ public:
 	 * @brief Find the predecessor of a key.
 	 * 
 	 * @param key to find the predecessor of.
-	 * @return some_key_value predecessor key if the predecessor exists. 
-	 * @return none_key_value if the predecessor does not exist.
+	 * @return some_key_type predecessor key if the predecessor exists. 
+	 * @return none_key_type if the predecessor does not exist.
 	 */
-	some_key_value predecessor(key_value key) const noexcept {
-		if (empty()) return some_key_value();
+	some_key_type predecessor(key_type key) const noexcept(NEX) {
+		if (empty()) return some_key_type();
 
 		// Compute the partition and representative node that the key would belong to.
 		auto partition_and_node = get_partition_and_node(key);
@@ -201,15 +201,14 @@ public:
 		auto node = partition_and_node.second;
 
 		// TODO: For succ/pred, tests should hit this.
-		if (node == nullptr) return some_key_value();
+		if (node == nullptr) return some_key_type();
 
 		auto rep_key = node->key();
 
 		// If the partition does not exist, then any key less than the given key cannot be in the
 		// trie. In other words, there are no possible predecessors.
-		if (partition == nullptr) return some_key_value();
+		if (partition == nullptr) return some_key_type();
 		
-		// TODO: == could possibly work instead of >=
 		// If the current partition does not contain the predecessor, then the predecessor must be 
 		// in the partition to the left. This happens when the key is the smallest value in the 
 		// partition because the predecessor cannot be in the partition. We also know that 
@@ -218,17 +217,12 @@ public:
 			// Compute the left representative node.
 			auto left_node = node->get_left();
 
-			// TODO: check if this is actually needed.
 			// Make sure the left partition actually exists.
-			if (left_node == nullptr) return some_key_value();
+			if (left_node == nullptr) return some_key_type();
 
-			// TODO: check if this is actually needed.
-			// Set the partition to the left partition if it exists.
+			// Set the partition to the left partition.
 			auto left_key = left_node->key();
-			if (partitions_.contains(left_key))
-				partition = partitions_.at(left_key);
-			else
-				return some_key_value();
+			partition = partitions_.at(left_key);
 		}
 
 		// Compute the predecessor.
@@ -239,22 +233,21 @@ public:
 	 * @brief Find the successor of a key.
 	 * 
 	 * @param key to find the successor of.
-	 * @return some_key_value successor key if the successor exists.
-	 * @return none_key_value if the successor does not exist.
+	 * @return some_key_type successor key if the successor exists.
+	 * @return none_key_type if the successor does not exist.
 	 */
-	some_key_value successor(key_value key) const noexcept { 
-		if (empty()) return some_key_value();
+	some_key_type successor(key_type key) const noexcept(NEX) { 
+		if (empty()) return some_key_type();
 
 		// Compute the partition and representative node that the key would belong to.
 		auto partition_and_node = get_partition_and_node(key);
 		auto partition = partition_and_node.first;
 		auto node = partition_and_node.second;
 
-		if (node == nullptr) return some_key_value();
+		if (node == nullptr) return some_key_type();
 
 		auto rep_key = node->key();
 
-		// TODO: == could possibly work instead of <=
 		// If the current partition does not contain the successor, then the successor must be 
 		// in the partition to the right. This happens when the key is the smallest value in the 
 		// partition because the successor cannot be in the partition. We also know that 
@@ -263,17 +256,12 @@ public:
 			// Compute the right representative node.
 			auto right_node = node->get_right();
 
-			// TODO: check if this is actually needed.
 			// Make sure the right partition actually exists.
-			if (right_node == nullptr) return some_key_value();
+			if (right_node == nullptr) return some_key_type();
 
-			// TODO: check if this is actually needed.
-			// Set the partition to the right partition if it exists.
+			// Set the partition to the right partition.
 			auto right_key = right_node->key();
-			if (partitions_.contains(right_key))
-				partition = partitions_.at(right_key);
-			else
-				return some_key_value();
+			partition = partitions_.at(right_key);
 		}
 
 		// Compute the successor.
@@ -283,11 +271,11 @@ public:
 	/**
 	 * @brief Find the minimum key.
 	 * 
-	 * @return some_key_value minimum key if trie is not empty.
-	 * @return none_key_value if the trie is empty.
+	 * @return some_key_type minimum key if trie is not empty.
+	 * @return none_key_type if the trie is empty.
 	 */
-	some_key_value min() const noexcept { 
-		if (empty()) return some_key_value(); 
+	some_key_type min() const noexcept(NEX) { 
+		if (empty()) return some_key_type(); 
 		auto min_rep_key = index_.min().value();
 		return partitions_.at(min_rep_key)->min();
 	}
@@ -295,11 +283,11 @@ public:
 	/**
 	 * @brief Find the maximum key.
 	 * 
-	 * @return some_key_value maximum key if trie is not empty.
-	 * @return none_key_value if the trie is empty.
+	 * @return some_key_type maximum key if trie is not empty.
+	 * @return none_key_type if the trie is empty.
 	 */
-	some_key_value max() const noexcept { 
-		if (empty()) return some_key_value(); 
+	some_key_type max() const noexcept(NEX) { 
+		if (empty()) return some_key_type(); 
 		auto max_rep_key = index_.max().value();
 		return partitions_.at(max_rep_key)->max(); 
 	}
@@ -309,7 +297,7 @@ public:
 	 * 
 	 * @param key to insert into the trie.
 	 */
-	void insert(key_value key) {
+	void insert(key_type key) noexcept(NEX) {
 
 		// Compute the partition and representative node that the key would belong to.
 		auto partition_and_node = create_partition_and_node(key);
@@ -358,7 +346,7 @@ public:
 	 * 
 	 * @param key to remove from the trie.
 	 */
-	void remove(key_value key) { 
+	void remove(key_type key) noexcept(NEX) { 
 		// Prevent double removes.
 		if (empty()) return;
 
