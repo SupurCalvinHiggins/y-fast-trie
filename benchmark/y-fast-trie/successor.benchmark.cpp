@@ -1,5 +1,5 @@
-#include "../base.h"
+#include "../fixtures/fixtures.h"
 #include "../../src/y-fast-trie/y-fast-trie.h"
 
-REGISTER_SUCCESSOR_BENCHMARKS(YFastTrie);
+DEFINE_SUCCESSOR_BENCHMARKS(YFastTrie);
 BENCHMARK_MAIN();
