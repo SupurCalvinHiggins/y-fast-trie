@@ -1,38 +1,42 @@
 #pragma once
 #include "binary-search-tree-node.h"
 #include <cstddef>
+#include <optional>
+#include <algorithm>
+#include <vector>
 #include <queue>
+#include <stack>
 #include <iostream>
 
 #define LEFT 0
 #define RIGHT 1
 
-//TODO: Add Split, Merge
-//TODO: MAKKE COPY AND TRY TO CONVERT FUNCTIONS TO ITERATIVE
-//TODO: Add Order based vectorizer
-	//* Add a vectorizer function that represents tree as a vector... level order* preorder/postorder/inorder (how to sort like one in class)
 template <typename T>
 class BinarySearchTree {
 private:
 	size_t size_;
 	BinarySearchTreeNode<T>* root;
-	BinarySearchTreeNode<T>** findNode(BinarySearchTreeNode<T>** curr, T Key);
-	BinarySearchTreeNode<T>* findMin(BinarySearchTreeNode<T>* curr);
-	BinarySearchTreeNode<T>* findMax(BinarySearchTreeNode<T>* curr);
+	BinarySearchTreeNode<T>* findNode(BinarySearchTreeNode<T>* curr, T Key);
+	BinarySearchTreeNode<T>* findParent(BinarySearchTreeNode<T>* curr, T key);
+	BinarySearchTreeNode<T>* min(BinarySearchTreeNode<T>* curr);
+	BinarySearchTreeNode<T>* max(BinarySearchTreeNode<T>* curr);
+	BinarySearchTreeNode<T>* predecessor_node(T key);
+	BinarySearchTreeNode<T>* successor_node(T key);
+	BinarySearchTreeNode<T>* generateBST(std::vector<T> &bst_data, int start, int end);
+	void inOrderVector(std::vector<T> &bst_data);
 public:
 	BinarySearchTree();
-	//~BinarySearchTree();
+	~BinarySearchTree();
 	void insert(T key);
 	void remove(T key);
 	bool contains(T key);
-	void split(BinarySearchTreeNode<T>** root2);
-	void merge(BinarySearchTreeNode<T>** root2);
-	BinarySearchTreeNode<T>* predecessor(T key);
-	BinarySearchTreeNode<T>* successor(T key);
-	BinarySearchTreeNode<T>* getRoot() { return this->root; };
+	void split(BinarySearchTree<T> &tree2, T key);
+	void merge(BinarySearchTree<T> &tree2, BinarySearchTree<T> &merged_tree);
+	std::optional<T> predecessor(T key);
+	std::optional<T> successor(T key);
 	size_t size() { return size_; };
-	const T limit() { return -1; }
-	void printInOrder(BinarySearchTreeNode<T>* curr);
+	constexpr T limit() { return -1; }
+	void printInOrder();
 };
 
 template <typename T>
@@ -40,110 +44,95 @@ BinarySearchTree<T>::BinarySearchTree() {
 	this->root = nullptr;
 	this->size_ = 0;
 }
-/*
+
 template <typename T>
 BinarySearchTree<T>::~BinarySearchTree() {
-	BinarySearchTreeNode<T>** curr = &(this->root);
-	if (*curr == nullptr) return;
-	
-	std::queue<BinarySearchTreeNode<T>**> destruct;
+	BinarySearchTreeNode<T>* curr = this->root;
+	if (curr == nullptr) return;
+
+	std::queue<BinarySearchTreeNode<T>*> destruct;
 	destruct.push(curr);
 
 	while(!destruct.empty()) {
 		curr = destruct.front();
 		destruct.pop();
 
-		if ((*curr)->children[LEFT] != nullptr) destruct.push(&(*curr)->children[LEFT]);
-		if ((*curr)->children[RIGHT] != nullptr) destruct.push(&(*curr)->children[RIGHT]);
+		if (curr->children[LEFT] != nullptr) destruct.push(curr->children[LEFT]);
+		if (curr->children[RIGHT] != nullptr) destruct.push(curr->children[RIGHT]);
 
-		delete *curr;
-		*curr = nullptr;
+		delete curr;
 		this->size_--;
 	}
 }
-*/
 
 template <typename T>
 void BinarySearchTree<T>::insert(T key) {
 	if (contains(key)) return;
 	
+	this->size_++;
 	BinarySearchTreeNode<T>** curr = &(this->root);
 
-	while ( *curr != nullptr ) {
+	while (*curr != nullptr) {
 		if (key < (*curr)->key )
 			curr = &(*curr)->children[LEFT];
-		else if (key > (*curr)->key)
+		else
 			curr = &(*curr)->children[RIGHT];
 	}
 
 	BinarySearchTreeNode<T>* temp = new BinarySearchTreeNode<T>(key);
 	*curr = temp;
-	this->size_++;
 }
 
 template <typename T>
 void BinarySearchTree<T>::remove(T key) {
 	if (!contains(key)) return;
 
-	BinarySearchTreeNode<T>** curr = &(this->root);
-	BinarySearchTree<T>* parent = nullptr;
-	BinarySearchTreeNode<T>** temp;
-
-	while (*curr != nullptr && (*curr)->key != key) {
-		parent = *curr;
-		if ((*curr)->key > key)
-			curr = &(*curr)->children[LEFT];
-		else if ((*curr)->key < key)
-			curr = &(*curr)->children[RIGHT];		
-	}
-	if (*curr == nullptr) return;
-
-	if ((*curr)->children[LEFT] == nullptr || (*curr)->children[RIGHT] == nullptr ) { // leaf node or one child
-		if ((*curr)->children[LEFT] != nullptr) // one child L
-			temp = &(*curr)->children[LEFT];
-		else if ((*curr)->children[RIGHT] != nullptr) // one child R
-			temp = &(*curr)->children[RIGHT];
-	}
-}
-
-/* Iterative remove not Working
-template <typename T>
-void BinarySearchTree<T>::remove(T key) {
-	if (!contains(key)) return;
-
-	BinarySearchTreeNode<T>** curr = &(this->root);
-	BinarySearchTreeNode<T>** parent = &(this->root);
-
-	curr = findNode(curr, key);
-	parent = findParent(curr, key);
-
-	if ((*curr)->children[LEFT] != nullptr && (*curr)->children[RIGHT] != nullptr) { //two children
-		BinarySearchTreeNode<T>* temp = findMin((*curr)->children[RIGHT]);
-		(*curr)->key = temp->key;
-
-		curr = findNode(&(*curr)->children[RIGHT], (*curr)->key);
-		parent = findParent(&(*curr)->children[RIGHT], (*curr)->key);
-	}
-	if (*curr != nullptr && (*curr)->children[LEFT] == nullptr && (*curr)->children[RIGHT] == nullptr) { //leaf node
-		delete *curr;
-		*curr = nullptr;
-		}
-	else if ((*curr)->children[LEFT] != nullptr) { // one child L
-		(*parent)->children[LEFT] = (*curr)->children[LEFT];
-		delete *curr;
-		*curr = nullptr;
-	}
-	else if ((*curr)->children[RIGHT] != nullptr) { // one child R
-		(*parent)->children[RIGHT] = (*curr)->children[RIGHT];
-		delete *curr;
-		*curr = nullptr;
-	}
 	this->size_--;
+	BinarySearchTreeNode<T>* curr = findNode(this->root, key);
+	BinarySearchTreeNode<T>* parent = findParent(this->root, key);
+	BinarySearchTreeNode<T>* temp = nullptr;
+	BinarySearchTreeNode<T>* succ = successor_node(key);
+
+
+	if (curr == this->root) {
+		if (succ != nullptr) {
+			curr->key = succ->key;
+			curr->children[RIGHT] = succ->children[RIGHT];
+			delete succ;
+		}
+		else {
+			this->root = this->root->children[LEFT];
+			delete curr;	
+		}
+	}
+
+	else if (curr->children[LEFT] == nullptr || curr->children[RIGHT] == nullptr ) { // leaf node or one child
+		if (curr->children[LEFT] != nullptr)
+			temp = curr->children[LEFT];
+		else
+			temp = curr->children[RIGHT];
+		
+		if (curr == parent->children[LEFT])
+			parent->children[LEFT] = temp;
+		else
+			parent->children[RIGHT] = temp;
+
+		delete curr;
+	}
+	else { // two children {
+		parent = findParent(curr->children[RIGHT], succ->key);
+		if (parent != nullptr)
+			parent->children[LEFT] = succ->children[RIGHT];
+		else
+			curr->children[RIGHT] = succ->children[RIGHT];
+		
+		curr->key = succ->key;
+		delete succ;
+	}
 }
-*/
 
 template <typename T>
-BinarySearchTreeNode<T>* BinarySearchTree<T>::findMin(BinarySearchTreeNode<T>* curr) {
+BinarySearchTreeNode<T>* BinarySearchTree<T>::min(BinarySearchTreeNode<T>* curr) {
 	if (this->size_ == 0) return nullptr;
 	
 	while (curr->children[LEFT] != nullptr) {
@@ -154,7 +143,7 @@ BinarySearchTreeNode<T>* BinarySearchTree<T>::findMin(BinarySearchTreeNode<T>* c
 }
 
 template <typename T>
-BinarySearchTreeNode<T>* BinarySearchTree<T>::findMax(BinarySearchTreeNode<T>* curr) {
+BinarySearchTreeNode<T>* BinarySearchTree<T>::max(BinarySearchTreeNode<T>* curr) {
 	if (this->size_ == 0) return nullptr;
 
 	while (curr->children[RIGHT] != nullptr) {
@@ -164,35 +153,50 @@ BinarySearchTreeNode<T>* BinarySearchTree<T>::findMax(BinarySearchTreeNode<T>* c
 	return curr;
 }
 
-//! COuld be an issue since getting freeing pointer error
 template <typename T>
-BinarySearchTreeNode<T>** BinarySearchTree<T>::findNode(BinarySearchTreeNode<T>** curr, T key) {
-	while (*curr != nullptr && (*curr)->key != key) {
-		if ((*curr)->key > key)
-			curr = &(*curr)->children[LEFT];
-		else if ((*curr)->key < key)
-			curr = &(*curr)->children[RIGHT];		
+BinarySearchTreeNode<T>* BinarySearchTree<T>::findNode(BinarySearchTreeNode<T>* curr, T key) {
+	while (curr != nullptr && curr->key != key) {
+		if (curr->key > key)
+			curr = curr->children[LEFT];
+		else
+			curr = curr->children[RIGHT];		
 	}
 
-	if (*curr == nullptr) return nullptr;
-	if ((*curr)->key == key) return curr;
+	if (curr == nullptr) return nullptr;
+	if (curr->key == key) return curr;
+}
+
+template <typename T>
+BinarySearchTreeNode<T>* BinarySearchTree<T>::findParent(BinarySearchTreeNode<T>* curr, T key) {
+	BinarySearchTreeNode<T>* parent = nullptr;
+
+	while (curr != nullptr && curr->key != key) {
+		parent = curr;
+		if (curr->key > key)
+			curr = curr->children[LEFT];
+		else
+			curr = curr->children[RIGHT];		
+	}
+
+	if (curr == nullptr) return nullptr;
+	if (curr->key == key) return parent;
 }
 
 template <typename T>
 bool BinarySearchTree<T>::contains(T key) {
-	if (findNode(&(this->root), key) == nullptr) return false;
+	if (findNode(this->root, key) == nullptr) return false;
 
 	return true;
 }
 
 template <typename T>
-BinarySearchTreeNode<T>* BinarySearchTree<T>::predecessor(T key) {
+BinarySearchTreeNode<T>* BinarySearchTree<T>::predecessor_node(T key) {
 	if (!contains(key)) return nullptr;
 	
 	BinarySearchTreeNode<T>* curr = this->root;
-	BinarySearchTreeNode<T>* target = *findNode(&curr, key);
+	BinarySearchTreeNode<T>* target = findNode(curr, key);
 
-	if (target->children[LEFT] != nullptr) return findMax(target->children[LEFT]);
+	if (target->children[LEFT] != nullptr) return max(target->children[LEFT]);
 	else {
 		BinarySearchTreeNode<T>* pred = nullptr;
 
@@ -201,23 +205,22 @@ BinarySearchTreeNode<T>* BinarySearchTree<T>::predecessor(T key) {
 				pred = curr;
 				curr = curr->children[RIGHT];
 			}
-			else if (curr->key > target->key)
+			else
 				curr = curr->children[LEFT];
 		}
 		return pred;
 	}
 }
 
-
 template <typename T>
-BinarySearchTreeNode<T>* BinarySearchTree<T>::successor(T key) {
+BinarySearchTreeNode<T>* BinarySearchTree<T>::successor_node(T key) {
 	if (!contains(key)) return nullptr;
 
 	BinarySearchTreeNode<T>* curr = this->root;
-	BinarySearchTreeNode<T>* target = *findNode(&curr, key);
+	BinarySearchTreeNode<T>* target = findNode(curr, key);
 
 	if (target->children[RIGHT] != nullptr)
-		return findMin(target->children[RIGHT]);
+		return min(target->children[RIGHT]);
 	else {
 		BinarySearchTreeNode<T>* succ = nullptr;
 
@@ -226,47 +229,105 @@ BinarySearchTreeNode<T>* BinarySearchTree<T>::successor(T key) {
 				succ = curr;
 				curr = curr->children[LEFT];
 			}
-			else if (curr->key < target->key)
+			else
 				curr = curr->children[RIGHT];
 		}
 		return succ;
 	}
 }
 
-/*
-//TODO Fix split
 template <typename T>
-void BinarySearchTree<T>::split(BinarySearchTreeNode<T>** root2) {
-	BinarySearchTreeNode<T>** curr = &(this->root);
-	if (*curr == nullptr) return;
+std::optional<T> BinarySearchTree<T>::predecessor(T key) {
+	BinarySearchTreeNode<T>* pred = this->predecessor_node(key);
+	if (pred) return std::optional<T>(pred->key);
+	return std::nullopt;
+}
 
-	std::queue<BinarySearchTreeNode<T>**> tree_splitter;
-	if ((*curr)->children[LEFT] != nullptr ) tree_splitter.push(&((*curr)->children[LEFT]));
+template <typename T>
+std::optional<T> BinarySearchTree<T>::successor(T key) {
+	BinarySearchTreeNode<T>* succ = this->successor_node(key);
+	if (succ) return std::optional<T>(succ->key);
+	return std::nullopt;
+}
 
-	while(!tree_splitter.empty()) {
-		curr = tree_splitter.front();
-		tree_splitter.pop();
+template <typename T>
+void BinarySearchTree<T>::inOrderVector(std::vector<T> &bst_data) {
+	BinarySearchTreeNode<T>* curr = this->root;
 
-		if ((*curr)->children[LEFT] != nullptr ) tree_splitter.push(&(*curr)->children[LEFT]);
-		if ((*curr)->children[RIGHT] != nullptr ) tree_splitter.push(&(*curr)->children[RIGHT]);
+	std::stack<BinarySearchTreeNode<T>*> printer;
 
-		std::cout << "INS" << std::endl;
-		insert(root2, (*curr)->key);
+	while(curr != nullptr || !printer.empty()) {
+		while(curr != nullptr) {
+			printer.push(curr);
+			curr = curr->children[LEFT];
+		}
+
+		curr = printer.top();
+		printer.pop();
+
+		bst_data.push_back(curr->key);
+		curr = curr->children[RIGHT];
 	}
 }
 
+template <typename T> 
+BinarySearchTreeNode<T>* BinarySearchTree<T>::generateBST(std::vector<T> &bst_data, int start, int end) {
+	if (start > end) return nullptr;
 
-//TODO Reverse split when completed working implementation
-template <typename T>
-void BinarySearchTree<T>::merge(BinarySearchTreeNode<T>** root, BinarySearchTree<T>** root2) {
+	int mid_index = (start + end) / 2;
+	BinarySearchTreeNode<T>* curr = new BinarySearchTreeNode<T>(bst_data[mid_index]);
+
+	curr->children[LEFT] = generateBST(bst_data, start, mid_index - 1);
+	curr->children[RIGHT] = generateBST(bst_data, mid_index + 1, end);
+
+	return curr;
 }
-*/
 
 template <typename T>
-void BinarySearchTree<T>::printInOrder(BinarySearchTreeNode<T>* curr) {
-	if (curr == nullptr) return;
+void BinarySearchTree<T>::split(BinarySearchTree<T> &tree2, T key) {
+	if (!contains(key)) return;
 
-	printInOrder(curr->children[LEFT]);
-	std::cout << curr->key << " ";
-	printInOrder(curr->children[RIGHT]);
+	std::vector<T> data;
+	this->inOrderVector(data);
+	int split_index = std::find(data.begin(), data.end(), key) - data.begin() - 1;
+
+	this->~BinarySearchTree();
+
+	this->root = generateBST(data, 0, split_index);
+	this->size_ = split_index + 1;
+	tree2.root = generateBST(data, split_index + 1, data.size() - 1);
+	tree2.size_ = data.size() - split_index - 1;
+}
+
+template <typename T>
+void BinarySearchTree<T>::merge(BinarySearchTree<T> &tree2, BinarySearchTree<T> &merged_tree) {
+	if (this->root == nullptr && tree2.root == nullptr) return;
+
+	std::vector<T> data;
+	this->inOrderVector(data);
+	tree2.inOrderVector(data);
+	std::sort(data.begin(), data.end());
+	
+	merged_tree.root = generateBST(data, 0, data.size() - 1);
+	merged_tree.size_ = data.size();
+}
+
+template <typename T>
+void BinarySearchTree<T>::printInOrder() {
+	BinarySearchTreeNode<T>* curr = this->root;
+
+	std::stack<BinarySearchTreeNode<T>*> printer;
+
+	while(curr != nullptr || !printer.empty()) {
+		while(curr != nullptr) {
+			printer.push(curr);
+			curr = curr->children[LEFT];
+		}
+
+		curr = printer.top();
+		printer.pop();
+	
+		std::cout << curr->key << " ";
+		curr = curr->children[RIGHT];
+	}
 }
