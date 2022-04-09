@@ -30,13 +30,33 @@ public:
 	void insert(T key);
 	void remove(T key);
 	bool contains(T key);
-	void split(BinarySearchTree<T> &tree2, T key);
-	void merge(BinarySearchTree<T> &tree2, BinarySearchTree<T> &merged_tree);
+	std::vector<BinarySearchTree<T>*> split(T key);
+	BinarySearchTree<T>* merge(BinarySearchTree<T> &tree2, BinarySearchTree<T> &merged_tree);
 	std::optional<T> predecessor(T key);
 	std::optional<T> successor(T key);
+	std::optional<T> max() {
+		if (size_ == 0) return std::nullopt;
+		auto node = max(root);
+		if (node == nullptr)
+			return std::nullopt;
+		return std::optional<T>(node->key);
+	}
+	std::optional<T> min() {
+		if (size_ == 0) return std::nullopt;
+		auto node = min(root);
+		if (node == nullptr)
+			return std::nullopt;
+		return std::optional<T>(node->key);
+	}
 	size_t size() { return size_; };
 	constexpr T limit() { return -1; }
 	void printInOrder();
+	T median() {
+		std::vector<T> vec;
+		this->inOrderVector(vec);
+		std::sort(std::begin(vec), std::end(vec));
+		return vec[vec.size() / 2];
+	}
 };
 
 template <typename T>
@@ -284,8 +304,9 @@ BinarySearchTreeNode<T>* BinarySearchTree<T>::generateBST(std::vector<T> &bst_da
 }
 
 template <typename T>
-void BinarySearchTree<T>::split(BinarySearchTree<T> &tree2, T key) {
-	if (!contains(key)) return;
+std::vector<BinarySearchTree<T>*> BinarySearchTree<T>::split(T key) {
+	
+	BinarySearchTree<T>* tree2 = new BinarySearchTree<T>();
 
 	std::vector<T> data;
 	this->inOrderVector(data);
@@ -295,13 +316,15 @@ void BinarySearchTree<T>::split(BinarySearchTree<T> &tree2, T key) {
 
 	this->root = generateBST(data, 0, split_index);
 	this->size_ = split_index + 1;
-	tree2.root = generateBST(data, split_index + 1, data.size() - 1);
-	tree2.size_ = data.size() - split_index - 1;
+	tree2->root = generateBST(data, split_index + 1, data.size() - 1);
+	tree2->size_ = data.size() - split_index - 1;
+
+	return std::vector<BinarySearchTree<T>*>{this, tree2};
 }
 
 template <typename T>
-void BinarySearchTree<T>::merge(BinarySearchTree<T> &tree2, BinarySearchTree<T> &merged_tree) {
-	if (this->root == nullptr && tree2.root == nullptr) return;
+BinarySearchTree<T>* BinarySearchTree<T>::merge(BinarySearchTree<T> &tree2, BinarySearchTree<T> &merged_tree) {
+	// if (this->root == nullptr && tree2.root == nullptr) return;
 
 	std::vector<T> data;
 	this->inOrderVector(data);
@@ -310,6 +333,7 @@ void BinarySearchTree<T>::merge(BinarySearchTree<T> &tree2, BinarySearchTree<T> 
 	
 	merged_tree.root = generateBST(data, 0, data.size() - 1);
 	merged_tree.size_ = data.size();
+	return merged_tree;
 }
 
 template <typename T>
