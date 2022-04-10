@@ -1,13 +1,17 @@
 #include "red-black-tree.h"
+#include <cstdint>
 
 const int SEED = 69;
-const int TESTS = 1000;
+const int TESTS = 100;
 const int MAX = 100000;
 
+const bool TRUE_RAND = true;
+using T = std::uint8_t;
 
-std::vector<int> get_keys() {
+
+std::vector<T> get_keys() {
 	int i = 0;
-	std::vector<int> keys = std::vector<int>();
+	std::vector<T> keys = std::vector<T>();
 	while (i < TESTS) {
 		keys.push_back(rand() % MAX);
 		i++;
@@ -16,9 +20,15 @@ std::vector<int> get_keys() {
 }
 
 int main(void) {
-	srand(SEED);
-	std::vector<int> keys = get_keys();
-	RedBlackTree<int> tree = RedBlackTree<int>();
+	if (TRUE_RAND){
+		srand(std::time(nullptr));
+	}
+	else{
+		srand(SEED);
+	}
+	
+	std::vector<T> keys = get_keys();
+	RedBlackTree<uint8_t> tree = RedBlackTree<uint8_t>();
 	unsigned int indices = keys.size();
 	for (unsigned int i = 0; i < indices; i++) {
 		std::cout << "Size: " << std::to_string(tree.size()) << '\n';
@@ -49,7 +59,7 @@ int main(void) {
 	std::cout << '\n';
 
 	keys = get_keys();
-	tree = RedBlackTree<int>();
+	tree = RedBlackTree<uint8_t>();
 	indices = keys.size();
 	for (unsigned int i = 0; i < indices; i++) {
 		std::cout << "Size: " << std::to_string(tree.size()) << '\n';
@@ -63,14 +73,15 @@ int main(void) {
 	}
 
 
-	int max = tree.max();
+	T max = *tree.
+	max();
 	std::cout << '\n';
 	bool no_double_red = tree.no_consecutive_reds();
-	std::vector<std::vector<Node<int>*>> layers = tree.make_2d_vector();
-	std::vector<int> layer_heights;
+	std::vector<std::vector<Node<T>*>> layers = tree.make_2d_vector();
+	std::vector<T> layer_heights;
 	layer_heights.reserve(layers.size());
 	
-	for (std::vector<Node<int>*>layer : layers) {
+	for (std::vector<Node<T>*>layer : layers) {
 		layer_heights.push_back(layer.size());
 	}
 
@@ -79,20 +90,45 @@ int main(void) {
 	tree.show();
 	std::cout << '\n';
 
-	std::vector<int> colors;
-	for (Node<int>* node : tree.nodes()){
+	std::vector<T> colors;
+	for (Node<T>* node : tree.nodes()){
 		colors.push_back(node->color());
 	}
 
-	std::pair<RedBlackTree<int>*,RedBlackTree<int>*> trees = tree.split(keys[0]);
-	int max1 = trees.first->max();
-	std::cout << trees.second->max();
+	std::pair<RedBlackTree<uint8_t>*,RedBlackTree<uint8_t>*> trees = tree.split(keys[0]);
+	T max1 = *trees.first->max();
+	T max2 = *trees.second->max();
 	std::cout << '\n';
 	std::cout << std::to_string(trees.first->no_consecutive_reds()) << '\n';
-	std::vector<std::vector<Node<int>*>> layers1 = trees.first->make_2d_vector();
+	std::vector<std::vector<Node<T>*>> layers1 = trees.first->make_2d_vector();
 	trees.first->show_layers();
 	std::cout << '\n';
 	trees.second->show();
 	std::cout << '\n';
 	trees.first->merge(trees.second);
+	std::cout << trees.first->root() << '\n';
+	std::cout << '\n';
+	trees.first->show();
+
+	RedBlackTree<T> tree3 = RedBlackTree<T>();
+	for (T i = 0; i < 40; i +=2){
+		if (i == 39){
+			i = 39;
+		}
+		tree3.insert(i);
+		tree3.show();
+		std::cout << '\n';
+	}
+	for (T i = 0; i < 40; i++){
+		if (i == 2){
+			i = 2;
+		}
+		std::cout << "Successor of " + std::to_string(i) + " is " + std::to_string(*tree3.successor(i)) << '\n';
+		std::cout << "Predecessor of " + std::to_string(i) + " is " + std::to_string(*tree3.predecessor(i)) << '\n';
+	}
+	std::cout << '\n';
+	tree3.show();
+	tree3.generate_dot("/home/pepe/Documents/RBT DOTs/RedBackTree" + std::to_string(rand()) + ".gv");
+
+	return 0;
 }
