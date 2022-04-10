@@ -1,13 +1,4 @@
-/**
- * @file red-black-tree-node.h
- * @author your name (you@domain.com)
- * @brief This is the header for the node for RedBlackTree, an implementation of a red black tree.
- * @version 1.0
- * @date 2022-04-09
- * 
- * @copyright Copyright (c) 2022
- * 
- */
+//Node.h
 #pragma once
 
 template <typename T> 
