@@ -4,3 +4,5 @@
 .vscode/tasks.json
 red-black-tree/main
 .gitignoreow
+src/red-black-tree/main
+src/red-black-tree/main.cpp

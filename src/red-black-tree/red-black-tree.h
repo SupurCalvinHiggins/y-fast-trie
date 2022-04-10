@@ -338,10 +338,10 @@ public:
      * 
      * @param node The value to find the exclusive predecessor of, which is strictly less than the value
      * @return some_key_type The exclusive predecessor of the value.
-     * Returns nullopt if <key> is not in the tree.
+     * Returns nullopt if <key> is not in the tree, or there is no value less than the input value in the tree.
      * 
      */
-    some_key_type predecessor(key_type key) {
+    some_key_type exclusive_predecessor(key_type key) {
 
         if(!root_) return std::nullopt;
 
@@ -383,15 +383,15 @@ public:
     };
 
     /**
-     * @brief Finds the inclusive successor of the value, which is the value closet to and less than the input value.
-     * If there is no lesser value, it returns the input value. 
+     * @brief Finds the inclusive predecessor of the value, which is the value closest to and less than or equal to the input value.
+     * If there is no lesser or equal value, it returns nullopt.
      * 
-     * @param node The value to find the exclusive predecessor of, which is strictly less than the value.
+     * @param node The value to find the inclusive predecessor of, which is less than or equal to the value.
      * @return some_key_type The inclusive predecessor of the value.
-     * Returns nullopt if the teee is empty.
+     * Returns nullopt if the teee is empty, or there is no value lesser than or equal to the input value.
      * 
      */
-    some_key_type inclusive_predecessor(key_type key) {
+    some_key_type predecessor(key_type key) {
         
         if(!root_) return std::nullopt;
 
@@ -412,7 +412,7 @@ public:
 
         //Case 1: Target node has left child, so find rightmost node from the subtree of the target node's left child
         if(pred){
-            while(pred->children[1]) {
+            while(pred->children_[1]) {
                 pred = pred->children_[1];
             }
             return some_key_type(pred->key_);
@@ -437,10 +437,10 @@ public:
      * 
      * @param node The value to find the exclusive successor of, which is strictly greater than the value
      * @return some_key_type The exclusive succecessor of the value.
-     * Returns nullopt if <key> is not in the tree.
+     * Returns nullopt if <key> is not in the tree, or there is no value greater than the input value.
      * 
      */
-    some_key_type successor(key_type key) {
+    some_key_type exlcusive_successor(key_type key) {
         
         if(!root_) return std::nullopt;
 
@@ -483,14 +483,14 @@ public:
 
     /**
      * @brief Finds the inclusive successor of the value, which is the value closest to and greater than the input value.
-     * If there is no greater value, it returns the input value. 
+     * If there is no greater than or equal to the value, returns nullopt.
      * 
-     * @param node The value to find the exclusive successor.
+     * @param node The value to find the inclusive successor of.
      * @return some_key_type The inclusive succecessor of the value, which might be itself.
-     * Returns nullopt if the tree is empty
+     * Returns nullopt if the tree is empty, or there is no value greater than or equal to the input value.
      * 
      */
-    some_key_type inclusive_successor(key_type key) {
+    some_key_type successor(key_type key) {
         
         if(!root_) return std::nullopt;
 
@@ -511,7 +511,7 @@ public:
 
         //Case 1: Target node has right child, so find leftmost node from the subtree of the target node's right child
         if(pred){
-            while(pred->children[0]) {
+            while(pred->children_[0]) {
                 pred = pred->children_[0];
             }
             return some_key_type(pred->key_);

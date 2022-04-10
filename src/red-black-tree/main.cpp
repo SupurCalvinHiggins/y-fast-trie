@@ -128,7 +128,6 @@ int main(void) {
 	}
 	std::cout << '\n';
 	tree3.show();
-	tree3.generate_dot("/home/pepe/Documents/RBT DOTs/RedBackTree" + std::to_string(rand()) + ".gv");
 
 	return 0;
 }
