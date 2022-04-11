@@ -10,20 +10,24 @@ This library implements the following data structures:
 3. Red-Black Tree  
 
 ## Installation
+
+### Linux
 To install dependencies on Linux systems, execute
 ```
 sudo chmod +x install_dependencies.sh
 sudo ./install_dependencies.sh
 ```
 
+### MacOS and Windows
 On MacOS and Windows, ensure that the following dependencies are installed:
-    1. python3
-    2. python3-pip
-    3. GCC
-    4. termcolor
-    5. Google Test
-    6. Google Benchmark
+1. python3
+2. python3-pip
+3. GCC
+4. termcolor
+5. Google Test
+6. Google Benchmark
 
+### Verification
 To ensure the library functions, execute
 ```
 python3 run.py test
