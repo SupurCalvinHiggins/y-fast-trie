@@ -84,7 +84,7 @@ public:
      * @param bit to set.
      */
     inline void set_bit(uintptr_t bit) noexcept(NEX) {
-        assert((bit >= 0) && (bit <= 4));
+        assert((bit >= 0) && (bit < bits_));
         ptr_ = reinterpret_cast<ptr_type>(
             reinterpret_cast<uintptr_t>(ptr_) | (1 << bit)
         );
@@ -96,7 +96,7 @@ public:
      * @param bit to unset.
      */
     inline void unset_bit(uintptr_t bit) noexcept(NEX) {
-        assert((bit >= 0) && (bit <= 4));
+        assert((bit >= 0) && (bit < bits_));
         ptr_ = reinterpret_cast<ptr_type>(
             reinterpret_cast<uintptr_t>(ptr_) & ~(1 << bit)
         );
@@ -110,7 +110,7 @@ public:
      * @return false if the bit is unset.
      */
     inline bool is_set_bit(uintptr_t bit) const noexcept(NEX) {
-        assert((bit >= 0) && (bit <= 4));
+        assert((bit >= 0) && (bit < bits_));
         return reinterpret_cast<ptr_type>(
             reinterpret_cast<uintptr_t>(ptr_) & (1 << bit)
         );
