@@ -25,10 +25,10 @@ private:
 private:
 
     // Mask that excludes the control bits of a pointer.
-	static constexpr uintptr_t ptr_mask_ = ~static_cast<uintptr_t>((1 << (bits_ + 1)) - 1);
+    static constexpr uintptr_t ptr_mask_ = ~static_cast<uintptr_t>((1 << (bits_ + 1)) - 1);
 
-	// Mask that excludes the pointer bits of a pointer.
-	static constexpr uintptr_t bit_mask_ = static_cast<uintptr_t>((1 << (bits_ + 1)) - 1);
+    // Mask that excludes the pointer bits of a pointer.
+    static constexpr uintptr_t bit_mask_ = static_cast<uintptr_t>((1 << (bits_ + 1)) - 1);
 
 private:
     ptr_type ptr_;
@@ -43,8 +43,8 @@ private:
      */
     inline bool is_clean_ptr(ptr_type ptr) const noexcept(NEX) {
         return !reinterpret_cast<ptr_type>(
-			reinterpret_cast<uintptr_t>(ptr) & bit_mask_
-		);
+            reinterpret_cast<uintptr_t>(ptr) & bit_mask_
+        );
     }
 
 public:
@@ -74,8 +74,8 @@ public:
      */
     inline ptr_type get_ptr() const noexcept(NEX) {
         return reinterpret_cast<ptr_type>(
-			reinterpret_cast<uintptr_t>(ptr_) & ptr_mask_
-		);
+            reinterpret_cast<uintptr_t>(ptr_) & ptr_mask_
+        );
     }
 
     /**
@@ -86,8 +86,8 @@ public:
     inline void set_bit(uintptr_t bit) noexcept(NEX) {
         assert((bit >= 0) && (bit <= 4));
         ptr_ = reinterpret_cast<ptr_type>(
-			reinterpret_cast<uintptr_t>(ptr_) | (1 << bit)
-		);
+            reinterpret_cast<uintptr_t>(ptr_) | (1 << bit)
+        );
     }
 
     /**
@@ -98,8 +98,8 @@ public:
     inline void unset_bit(uintptr_t bit) noexcept(NEX) {
         assert((bit >= 0) && (bit <= 4));
         ptr_ = reinterpret_cast<ptr_type>(
-			reinterpret_cast<uintptr_t>(ptr_) & ~(1 << bit)
-		);
+            reinterpret_cast<uintptr_t>(ptr_) & ~(1 << bit)
+        );
     }
 
     /**
@@ -112,7 +112,7 @@ public:
     inline bool is_set_bit(uintptr_t bit) const noexcept(NEX) {
         assert((bit >= 0) && (bit <= 4));
         return reinterpret_cast<ptr_type>(
-			reinterpret_cast<uintptr_t>(ptr_) & (1 << bit)
-		);
+            reinterpret_cast<uintptr_t>(ptr_) & (1 << bit)
+        );
     }
 };
