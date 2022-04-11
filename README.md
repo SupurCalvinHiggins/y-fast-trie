@@ -4,7 +4,7 @@ Y-Fast Trie
 A C++ implementation of a Y-Fast Trie.
 
 ## Overview
-This library implements the following data structures:
+This library implements the following data structures:  
     1. Y-Fast Trie  
     2. X-Fast Trie  
     3. Red-Black Tree  
