@@ -86,7 +86,7 @@ def assert_path_exists(path):
 
 def is_test(fname):
     '''Checks if a file is a test.'''
-    return '.test.cpp' in fname
+    return '.test.cpp' in fname or os.path.basename(fname) == 'test.cpp'
 
 
 def is_benchmark(fname):
@@ -114,6 +114,25 @@ def only_valid_fnames(fnames):
         if fname in new_fnames: continue
         if is_benchmark(fname) or is_test(fname):
             new_fnames.append(fname)
+    return new_fnames
+
+
+def only_unique_tests(fnames):
+    '''Filter out individual tests that are covered by test.cpp.'''
+    new_fnames = []
+    test_suite_directories = []
+
+    for fname in fnames:
+        directory, basename = os.path.split(fname)
+        if basename == 'test.cpp':
+            new_fnames.append(fname)
+            test_suite_directories.append(directory)
+    
+    for fname in fnames:
+        directory, basename = os.path.split(fname)
+        if directory not in test_suite_directories:
+            new_fnames.append(fname)
+    
     return new_fnames
 
 
@@ -175,6 +194,7 @@ if __name__ == '__main__':
     # Compute unique valid files.
     fnames = expand_directories(args.paths)
     fnames = only_valid_fnames(fnames)
+    fnames = only_unique_tests(fnames)
 
     # Display them.
     ok('*** FILES ***')
@@ -199,7 +219,7 @@ if __name__ == '__main__':
             error_code = execute()
             if error_code != 0:
                 warn('*** WARNING ***')
-                print(f'benchmark crashed with error code {error_code}')
+                print(f'program crashed with error code {error_code}')
         else:
             warn('*** WARNING ***')
             print(f'{fname} failed to compile')
