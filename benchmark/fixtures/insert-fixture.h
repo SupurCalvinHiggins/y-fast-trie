@@ -1,8 +1,8 @@
 #pragma once
 #include "base/empty-base-fixture.h"
 
-template <typename Obj_, typename Key_>
-class InsertFixture : public EmptyBaseFixture<Obj_, Key_> { 
+template <typename Obj_>
+class InsertFixture : public EmptyBaseFixture<Obj_> { 
 protected:
     virtual void BM_insert(benchmark::State& state) {
         for (auto _ : state) {
