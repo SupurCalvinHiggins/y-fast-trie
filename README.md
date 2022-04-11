@@ -5,9 +5,9 @@ A C++ implementation of a Y-Fast Trie.
 
 ## Overview
 This library implements the following data structures:  
-    1. Y-Fast Trie  
-    2. X-Fast Trie  
-    3. Red-Black Tree  
+1. Y-Fast Trie  
+2. X-Fast Trie  
+3. Red-Black Tree  
 
 ## Installation
 To install dependencies on Linux systems, execute
@@ -66,7 +66,7 @@ Certain constants are set in test/base/constants.h. See the file for more detail
 
 ### Adding Tests
 Test fixture implementations are stored in test/fixtures and come with several builtin tests. These can be accessed by including test/fixtures/fixtures.h and defining the appropriate test fixture. For example, to add insertion tests in test/my-data-structure write
-```
+```c++
 #include "../fixtures/fixtures.h"
 #include <my-data-structure>
 
@@ -108,7 +108,7 @@ Certain constants are set in benchmark/base/constants.h. See the file for more d
 
 ### Adding Benchmarks
 Benchmark fixture implementations are stored in benchmark/fixtures and come with several builtin benchmarks. These can be accessed by including benchmark/fixtures/fixtures.h and defining the appropriate benchmark fixture. For example, to add insertion benchmarks in benchmark/my-data-structure write
-```
+```c++
 #include "../fixtures/fixtures.h"
 #include <my-data-structure>
 
@@ -118,3 +118,24 @@ BENCHMARK_MAIN();
 to benchmark/my-data-structure/insert.benchmark.cpp.
 
 Benchmark subsumption is currently unsupported.
+
+## Y-Fast Trie
+TODO
+### Interface
+TODO
+### Example
+TODO
+
+## X-Fast Trie
+TODO
+### Interface
+TODO
+### Example
+TODO
+
+## Red-Black Tree
+TODO
+### Interface
+TODO
+### Example
+TODO
