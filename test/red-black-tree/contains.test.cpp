@@ -1,5 +1,5 @@
 #include "../fixtures/fixtures.h"
-#include "../../src/y-fast-trie/y-fast-trie.h"
+#include "../../src/red-black-tree/red-black-tree.h"
 
-DEFINE_CONTAINS_TESTS(YFastTrie);
+DEFINE_CONTAINS_TESTS(RedBlackTree);
 TEST_MAIN();
