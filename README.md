@@ -5,9 +5,9 @@ A C++ implementation of a Y-Fast Trie.
 
 ## Overview
 This library implements the following data structures:
-    1. Y-Fast Trie
-    2. X-Fast Trie
-    3. Red-Black Tree
+    1. Y-Fast Trie  
+    2. X-Fast Trie  
+    3. Red-Black Tree  
 
 ## Installation
 To install dependencies on Linux systems, execute
@@ -80,7 +80,7 @@ Tests can be slow when they are executed as seperate files. Place test.cpp in a 
 ## Benchmarking
 The library implements a full benchmarking suite using the Google Benchmark C++ framework.
 
-### Executing Tests
+### Executing Benchmarks
 The run.py Python script provides useful functionality for benchmarking the library.
 
 To run all benchmarks, execute
