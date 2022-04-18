@@ -170,6 +170,7 @@ The Red-Black Tree methods run in the following time complexities where N is the
 | upper_bound | O(1) |
 
 ### Example
+
 TODO
 
 ## X-Fast Trie
@@ -212,8 +213,60 @@ The X-Fast Trie methods run in the following time complexities where M is the si
 | upper_bound | O(1) |
 
 ### Example
-TODO
 
+Sample Program:
+```c++
+#include "src/x-fast-trie/x-fast-trie.h"
+#include <iostream>
+#include <cstdint>
+
+int main() {
+    XFastTrie<uint32_t> trie;
+
+    trie.insert(5);
+    if (trie.contains(5))
+        std::cout << "The trie contains the number 5." << std::endl;
+
+    trie.insert(5);
+    if (trie.contains(5))
+        std::cout << "Double insertions are effectively no-ops." << std::endl;
+    
+    trie.remove(5);
+    if (!trie.contains(5))
+        std::cout << "The trie does not contain the number 5." << std::endl;
+    
+    trie.remove(5);
+    if (!trie.contains(5))
+        std::cout << "Double removes are effectively no-ops." << std::endl;
+    
+    trie.insert(7);
+    trie.insert(11);
+    trie.insert(16);
+
+    std::cout << "The successor of 11 is "  << trie.successor(11).value() << "." << std::endl;
+    std::cout << "The predecessor of 11 is "  << trie.predecessor(11).value() << "." << std::endl;
+
+    std::cout << "The successor of 10 is "  << trie.successor(10).value() << "." << std::endl;
+    std::cout << "The predecessor of 10 is "  << trie.predecessor(10).value() << "." << std::endl;
+
+    std::cout << "Does the successor of 16 exist? "  << trie.successor(16).has_value() << "." << std::endl;
+    std::cout << "Does the predecessor of 7 exist? "  << trie.predecessor(7).has_value() << "." << std::endl;
+}
+```
+
+Sample Output:
+```
+The trie contains the number 5.
+Double insertions are effectively no-ops.
+The trie does not contain the number 5.
+Double removes are effectively no-ops.
+The successor of 11 is 16.
+The predecessor of 11 is 7.
+The successor of 10 is 11.
+The predecessor of 10 is 7.
+Does the successor of 16 exist? 0.
+Does the predecessor of 7 exist? 0.
+```
 
 ## Y-Fast Trie
 Y-Fast Tries are bitwise tries that implement dynamic ordered set operations in O(log(log(M))) time in O(N) space.
