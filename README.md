@@ -152,6 +152,8 @@ key_type lower_bound();
 key_type upper_bound();
 ```
 
+Double insertions and double removes are ignored.
+
 ### Complexity
 The Red-Black Tree methods run in the following time complexities where N is the number of keys.
 
@@ -190,6 +192,9 @@ bool contains(key_type key);
 key_type lower_bound();
 key_type upper_bound();
 ```
+
+Double insertions and double removes are ignored.
+
 
 ### Complexity
 The X-Fast Trie methods run in the following time complexities where M is the size of universe.
@@ -230,6 +235,8 @@ bool contains(key_type key);
 key_type lower_bound();
 key_type upper_bound();
 ```
+
+Double insertions and double removes are ignored.
 
 ### Complexity
 The Y-Fast Trie methods run in the following time complexities where M is the size of universe.
