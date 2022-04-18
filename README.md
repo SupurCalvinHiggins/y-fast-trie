@@ -141,19 +141,19 @@ Red-Black Trees are balanced binary search trees that provide dynamic ordered se
 ### Interface
 The Red-Black Tree provides the following interface:
 ```c++
-void insert(key_type key);
-void remove(key_type key);
+void insert(key_type key); /* insert a key */
+void remove(key_type key); /* remove a key */
 
-some_key_type predecessor(key_type key);
-some_key_type successor(key_type key);
+some_key_type predecessor(key_type key); /* strict predecessor */
+some_key_type successor(key_type key);   /* strict successor   */
 
-some_key_type min(key_type key);
-some_key_type max(key_type key);
+some_key_type min(key_type key); /* minimum key */
+some_key_type max(key_type key); /* maximum key */
 
-bool contains(key_type key);
+bool contains(key_type key); /* check containment */
 
-key_type lower_bound();
-key_type upper_bound();
+key_type lower_bound(); /* minimum possible key */
+key_type upper_bound(); /* maximum possible key */
 ```
 
 Double insertions and double removes are ignored.
@@ -235,19 +235,19 @@ X-Fast Tries are bitwise tries that implement ordered set operations in O(log(lo
 ### Interface
 The X-Fast Trie provides the following interface:
 ```c++
-void insert(key_type key);
-void remove(key_type key);
+void insert(key_type key); /* insert a key */
+void remove(key_type key); /* remove a key */
 
-some_key_type predecessor(key_type key);
-some_key_type successor(key_type key);
+some_key_type predecessor(key_type key); /* strict predecessor */
+some_key_type successor(key_type key);   /* strict successor   */
 
-some_key_type min(key_type key);
-some_key_type max(key_type key);
+some_key_type min(key_type key); /* minimum key */
+some_key_type max(key_type key); /* maximum key */
 
-bool contains(key_type key);
+bool contains(key_type key); /* check containment */
 
-key_type lower_bound();
-key_type upper_bound();
+key_type lower_bound(); /* minimum possible key */
+key_type upper_bound(); /* maximum possible key */
 ```
 
 Double insertions and double removes are ignored.
@@ -330,19 +330,19 @@ Y-Fast Tries are bitwise tries that implement dynamic ordered set operations in 
 ### Interface
 The Y-Fast Trie provides the following interface:
 ```c++
-void insert(key_type key);
-void remove(key_type key);
+void insert(key_type key); /* insert a key */
+void remove(key_type key); /* remove a key */
 
-some_key_type predecessor(key_type key);
-some_key_type successor(key_type key);
+some_key_type predecessor(key_type key); /* strict predecessor */
+some_key_type successor(key_type key);   /* strict successor   */
 
-some_key_type min(key_type key);
-some_key_type max(key_type key);
+some_key_type min(key_type key); /* minimum key */
+some_key_type max(key_type key); /* maximum key */
 
-bool contains(key_type key);
+bool contains(key_type key); /* check containment */
 
-key_type lower_bound();
-key_type upper_bound();
+key_type lower_bound(); /* minimum possible key */
+key_type upper_bound(); /* maximum possible key */
 ```
 
 Double insertions and double removes are ignored.
