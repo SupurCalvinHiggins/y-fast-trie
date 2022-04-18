@@ -18,6 +18,10 @@ This library implements the following data structures:
 
 ## Installation
 
+### C++ Version
+
+The library requires at least C++17. With some tweaks, the library will work for lower C++ version given a custom std::optional implementation.
+
 ### Linux
 To install dependencies on Linux systems, execute
 ```
@@ -171,7 +175,59 @@ The Red-Black Tree methods run in the following time complexities where N is the
 
 ### Example
 
-TODO
+Sample Program:
+```c++
+#include "../src/red-black-tree/red-black-tree.h"
+#include <iostream>
+#include <cstdint>
+
+int main() {
+    RedBlackTree<uint32_t> tree;
+
+    tree.insert(5);
+    if (tree.contains(5))
+        std::cout << "The tree contains the number 5." << std::endl;
+
+    tree.insert(5);
+    if (tree.contains(5))
+        std::cout << "Double insertions are effectively no-ops." << std::endl;
+    
+    tree.remove(5);
+    if (!tree.contains(5))
+        std::cout << "The tree does not contain the number 5." << std::endl;
+    
+    tree.remove(5);
+    if (!tree.contains(5))
+        std::cout << "Double removes are effectively no-ops." << std::endl;
+    
+    tree.insert(7);
+    tree.insert(11);
+    tree.insert(16);
+
+    std::cout << "The successor of 11 is "  << tree.successor(11).value() << "." << std::endl;
+    std::cout << "The predecessor of 11 is "  << tree.predecessor(11).value() << "." << std::endl;
+
+    std::cout << "The successor of 10 is "  << tree.successor(10).value() << "." << std::endl;
+    std::cout << "The predecessor of 10 is "  << tree.predecessor(10).value() << "." << std::endl;
+
+    std::cout << "Does the successor of 16 exist? "  << tree.successor(16).has_value() << "." << std::endl;
+    std::cout << "Does the predecessor of 7 exist? "  << tree.predecessor(7).has_value() << "." << std::endl;
+}
+```
+
+Sample Output:
+```
+The trie contains the number 5.
+Double insertions are effectively no-ops.
+The trie does not contain the number 5.
+Double removes are effectively no-ops.
+The successor of 11 is 16.
+The predecessor of 11 is 7.
+The successor of 10 is 11.
+The predecessor of 10 is 7.
+Does the successor of 16 exist? 0.
+Does the predecessor of 7 exist? 0.
+```
 
 ## X-Fast Trie
 X-Fast Tries are bitwise tries that implement ordered set operations in O(log(log(M))) time and dynamic set operations in O(log(M)) time in O(N) space.
@@ -307,4 +363,57 @@ The Y-Fast Trie methods run in the following time complexities where M is the si
 | upper_bound | O(1) |
 
 ### Example
-TODO
+
+Sample Program:
+```c++
+#include "../src/y-fast-trie/y-fast-trie.h"
+#include <iostream>
+#include <cstdint>
+
+int main() {
+    YFastTrie<uint32_t> trie;
+
+    trie.insert(5);
+    if (trie.contains(5))
+        std::cout << "The trie contains the number 5." << std::endl;
+
+    trie.insert(5);
+    if (trie.contains(5))
+        std::cout << "Double insertions are effectively no-ops." << std::endl;
+    
+    trie.remove(5);
+    if (!trie.contains(5))
+        std::cout << "The trie does not contain the number 5." << std::endl;
+    
+    trie.remove(5);
+    if (!trie.contains(5))
+        std::cout << "Double removes are effectively no-ops." << std::endl;
+    
+    trie.insert(7);
+    trie.insert(11);
+    trie.insert(16);
+
+    std::cout << "The successor of 11 is "  << trie.successor(11).value() << "." << std::endl;
+    std::cout << "The predecessor of 11 is "  << trie.predecessor(11).value() << "." << std::endl;
+
+    std::cout << "The successor of 10 is "  << trie.successor(10).value() << "." << std::endl;
+    std::cout << "The predecessor of 10 is "  << trie.predecessor(10).value() << "." << std::endl;
+
+    std::cout << "Does the successor of 16 exist? "  << trie.successor(16).has_value() << "." << std::endl;
+    std::cout << "Does the predecessor of 7 exist? "  << trie.predecessor(7).has_value() << "." << std::endl;
+}
+```
+
+Sample Output:
+```
+The trie contains the number 5.
+Double insertions are effectively no-ops.
+The trie does not contain the number 5.
+Double removes are effectively no-ops.
+The successor of 11 is 16.
+The predecessor of 11 is 7.
+The successor of 10 is 11.
+The predecessor of 10 is 7.
+Does the successor of 16 exist? 0.
+Does the predecessor of 7 exist? 0.
+```
