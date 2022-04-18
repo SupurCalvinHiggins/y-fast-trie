@@ -1,7 +1,13 @@
 # y-fast-trie
 Y-Fast Trie
 
-A C++ implementation of a Y-Fast Trie.
+A C++ implementation of a Y-Fast Trie. 
+
+## Preamble
+
+**Do not use in production code!!!** 
+
+Check out https://github.com/pdinklag/tdc/tree/sea21-predecessor for a quality implementation instead.
 
 ## Overview
 This library implements the following data structures:  
@@ -123,23 +129,118 @@ to benchmark/my-data-structure/insert.benchmark.cpp.
 
 Benchmark subsumption is currently unsupported.
 
-## Y-Fast Trie
-TODO
+
+## Red-Black Tree
+Red-Black Trees are balanced binary search trees that provide dynamic ordered set operations in O(log(N)) time with O(N) space.
+
 ### Interface
-TODO
+The Red-Black Tree provides the following interface:
+```c++
+void insert(key_type key);
+void remove(key_type key);
+
+some_key_type predecessor(key_type key);
+some_key_type successor(key_type key);
+
+some_key_type min(key_type key);
+some_key_type max(key_type key);
+
+bool contains(key_type key);
+
+key_type lower_bound();
+key_type upper_bound();
+```
+
+### Complexity
+| Operation | Time complexity |
+| --- | --- |
+| insert | O(log(N)) |
+| remove | O(log(N)) |
+| split | O(Nlog(N)) |
+| merge | O(Nlog(N)) |
+| median | O(Nlog(N)) |
+| predecessor | O(log(N)) |
+| successor | O(log(N)) |
+| min | O(log(N)) |
+| max | O(log(N)) |
+| contains | O(1) |
+| lower_bound | O(1) |
+| upper_bound | O(1) |
+
 ### Example
 TODO
 
 ## X-Fast Trie
-TODO
+X-Fast Tries are bitwise tries that implement ordered set operations in O(log(log(M))) time and dynamic set operations in O(log(M)) time in O(N) space.
+
 ### Interface
-TODO
+The X-Fast Trie provides the following interface:
+```c++
+void insert(key_type key);
+void remove(key_type key);
+
+some_key_type predecessor(key_type key);
+some_key_type successor(key_type key);
+
+some_key_type min(key_type key);
+some_key_type max(key_type key);
+
+bool contains(key_type key);
+
+key_type lower_bound();
+key_type upper_bound();
+```
+
+### Complexity
+| Operation | Time complexity |
+| --- | --- |
+| insert | O(log(M)) |
+| remove | O(log(M)) |
+| predecessor | O(log(log(M))) |
+| successor | O(log(log(M))) |
+| min | O(log(log(M))) |
+| max | O(log(log(M))) |
+| contains | O(1) |
+| lower_bound | O(1) |
+| upper_bound | O(1) |
+
 ### Example
 TODO
 
-## Red-Black Tree
-TODO
+
+## Y-Fast Trie
+Y-Fast Tries are bitwise tries that implement dynamic ordered set operations in O(log(log(M))) time in O(N) space.
+
 ### Interface
-TODO
+The Y-Fast Trie provides the following interface:
+```c++
+void insert(key_type key);
+void remove(key_type key);
+
+some_key_type predecessor(key_type key);
+some_key_type successor(key_type key);
+
+some_key_type min(key_type key);
+some_key_type max(key_type key);
+
+bool contains(key_type key);
+
+key_type lower_bound();
+key_type upper_bound();
+```
+
+### Complexity
+| Operation | Time complexity |
+| --- | --- |
+| insert | O(log(log(M))) |
+| remove | O(log(log(M))) |
+| predecessor | O(log(log(M))) |
+| successor | O(log(log(M))) |
+| min | O(log(log(M))) |
+| max | O(log(log(M))) |
+| contains | O(1) |
+| lower_bound | O(1) |
+| upper_bound | O(1) |
+
 ### Example
 TODO
