@@ -472,7 +472,7 @@ public:
 	 * @brief Destroy the XFastTrie object.
 	 * 
 	 */
-	~XFastTrie() {
+	virtual ~XFastTrie() {
 		for (auto level : lss_)
 			for (auto key_and_node : level)
 				delete key_and_node.second;
