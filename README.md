@@ -7,7 +7,8 @@ A C++ implementation of a Y-Fast Trie.
 
 **Do not use in production code!!!** 
 
-Check out https://github.com/pdinklag/tdc/tree/sea21-predecessor for a quality implementation instead.
+Check out https://github.com/pdinklag/tdc/tree/sea21-predecessor and the paper "Engineering Predecessor Data Structures for
+Dynamic Integer Sets" for a quality implementation instead.
 
 ## Overview
 This library implements the following data structures:  
@@ -152,13 +153,12 @@ key_type upper_bound();
 ```
 
 ### Complexity
+The Red-Black Tree methods run in the following time complexities where N is the number of keys.
+
 | Operation | Time complexity |
 | --- | --- |
 | insert | O(log(N)) |
 | remove | O(log(N)) |
-| split | O(Nlog(N)) |
-| merge | O(Nlog(N)) |
-| median | O(Nlog(N)) |
 | predecessor | O(log(N)) |
 | successor | O(log(N)) |
 | min | O(log(N)) |
@@ -192,6 +192,8 @@ key_type upper_bound();
 ```
 
 ### Complexity
+The X-Fast Trie methods run in the following time complexities where M is the size of universe.
+
 | Operation | Time complexity |
 | --- | --- |
 | insert | O(log(M)) |
@@ -230,6 +232,8 @@ key_type upper_bound();
 ```
 
 ### Complexity
+The Y-Fast Trie methods run in the following time complexities where M is the size of universe.
+
 | Operation | Time complexity |
 | --- | --- |
 | insert | O(log(log(M))) |
