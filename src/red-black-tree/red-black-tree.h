@@ -14,7 +14,7 @@ class RedBlackTree {
     friend Node<T>;
 public:
 	RedBlackTree();
-    ~RedBlackTree();
+    virtual ~RedBlackTree();
 	Node<T>* rotate(Node<T>* root, bool side);
 	Node<T>* left_rotate(Node<T>* root);
 	Node<T>* right_rotate(Node<T>* root);
