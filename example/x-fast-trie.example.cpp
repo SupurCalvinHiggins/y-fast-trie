@@ -1,4 +1,4 @@
-#include "x-fast-trie.h"
+#include "../src/x-fast-trie/x-fast-trie.h"
 #include <iostream>
 #include <cstdint>
 
