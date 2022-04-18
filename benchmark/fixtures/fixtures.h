@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "base/constants.h"
 #include "contains-fixture.h"
 #include "predecessor-fixture.h"
 #include "successor-fixture.h"
@@ -8,12 +9,8 @@
 #include "insert-fixture.h"
 #include "remove-fixture.h"
 
-constexpr uint64_t RANGE_MULTIPLER   = (1 << 4);
-constexpr uint64_t RANGE_LOWER_BOUND = (1 << 4);
-constexpr uint64_t RANGE_UPPER_BOUND = (1 << 16);
-
 #define DEFINE_BENCHMARK_HELPER(OBJ_TYPE, KEY_TYPE, FIXTURE_NAME, METHOD_NAME) \
-BENCHMARK_TEMPLATE_DEFINE_F(FIXTURE_NAME, METHOD_NAME ## _ ## KEY_TYPE, OBJ_TYPE<KEY_TYPE>, KEY_TYPE) (benchmark::State& state) { \
+BENCHMARK_TEMPLATE_DEFINE_F(FIXTURE_NAME, METHOD_NAME ## _ ## KEY_TYPE, OBJ_TYPE<KEY_TYPE>) (benchmark::State& state) { \
 	FIXTURE_NAME::METHOD_NAME(state); \
 } \
 BENCHMARK_REGISTER_F(FIXTURE_NAME, METHOD_NAME ## _ ## KEY_TYPE)->RangeMultiplier(RANGE_MULTIPLER)->Range(RANGE_LOWER_BOUND, RANGE_UPPER_BOUND);

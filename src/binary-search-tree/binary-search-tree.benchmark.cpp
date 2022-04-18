@@ -1,6 +1,7 @@
 #include "binary-search-tree.h"
 #include <cstdint>
 #include <benchmark/benchmark.h>
+#include <chrono>
 
 template <typename T>
 class BinarySearchTreeFixture: public benchmark::Fixture {
@@ -77,109 +78,109 @@ protected:
 	BinarySearchTree<T> tree;
 };
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint64_t, uint64_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_insert(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint64_t, uint64_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_insert(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint32_t, uint32_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_insert(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint32_t, uint32_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_insert(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint16_t, uint16_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_insert(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint16_t, uint16_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_insert(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint8_t, uint8_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_insert(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint8_t, uint8_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_insert(state);
+// }
 
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_insert_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint64_t, uint64_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_remove(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint64_t, uint64_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_remove(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint32_t, uint32_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_remove(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint32_t, uint32_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_remove(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint16_t, uint16_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_remove(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint16_t, uint16_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_remove(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint8_t, uint8_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_remove(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint8_t, uint8_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_remove(state);
+// }
 
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_remove_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint64_t, uint64_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_predecessor(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint64_t, uint64_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_predecessor(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint32_t, uint32_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_predecessor(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint32_t, uint32_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_predecessor(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint16_t, uint16_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_predecessor(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint16_t, uint16_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_predecessor(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint8_t, uint8_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_predecessor(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint8_t, uint8_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_predecessor(state);
+// }
 
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_predecessor_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint64_t, uint64_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_successor(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint64_t, uint64_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_successor(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint32_t, uint32_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_successor(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint32_t, uint32_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_successor(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint16_t, uint16_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_successor(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint16_t, uint16_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_successor(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint8_t, uint8_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_successor(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint8_t, uint8_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_successor(state);
+// }
 
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_successor_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint64_t, uint64_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_contains(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint64_t, uint64_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_contains(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint32_t, uint32_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_contains(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint32_t, uint32_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_contains(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint16_t, uint16_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_contains(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint16_t, uint16_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_contains(state);
+// }
 
-BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint8_t, uint8_t) (benchmark::State& state) {
-	BinarySearchTreeFixture::BM_BinarySearchTree_contains(state);
-}
+// BENCHMARK_TEMPLATE_DEFINE_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint8_t, uint8_t) (benchmark::State& state) {
+// 	BinarySearchTreeFixture::BM_BinarySearchTree_contains(state);
+// }
 
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
-BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint64_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint32_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint16_t)->RangeMultiplier(16)->Range(1, 1<<16);
+// BENCHMARK_REGISTER_F(BinarySearchTreeFixture, BM_BinarySearchTree_contains_uint8_t)->RangeMultiplier(16)->Range(1, 1<<16);
 
-BENCHMARK_MAIN();
+// BENCHMARK_MAIN();

@@ -1,5 +1,5 @@
-#include "../base.h"
+#include "../fixtures/fixtures.h"
 #include "../../src/red-black-tree/red-black-tree.h"
 
-REGISTER_DOSPQ_TEST_SUITE(RedBlackTree);
+DEFINE_MAX_TESTS(RedBlackTree);
 TEST_MAIN();

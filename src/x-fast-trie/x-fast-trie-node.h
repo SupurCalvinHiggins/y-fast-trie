@@ -1,5 +1,6 @@
 #pragma once
 #include "../constants.h"
+#include "../augmented-pointer/augmented-pointer.h"
 #include <cstdint>
 #include <assert.h>
 #include <type_traits>
@@ -18,71 +19,13 @@ public:
 private:
 	using node_type = XFastTrieNode<key_type>;
 	using node_ptr = node_type*;
-
-private:
-
-	// Mask that excludes the control bits of a pointer.
-	static constexpr uintptr_t ptr_mask_ = ~static_cast<uintptr_t>(1);
-
-	// Mask that excludes the pointer bits of a pointer.
-	static constexpr uintptr_t bit_mask_ = static_cast<uintptr_t>(1);
+	using aug_ptr = AugmentedPointer<node_ptr, 1>;
 
 private:
 	key_type key_;
 
-	node_ptr left_;
-	node_ptr right_;
-
-private:
-	/**
-	 * @brief Convert a node pointer into a clean pointer.
-	 * 
-	 * @param node pointer to convert.
-	 * @return converted node pointer.
-	 */
-	inline node_ptr to_clean_ptr(node_ptr node) const noexcept(NEX) {
-		return reinterpret_cast<node_ptr>(
-			reinterpret_cast<uintptr_t>(node) & ptr_mask_
-		);
-	}
-
-	/**
-	 * @brief Check if a node pointer is a clean pointer.
-	 * 
-	 * @param node pointer to check.
-	 * @return true if the node pointer is a clean pointer.
-	 * @return false if the node pointer is not a clean pointer.
-	 */
-	inline bool is_clean_ptr(node_ptr node) const noexcept(NEX) {
-		return !reinterpret_cast<node_ptr>(
-			reinterpret_cast<uintptr_t>(node) & bit_mask_
-		);
-	}
-
-	/**
-	 * @brief Convert a node pointer into a skip link.
-	 * 
-	 * @param node pointer to convert.
-	 * @return converted node pointer.
-	 */
-	inline node_ptr to_skip_link(node_ptr node) const noexcept(NEX) {
-		return reinterpret_cast<node_ptr>(
-			reinterpret_cast<uintptr_t>(node) ^ bit_mask_
-		);
-	}
-
-	/**
-	 * @brief Check if a node pointer is a skip link.
-	 * 
-	 * @param node pointer to check.
-	 * @return true if the node pointer is a skip link.
-	 * @return false if the node pointer is not a skip link.
-	 */
-	inline bool is_skip_link(node_ptr node) const noexcept(NEX) {
-		return reinterpret_cast<node_ptr>(
-			reinterpret_cast<uintptr_t>(node) & bit_mask_
-		);
-	}
+	aug_ptr left_;
+	aug_ptr right_;
 
 public:
 	/**
@@ -110,7 +53,7 @@ public:
 	 * @return pointer to the left child. 
 	 */
 	inline node_ptr get_left() const noexcept(NEX) {
-		return to_clean_ptr(left_);
+		return left_.get_ptr();
 	}
 
 	/**
@@ -119,7 +62,7 @@ public:
 	 * @return pointer to the right child. 
 	 */
 	inline node_ptr get_right() const noexcept(NEX) {
-		return to_clean_ptr(right_);
+		return right_.get_ptr();
 	}
 
 	/**
@@ -128,8 +71,7 @@ public:
 	 * @param left is the new left child.
 	 */
 	inline void set_left(node_ptr left) noexcept(NEX) {
-		assert(is_clean_ptr(left));
-		left_ = left;
+		left_.set_ptr(left);
 	}
 
 	/**
@@ -138,8 +80,7 @@ public:
 	 * @param right is the new right child.
 	 */
 	inline void set_right(node_ptr right) noexcept(NEX) {
-		assert(is_clean_ptr(right));
-		right_ = right;
+		right_.set_ptr(right);
 	}
 
 	/**
@@ -148,8 +89,8 @@ public:
 	 * @param left is the new left child.
 	 */
 	inline void set_left_skip_link(node_ptr left) noexcept(NEX) {
-		assert(is_clean_ptr(left));
-		left_ = to_skip_link(left);
+		left_.set_ptr(left);
+		left_.set_bit(0);
 	}
 
 	/**
@@ -158,8 +99,8 @@ public:
 	 * @param right is the new right child.
 	 */
 	inline void set_right_skip_link(node_ptr right) noexcept(NEX) {
-		assert(is_clean_ptr(right));
-		right_ = to_skip_link(right);
+		right_.set_ptr(right);
+		right_.set_bit(0);
 	}
 
 	/**
@@ -169,7 +110,7 @@ public:
 	 * @return false if the left child is not a skip link.
 	 */
 	inline bool is_left_skip_link() const noexcept(NEX) {
-		return is_skip_link(left_);
+		return left_.is_set_bit(0);
 	}
 
 	/**
@@ -179,7 +120,7 @@ public:
 	 * @return false if the right child is not a skip link.
 	 */
 	inline bool is_right_skip_link() const noexcept(NEX) {
-		return is_skip_link(right_);
+		return right_.is_set_bit(0);
 	}
 
 	/**

@@ -5,6 +5,7 @@
 
 const size_t KEY_COUNT = 256;
 
+template <class T>
 class BinarySearchTreeTest : public ::testing::Test {
 protected:
 	static void SetUpTestSuite() {
