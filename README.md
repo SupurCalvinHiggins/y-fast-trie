@@ -156,6 +156,9 @@ some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
 
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
+
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
 ```
@@ -174,6 +177,8 @@ The Red-Black Tree methods run in the following time complexities where N is the
 | min | O(log(N)) |
 | max | O(log(N)) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
@@ -250,6 +255,9 @@ some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
 
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
+
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
 ```
@@ -269,6 +277,8 @@ The X-Fast Trie methods run in the following time complexities where M is the si
 | min | O(log(log(M))) |
 | max | O(log(log(M))) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
@@ -345,6 +355,9 @@ some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
 
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
+
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
 ```
@@ -363,6 +376,8 @@ The Y-Fast Trie methods run in the following time complexities where M is the si
 | min | O(log(log(M))) |
 | max | O(log(log(M))) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
