@@ -12,9 +12,10 @@ Dynamic Integer Sets" for a quality implementation instead.
 
 ## Overview
 This library implements the following data structures:  
-1. Y-Fast Trie  
+1. Red-Black Tree   
 2. X-Fast Trie  
-3. Red-Black Tree  
+3. Y-Fast Trie
+4. Augmented Pointer
 
 ## Installation
 
@@ -416,4 +417,67 @@ The successor of 10 is 11.
 The predecessor of 10 is 7.
 Does the successor of 16 exist? 0.
 Does the predecessor of 7 exist? 0.
+```
+
+## Augmented Pointer
+The AugmentedPointer class allows bit packing into aligned pointers.
+
+### Interface
+
+```c++
+void set_ptr(ptr_type ptr); /* set the raw pointer */
+void get_ptr(ptr_type ptr); /* get the raw pointer */
+
+void set_bit(uintptr_t bit);   /* set packed bit   */
+void unset_bit(uintptr_t bit); /* unset packed bit */
+
+bool is_set_bit(uintptr_t bit); /* check if packed bit is set */
+```
+
+### Complexity
+
+| Operation | Time complexity |
+| --- | --- |
+| set_ptr | O(1) |
+| get_ptr | O(1) |
+| set_bit | O(1) |
+| unset_bit | O(1) |
+| is_set_bit | O(1) |
+
+### Example
+
+Sample Program:
+```c++
+#include "../src/augmented-pointer/augmented-pointer.h"
+#include <iostream>
+
+int main() {
+    int val = 9;
+    AugmentedPointer<int*, 2> aug_ptr(&val);
+
+    aug_ptr.set_bit(0);
+    if (aug_ptr.is_set_bit(0))
+        std::cout << "The 0th bit is set." << std::endl;
+
+    aug_ptr.unset_bit(0);
+    if (aug_ptr.is_set_bit(0))
+        std::cout << "The 0th bit is not set." << std::endl;
+    
+    aug_ptr.set_bit(1);
+    if (aug_ptr.get_ptr() == &val)
+        std::cout << "get_ptr returns the pointer without the data bits." << std::endl;
+
+    int second_val = 10;
+    aug_ptr.set_ptr(&second_val);
+    if (!aug_ptr.is_set_bit(1))
+        std::cout << "Resetting the raw pointer clears the data bits." << std::endl;
+}
+```
+
+Sample Output:
+```
+The 0th bit is set.
+The 0th bit is not set.
+get_ptr returns the pointer without the data bits.
+Resetting the raw pointer clears the data bits.
 ```

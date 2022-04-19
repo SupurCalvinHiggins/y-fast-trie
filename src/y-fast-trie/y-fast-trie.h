@@ -12,8 +12,9 @@
  * @brief Data structure for fast dynamic ordered set operations on a bounded universe.
  * 
  * @tparam Key_ is the key type.
+ * @tparam Bucket_ is the bucket type.
  */
-template <typename Key_>
+template <typename Key_, typename Bucket_ = RedBlackTree<Key_>>
 class YFastTrie {
 public:
 	using key_type = Key_;
@@ -26,7 +27,7 @@ private:
 	using index_type = XFastTrie<key_type>;
 	using node_ptr = typename index_type::node_ptr;
 
-	using partition_type = RedBlackTree<key_type>;
+	using partition_type = Bucket_;
 	using partition_ptr = partition_type*;
 	using partition_and_node_ptr_pair = std::pair<partition_ptr, node_ptr>;
 

@@ -479,5 +479,5 @@ public:
 	}
 
 public:
-	template <typename> friend class YFastTrie;
+	template <typename, typename> friend class YFastTrie;
 };
