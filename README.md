@@ -12,9 +12,10 @@ Dynamic Integer Sets" for a quality implementation instead.
 
 ## Overview
 This library implements the following data structures:  
-1. Y-Fast Trie  
+1. Red-Black Tree   
 2. X-Fast Trie  
-3. Red-Black Tree  
+3. Y-Fast Trie
+4. Augmented Pointer
 
 ## Installation
 
@@ -32,11 +33,14 @@ sudo ./install_dependencies.sh
 ### MacOS and Windows
 On MacOS and Windows, ensure that the following dependencies are installed:
 1. python3
-2. python3-pip
+2. pip
 3. GCC
 4. termcolor
 5. Google Test
 6. Google Benchmark
+7. SFML
+8. dot
+9. cpupower
 
 ### Verification
 To ensure the library functions, execute
@@ -77,7 +81,7 @@ python3 run.py <path1> <path2> ...
 ```
 
 ### Tweaking Tests
-Certain constants are set in test/base/constants.h. See the file for more details.
+Certain constants are set in test/fixtures/base/constants.h. See the file for more details.
 
 ### Adding Tests
 Test fixture implementations are stored in test/fixtures and come with several builtin tests. These can be accessed by including test/fixtures/fixtures.h and defining the appropriate test fixture. For example, to add insertion tests in test/my-data-structure write
@@ -119,7 +123,7 @@ python3 run.py <path1> <path2> ...
 ```
 
 ### Tweaking Benchmarks
-Certain constants are set in benchmark/base/constants.h. See the file for more details.
+Certain constants are set in benchmark/fixtures/base/constants.h. See the file for more details.
 
 ### Adding Benchmarks
 Benchmark fixture implementations are stored in benchmark/fixtures and come with several builtin benchmarks. These can be accessed by including benchmark/fixtures/fixtures.h and defining the appropriate benchmark fixture. For example, to add insertion benchmarks in benchmark/my-data-structure write
@@ -152,6 +156,9 @@ some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
 
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
+
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
 ```
@@ -170,6 +177,8 @@ The Red-Black Tree methods run in the following time complexities where N is the
 | min | O(log(N)) |
 | max | O(log(N)) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
@@ -246,6 +255,9 @@ some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
 
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
+
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
 ```
@@ -265,6 +277,8 @@ The X-Fast Trie methods run in the following time complexities where M is the si
 | min | O(log(log(M))) |
 | max | O(log(log(M))) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
@@ -341,6 +355,9 @@ some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
 
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
+
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
 ```
@@ -359,6 +376,8 @@ The Y-Fast Trie methods run in the following time complexities where M is the si
 | min | O(log(log(M))) |
 | max | O(log(log(M))) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
@@ -416,4 +435,67 @@ The successor of 10 is 11.
 The predecessor of 10 is 7.
 Does the successor of 16 exist? 0.
 Does the predecessor of 7 exist? 0.
+```
+
+## Augmented Pointer
+The AugmentedPointer class allows bit packing into aligned pointers.
+
+### Interface
+
+```c++
+void set_ptr(ptr_type ptr); /* set the raw pointer */
+void get_ptr(ptr_type ptr); /* get the raw pointer */
+
+void set_bit(uintptr_t bit);   /* set packed bit   */
+void unset_bit(uintptr_t bit); /* unset packed bit */
+
+bool is_set_bit(uintptr_t bit); /* check if packed bit is set */
+```
+
+### Complexity
+
+| Operation | Time complexity |
+| --- | --- |
+| set_ptr | O(1) |
+| get_ptr | O(1) |
+| set_bit | O(1) |
+| unset_bit | O(1) |
+| is_set_bit | O(1) |
+
+### Example
+
+Sample Program:
+```c++
+#include "../src/augmented-pointer/augmented-pointer.h"
+#include <iostream>
+
+int main() {
+    int val = 9;
+    AugmentedPointer<int*, 2> aug_ptr(&val);
+
+    aug_ptr.set_bit(0);
+    if (aug_ptr.is_set_bit(0))
+        std::cout << "The 0th bit is set." << std::endl;
+
+    aug_ptr.unset_bit(0);
+    if (aug_ptr.is_set_bit(0))
+        std::cout << "The 0th bit is not set." << std::endl;
+    
+    aug_ptr.set_bit(1);
+    if (aug_ptr.get_ptr() == &val)
+        std::cout << "get_ptr returns the pointer without the data bits." << std::endl;
+
+    int second_val = 10;
+    aug_ptr.set_ptr(&second_val);
+    if (!aug_ptr.is_set_bit(1))
+        std::cout << "Resetting the raw pointer clears the data bits." << std::endl;
+}
+```
+
+Sample Output:
+```
+The 0th bit is set.
+The 0th bit is not set.
+get_ptr returns the pointer without the data bits.
+Resetting the raw pointer clears the data bits.
 ```

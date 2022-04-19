@@ -1,9 +1,10 @@
 #include "../../../src/y-fast-trie/y-fast-trie.h"
+#include "../red-black-tree/red-black-tree-dot.h"
 #include <string>
 #include <sstream>
 
 template <typename Key_>
-class YFastTrieDot : public YFastTrie<Key_> {
+class YFastTrieDot : public YFastTrie<Key_, RedBlackTreeDot<Key_>> {
 private:
     std::string ptr_to_str(void* ptr) const noexcept {
         std::ostringstream ss;

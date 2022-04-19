@@ -35,7 +35,7 @@ private:
 
 private:
     /**
-     * @brief Tests if a pointer is aligned enough.15
+     * @brief Tests if a pointer is aligned enough.
      * 
      * @param pointer to test.
      * @return true if the pointer is aligned enough.
