@@ -139,6 +139,7 @@ public:
                 else {
                     node_ptr succ = node->children_[1];
                     while (succ->children_[0] != nullptr) {
+                        MARK(succ);
                         succ = succ->children_[0];
                     }
                     node->key_ = succ->key_;
