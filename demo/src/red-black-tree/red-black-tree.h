@@ -9,7 +9,6 @@
 #pragma once
 #include "red-black-tree-node.h"
 #include <cassert>
-#include <filesystem>
 #include <ctime>
 #include <array>
 #include <vector>
@@ -44,7 +43,7 @@ public:
 public:
 
     /**
-     * @brief Construct a new RedBlackTree object
+     * @brief ruct a new RedBlackTree object
      * 
      */
 	RedBlackTree() {
@@ -52,6 +51,7 @@ public:
         max_ = nullptr;
         min_ = nullptr;
         size_ = 0;
+        std::vector<node_ptr> node_path_;
     };
 
     /**
@@ -73,6 +73,7 @@ public:
     void insert(key_type key) {
         //See insert by node ptr for the implementation
         insert(new Node<key_type>(key,1));
+        CLEAN();
     };
 
     /**
@@ -150,7 +151,6 @@ public:
                     parent = succ->parent_;
                     color = succ->color_;
                     delete succ;
-                    
                 }
             }
             //Maintains the RedBlackTree invariant
@@ -194,6 +194,7 @@ public:
             }
         }
         size_--;
+        CLEAN();
     };
 
     /**
@@ -238,6 +239,7 @@ private:
             
             node_ptr target_node = root_;
             while (target_node != nullptr && target_node->key_ != key) {
+                MARK(target_node);
                 bool dir = key > target_node->key_;
                 if (target_node->children_[dir] == nullptr) {
                     target_node->children_[dir] = node;
@@ -263,6 +265,20 @@ private:
 
 //Visualization
 public:
+    void MARK(node_ptr node){
+        node_path_.push_back(node);
+        UPDATE_GUI();
+    }
+
+    void UPDATE_GUI()  noexcept{
+        std::cout << to_dot() << "\n\n\n\n";
+    };
+
+    void CLEAN()  noexcept{
+        node_path_.clear();
+        UPDATE_GUI();
+    }
+
     /**
      * @brief Prints out a text based representation of the tree by calling the recursive function to do so.
      * Each node has its key, color and memory address shown.
@@ -293,7 +309,7 @@ public:
      * 
      * @param out_fpath The full path of the created destination file, which includes the directory and the file name.
      */
-    std::string to_dot() const noexcept {
+    std::string to_dot()  noexcept {
         std::string text;
         if (!root_){
             text += "digraph RBTree0x00000000 {\n\n\n}";
@@ -307,7 +323,18 @@ public:
             std::string colors[2] = {"black","red"};
 
             text += "digraph RBTree" + root_ptr + " {\n\n";
-            text += "\tn" + root_ptr + " [label=\"" + std::to_string(root_->key_) + "\", color=black];\n";
+            bool do_color = false;
+            for (int i = 0; i < node_path_.size(); i++){
+                if (node_path_[i] == root_){
+                    do_color = true;
+                }
+            }
+            if (do_color){
+                text += "\tn" + root_ptr + " [label=\"" + std::to_string(root_->key_) + "\", color=black, fillcolor=\"#90ee90\", style=filled];\n";
+            }
+            else{
+                text += "\tn" + root_ptr + " [label=\"" + std::to_string(root_->key_) + "\", color=black, fillcolor=\"#bebebe\", style=filled];\n";
+            }
             //Most of this method is done in a recursive submethod, so see that for details on the implementation.
             text = write_dot(root_,text);
             text += "\n}";
@@ -346,6 +373,7 @@ public:
     node_ptr find(key_type key){
         auto target_node = root_;
         while (target_node != nullptr && target_node->key_ != key) {
+            MARK(target_node);
             target_node = target_node->children_[key > target_node->key_];
         }
         return target_node;
@@ -378,6 +406,7 @@ public:
         //The predecessor will be the same for this target node as the key.
         node_ptr target = root_;
         while (target->children_[key > target->key_] != nullptr) {
+            MARK(target);
             target = target->children_[key > target->key_];
             //If the input key is in the tree, it used that as the target instead.
             if (target->key_ == key) break;
@@ -391,8 +420,10 @@ public:
 
         //Case 1: Target node has left child, so find rightmost node from the subtree of the target node's left child
         if(pred){
+            MARK(pred);
             while(pred->children_[1]) {
                 pred = pred->children_[1];
+                MARK(pred);
             }
             return some_key_type(pred->key_);
         }
@@ -401,11 +432,12 @@ public:
         auto parent = target->parent_;
 
         while (parent) {
+            MARK(parent);
             if (target == parent->children_[1]) break;
             target = parent;
             parent = parent->parent_;
         }
-
+        CLEAN();
         if (parent) return some_key_type(parent->key_);
     
         return std::nullopt;
@@ -477,6 +509,7 @@ public:
         //The successor will be the same for this target node as the key.
         auto target = root_;
         while (target->children_[key > target->key_] != nullptr) {
+            MARK(target);
             target = target->children_[key > target->key_];
             //If the input key is in the tree, it used that as the target instead.
             if (target->key_ == key) break;
@@ -490,8 +523,10 @@ public:
 
         //Case 1: Target node has right child, so find leftmost node from the subtree of the target node's right child
         if(pred){
+            MARK(pred);
             while(pred->children_[0]) {
                 pred = pred->children_[0];
+                MARK(pred);
             }
             return some_key_type(pred->key_);
         }
@@ -500,10 +535,13 @@ public:
         auto parent = target->parent_;
 
         while (parent) {
+            MARK(pred);
             if (target == parent->children_[0]) break;
             target = parent;
             parent = parent->parent_;
         }
+
+        CLEAN();
 
         if (parent) return some_key_type(parent->key_);
     
@@ -658,8 +696,9 @@ private:
 	size_type size_;
     node_ptr max_;
     node_ptr min_;
+    std::vector<node_ptr> node_path_;
 
-//Class constants
+//Class ants
 private:
     //The maximum value for the type that Key_ is using.
     static constexpr key_type upper_bound_ = std::numeric_limits<key_type>::max();
@@ -871,7 +910,7 @@ private:
      * @param text The return text as it is during the current recursive call.
      * @return std::string 
      */
-    std::string write_dot(node_ptr node, std::string text = "") const noexcept {
+    std::string write_dot(node_ptr node, std::string text = "")  noexcept {
         if (node){
             //Gets the text representation of the node's memory address
             std::stringstream sstream;
@@ -882,13 +921,15 @@ private:
 
             //For converting color booleans to color words.
             std::string colors[2] = {"black","red"};
+            std::string fill_colors[3] = {"\"#bebebe\"","\"#ff6a6a\"","\"#90ee90\""};
 
             if (node->children_[0]||node->children_[1]){
                 //Director is the string that represents the relationship to the node's children.
                 std::string director = "";
                 std::string left_id = "";
                 std::string right_id = "";
-
+                char left_color,right_color;
+                
                 //If there's a left child, make the definition for the left child, and add it to the parent's relationship.
                 if(node->children_[0]) {
                     
@@ -896,8 +937,16 @@ private:
                     left_id = 'n' + sstream.str();
                     sstream.str("");
 
+                    left_color = node->children_[0]->color_;
+                    for (int i = 0; i < node_path_.size(); i++){
+                        if (node_path_[i] == node->children_[0]){
+                            left_color = 2;
+                        }
+                    }
+
                     //Format: (tab) (left node id) [label="(left node's key)", color=(left node's color)];
-                    text += '\t' + left_id + " [label=\"" + std::to_string(node->children_[0]->key_) +  + "\", color=" + colors[node->children_[0]->color_] + "];\n";
+
+                    text += '\t' + left_id + " [label=\"" + std::to_string(node->children_[0]->key_)  + "\", color=" + colors[node->children_[0]->color_] +  ", fillcolor=" + fill_colors[left_color] + ", style=filled];\n";
                     director += " -> {" + left_id;
 
                     //If there's also a right child, define it and add it to the parent's relationship as well.
@@ -905,9 +954,16 @@ private:
                         sstream << node->children_[1];
                         right_id = 'n' + sstream.str();
                         sstream.str("");
+
+                        right_color = node->children_[1]->color_;
+                        for (int i = 0; i < node_path_.size(); i++){
+                            if (node_path_[i] == node->children_[1]){
+                                right_color = 2;
+                            }
+                        }
                         
                         //Format: (tab) (right node id) [label="(right node's key)", color=(right node's color)];
-                        text += '\t' + right_id + " [label=\"" + std::to_string(node->children_[1]->key_) + "\", color=" + colors[node->children_[1]->color_] + "];\n";
+                        text += '\t' + right_id + " [label=\"" + std::to_string(node->children_[1]->key_) + "\", color=" + colors[node->children_[1]->color_] + ", fillcolor=" + fill_colors[right_color] + ", style=filled];\n";
                         director += ", " + right_id;
                     }
 
@@ -918,8 +974,15 @@ private:
                     right_id = 'n' + sstream.str();
                     sstream.str("");
 
+                    right_color = node->children_[1]->color_;
+                    for (int i = 0; i < node_path_.size(); i++){
+                        if (node_path_[i] == node->children_[1]){
+                            right_color = 2;
+                        }
+                    }
+
                     //Format: (tab) (right node id) [label="(right node's key)", color=(right node's color)];
-                    text += '\t' + right_id + " [label=\"" + std::to_string(node->children_[1]->key_) + "\", color=" + colors[node->children_[1]->color_] + "];\n";
+                    text += '\t' + right_id + " [label=\"" + std::to_string(node->children_[1]->key_) + "\", color=" + colors[node->children_[1]->color_] + ", fillcolor=" + fill_colors[right_color] + ", style=filled];\n";
                     director += " -> {"+ right_id;
                 }
                 text += '\t' + node_id + director + "};\n";
