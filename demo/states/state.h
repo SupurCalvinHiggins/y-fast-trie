@@ -47,7 +47,8 @@ public:
     void exitState();
     void inConsoleState();
     void outConsoleState();
-
+    
+    virtual std::string getStateID() = 0;
     virtual void updateMousePositions();
     virtual void updateKeyTime(const float &dt);
     virtual void updateInput(const float &dt) = 0;

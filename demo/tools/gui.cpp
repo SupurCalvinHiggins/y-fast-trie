@@ -39,7 +39,6 @@ void GUI::Button::setText(const std::string text) {
     this->text.setString(text);
 }
 
-//TODO: Add timer to limit how often buttons can be clicked
 void GUI::Button::update(const sf::Vector2f &mouse_pos) {
 
     // Mouse is not over button

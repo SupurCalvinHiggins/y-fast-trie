@@ -48,6 +48,10 @@ AboutState::~AboutState() {
     }
 }
  
+std::string AboutState::getStateID() {
+    return "ABOUT_STATE";
+}
+
 void AboutState::updateInput(const float &dt) {
 }
 
