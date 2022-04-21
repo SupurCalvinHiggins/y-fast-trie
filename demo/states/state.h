@@ -23,13 +23,16 @@ protected:
     std::map<std::string, int> *valid_keys;
     std::map<std::string, int> key_binds;
     bool exit;
+    bool is_in_console;
+    float key_timer;
+    float key_timer_max;
 
     sf::Vector2i mouse_pos_screen;
     sf::Vector2i mouse_pos_window;
     sf::Vector2f mouse_pos_view;
     
     // Resources
-    std::vector<sf::Texture> textures;
+    //std::map<std::string, sf::Texture> textures;
 
     // Functions
     virtual void initKeyBinds() = 0;
@@ -39,9 +42,14 @@ public:
     virtual ~State();
 
     const bool &getExit() const;
-    virtual void setExit();
-    virtual void exitState() = 0; 
+    const bool getKeyTimer();
+
+    void exitState();
+    void inConsoleState();
+    void outConsoleState();
+
     virtual void updateMousePositions();
+    virtual void updateKeyTime(const float &dt);
     virtual void updateInput(const float &dt) = 0;
     virtual void update(const float &dt) = 0;
     virtual void render(sf::RenderTarget *target = nullptr) = 0;

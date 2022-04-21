@@ -1,8 +1,9 @@
 #pragma once
 
-#include "about-state.h"
+#include "visualizer-state.h"
+#include "../tools/gui.h"
 
-class MainMenuState : public State {
+class AboutState : public State {
 private:
     // Variables
     sf::Texture background_texture;
@@ -11,16 +12,14 @@ private:
 
     std::map<std::string, GUI::Button*> buttons;
 
-    GUI::DropDownList *trie_types_list;
-
     void initBackground();
     void initFonts();
     void initKeyBinds();
     void initButtons();
     
 public:
-    MainMenuState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states);
-    virtual ~MainMenuState();
+    AboutState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states);
+    virtual ~AboutState();
 
     // Functions
     void updateInput(const float &dt);

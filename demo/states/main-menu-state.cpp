@@ -10,8 +10,8 @@ void MainMenuState::initBackground() {
 }
 
 void MainMenuState::initFonts() {
-    if (!this->title_font.loadFromFile("resource/font/Dosis-Medium.ttf"))
-        throw std::runtime_error("Could not load Dosis-Medium.ttf (MainMenuState TITLE)");
+    if (!this->button_font.loadFromFile("resource/font/Dosis-Medium.ttf"))
+        throw std::runtime_error("Could not load Dosis-Medium.ttf (MainMenuState Font)");
 }
 
 void MainMenuState::initKeyBinds() {
@@ -30,9 +30,11 @@ void MainMenuState::initKeyBinds() {
 }
 
 void MainMenuState::initButtons() {
-    this->buttons["ABOUT"] = new Button(320, 840, 250, 50, &this->title_font, "About", sf::Color(70,70,70,200), sf::Color(150, 150, 150, 255), sf::Color(20, 20, 20, 200));
-    
-    this->buttons["EXIT"] = new Button(1350, 840, 250, 50, &this->title_font, "Quit", sf::Color(70,70,70,200), sf::Color::Red, sf::Color::Red);
+    this->buttons["ABOUT"] = new GUI::Button(320.f, 800.f, 150.f, 50.f, &this->button_font, "About", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
+    this->buttons["EXIT"] = new GUI::Button(1450.f, 800.f, 150.f, 50.f, &this->button_font, "Quit", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
+    this->buttons["START"] = new GUI::Button(860.f, 520.f, 150.f, 50.f, &this->button_font, "Generate Tree", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
+
+    //this->trie_types_list = new GUI::DropDownList(860.f, 520.f, 150.f, 50.f, &this->button_font);
 }
 
 MainMenuState::MainMenuState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states) : State(window, valid_keys, states) {
@@ -47,13 +49,8 @@ MainMenuState::~MainMenuState() {
         delete it->second;
     }
 }
-
-void MainMenuState::exitState() {
-    std::cout << "Exiting MainMenuState" << std::endl;
-}
  
 void MainMenuState::updateInput(const float &dt) {
-    this->setExit();
 }
 
 void MainMenuState::updateButtons() {
@@ -62,12 +59,14 @@ void MainMenuState::updateButtons() {
         it.second->update(this->mouse_pos_view);
     }
 
-    if (this->buttons["ABOUT"]->isClicked()) {
+    if (this->buttons["ABOUT"]->isClicked())
+        this->states->push(new AboutState(this->window, this->valid_keys, this->states));
+
+    if (this->buttons["START"]->isClicked())
         this->states->push(new VisualizerState(this->window, this->valid_keys, this->states));
-    }
 
     if (this->buttons["EXIT"]->isClicked())
-        this->exit = true;
+        this->exitState();
 }
 
 void MainMenuState::update(const float &dt) {
@@ -80,7 +79,7 @@ void MainMenuState::update(const float &dt) {
     //std::cout << this->mouse_pos_view.x << " " << this->mouse_pos_view.y << std::endl;
 }
 
-void MainMenuState::renderButtons(sf::RenderTarget *target) {
+void MainMenuState::renderButtons(sf::RenderTarget &target) {
     for (auto &it : this->buttons) {
         it.second->render(target);
     }
@@ -93,16 +92,16 @@ void MainMenuState::render(sf::RenderTarget *target) {
 
     target->draw(this->background);
 
-    this->renderButtons(target);
+    this->renderButtons(*target);
 
     //TODO: Remove this when no longer using (visualizes mouse position next to cursor)
-    /*
+
     sf::Text mouse_text;
     mouse_text.setPosition(this->mouse_pos_view.x, this->mouse_pos_view.y - 30);
-    mouse_text.setFont(this->title_font);
+    mouse_text.setFont(this->button_font);
     mouse_text.setCharacterSize(20);
     mouse_text.setString(std::to_string(this->mouse_pos_view.x) + " " + std::to_string(this->mouse_pos_view.y));
 
     target->draw(mouse_text);
-    */
+
 }
