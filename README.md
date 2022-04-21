@@ -33,11 +33,14 @@ sudo ./install_dependencies.sh
 ### MacOS and Windows
 On MacOS and Windows, ensure that the following dependencies are installed:
 1. python3
-2. python3-pip
+2. pip
 3. GCC
 4. termcolor
 5. Google Test
 6. Google Benchmark
+7. SFML
+8. dot
+9. cpupower
 
 ### Verification
 To ensure the library functions, execute
@@ -78,7 +81,7 @@ python3 run.py <path1> <path2> ...
 ```
 
 ### Tweaking Tests
-Certain constants are set in test/base/constants.h. See the file for more details.
+Certain constants are set in test/fixtures/base/constants.h. See the file for more details.
 
 ### Adding Tests
 Test fixture implementations are stored in test/fixtures and come with several builtin tests. These can be accessed by including test/fixtures/fixtures.h and defining the appropriate test fixture. For example, to add insertion tests in test/my-data-structure write
@@ -120,7 +123,7 @@ python3 run.py <path1> <path2> ...
 ```
 
 ### Tweaking Benchmarks
-Certain constants are set in benchmark/base/constants.h. See the file for more details.
+Certain constants are set in benchmark/fixtures/base/constants.h. See the file for more details.
 
 ### Adding Benchmarks
 Benchmark fixture implementations are stored in benchmark/fixtures and come with several builtin benchmarks. These can be accessed by including benchmark/fixtures/fixtures.h and defining the appropriate benchmark fixture. For example, to add insertion benchmarks in benchmark/my-data-structure write
@@ -153,6 +156,9 @@ some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
 
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
+
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
 ```
@@ -171,6 +177,8 @@ The Red-Black Tree methods run in the following time complexities where N is the
 | min | O(log(N)) |
 | max | O(log(N)) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
@@ -231,7 +239,7 @@ Does the predecessor of 7 exist? 0.
 ```
 
 ## X-Fast Trie
-X-Fast Tries are bitwise tries that implement ordered set operations in O(log(log(M))) time and dynamic set operations in O(log(M)) time in O(N) space.
+X-Fast Tries are bitwise tries that implement ordered set operations in O(log(log(M))) time and dynamic set operations in O(log(M)) time in O(N\*log(M)) space.
 
 ### Interface
 The X-Fast Trie provides the following interface:
@@ -246,6 +254,9 @@ some_key_type min(key_type key); /* minimum key */
 some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
+
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
 
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
@@ -266,6 +277,8 @@ The X-Fast Trie methods run in the following time complexities where M is the si
 | min | O(log(log(M))) |
 | max | O(log(log(M))) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
@@ -342,6 +355,9 @@ some_key_type max(key_type key); /* maximum key */
 
 bool contains(key_type key); /* check containment */
 
+size_type size(); /* size of set    */
+bool empty();     /* check if empty */
+
 key_type lower_bound(); /* minimum possible key */
 key_type upper_bound(); /* maximum possible key */
 ```
@@ -360,6 +376,8 @@ The Y-Fast Trie methods run in the following time complexities where M is the si
 | min | O(log(log(M))) |
 | max | O(log(log(M))) |
 | contains | O(1) |
+| size | O(1) |
+| empty | O(1) |
 | lower_bound | O(1) |
 | upper_bound | O(1) |
 
