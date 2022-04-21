@@ -58,7 +58,7 @@ namespace GUI
         float key_timer_max;
 
     public:
-        DropDownList(float x, float y, float width, float height, sf::Font &font, std::vector<std::string> &button_names);
+        DropDownList(float x, float y, float width, float height, sf::Font &font, std::vector<std::string> button_names);
         ~DropDownList();
 
         const bool getKeyTimer();
