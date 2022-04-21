@@ -388,8 +388,9 @@ public:
      * @return false if the key is not in the tree.
      */
     bool contains(key_type key) {
-        return find(key) != nullptr;
+        bool has = find(key) != nullptr;
         CLEAN();
+        return has;
     };
 
     /**
