@@ -19,6 +19,7 @@
 #include <cmath>
 #include <optional>
 #include <algorithm>
+#include "../../main.h"
 
 template <typename Key_>
 class RedBlackTree {
@@ -388,8 +389,9 @@ public:
      * @return false if the key is not in the tree.
      */
     bool contains(key_type key) {
-        return find(key) != nullptr;
+        bool has = find(key) != nullptr;
         CLEAN();
+        return has;
     };
 
     /**
