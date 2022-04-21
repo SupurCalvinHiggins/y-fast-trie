@@ -184,7 +184,7 @@ public:
 		auto partition_and_node = get_partition_and_node(key);
 		auto partition = partition_and_node.first;
 		auto res = partition != nullptr && partition->contains(key);
-        index_.CLEAN();
+        CLEAN();
 	}
 
 	/**
@@ -229,7 +229,7 @@ public:
 
 		// Compute the predecessor.
 		auto res = partition->predecessor(key);
-        index_.CLEAN();
+        CLEAN();
         return res;
 	}
 
@@ -270,7 +270,7 @@ public:
 
 		// Compute the successor.
 		auto res =  partition->successor(key);
-        index_.CLEAN();
+        CLEAN();
         return res;
 	}
 
@@ -346,7 +346,7 @@ public:
 
     	size_ += 1;
 
-        index_.CLEAN();
+        CLEAN();
 	}
 
 	/**
@@ -442,7 +442,7 @@ public:
 		}
 
 		size_ -= 1;
-        index_.CLEAN();
+        CLEAN();
 	}
 
 private:
@@ -458,6 +458,12 @@ private:
         std::ostringstream ss;
         ss << ptr;
         return "n" + ss.str();
+    }
+
+    void CLEAN() {
+        index_.CLEAN();
+        for (auto& pair : partitions_) 
+            pair.second->CLEAN();
     }
 
 public:
@@ -476,10 +482,18 @@ public:
 			auto partition_output = pair.second->to_dot();
 			partition_output.erase(0, 7);
 			auto found = partition_output.find("n");
-			auto root_str  = partition_output.substr(found, 15);
-			auto index_str = ptr_to_str(index_.lss_.back().at(pair.first));
-			output += index_str + " -> " + root_str + ";\n";
-			output += "subgraph" + partition_output + "\n";
+            try {
+                auto root_str  = partition_output.substr(found, 15);
+                auto index_str = ptr_to_str(index_.lss_.back().at(pair.first));
+                output += index_str + " -> " + root_str + ";\n";
+                output += "subgraph" + partition_output + "\n";
+            } catch(...) { 
+                // FUCK NULL RB_TREES SFJKLDSJKL:LGKSJDKL:GNHKEWkhl;GHEWGHKL:;hgsr
+                // four fucking hours
+                // std::cout << partition_output << std::endl;
+                // assert(false); 
+            }
+			
 		}
 		return output + "}";
 	}
