@@ -388,6 +388,7 @@ public:
      */
     bool contains(key_type key) {
         return find(key) != nullptr;
+        CLEAN();
     };
 
     /**
