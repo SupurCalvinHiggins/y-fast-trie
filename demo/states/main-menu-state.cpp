@@ -34,7 +34,8 @@ void MainMenuState::initButtons() {
     this->buttons["EXIT"] = new GUI::Button(1450.f, 800.f, 150.f, 50.f, &this->button_font, "Quit", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
     this->buttons["START"] = new GUI::Button(860.f, 520.f, 150.f, 50.f, &this->button_font, "Generate Tree", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
 
-    //this->trie_types_list = new GUI::DropDownList(860.f, 520.f, 150.f, 50.f, &this->button_font);
+    std::vector<std::string> drop_down_button_names {"uint8_t", "uint_16t", "uint32_t", "uint64_t"};
+    this->trie_types_list = new GUI::DropDownList(860.f, 400.f, 150.f, 50.f, this->button_font, drop_down_button_names);
 }
 
 MainMenuState::MainMenuState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states) : State(window, valid_keys, states) {
@@ -48,6 +49,8 @@ MainMenuState::~MainMenuState() {
     for (auto it = this->buttons.begin(); it != this->buttons.end(); it++) {
         delete it->second;
     }
+
+    delete this->trie_types_list;
 }
  
 void MainMenuState::updateInput(const float &dt) {
@@ -61,10 +64,8 @@ void MainMenuState::updateButtons() {
 
     if (this->buttons["ABOUT"]->isClicked())
         this->states->push(new AboutState(this->window, this->valid_keys, this->states));
-
     if (this->buttons["START"]->isClicked())
         this->states->push(new VisualizerState(this->window, this->valid_keys, this->states));
-
     if (this->buttons["EXIT"]->isClicked())
         this->exitState();
 }
@@ -74,9 +75,7 @@ void MainMenuState::update(const float &dt) {
     this->updateInput(dt);
 
     this->updateButtons();
-
-    //system("clear");
-    //std::cout << this->mouse_pos_view.x << " " << this->mouse_pos_view.y << std::endl;
+    this->trie_types_list->update(this->mouse_pos_view, dt);
 }
 
 void MainMenuState::renderButtons(sf::RenderTarget &target) {
@@ -93,6 +92,7 @@ void MainMenuState::render(sf::RenderTarget *target) {
     target->draw(this->background);
 
     this->renderButtons(*target);
+    this->trie_types_list->render(*target);
 
     //TODO: Remove this when no longer using (visualizes mouse position next to cursor)
 
