@@ -6,3 +6,6 @@ red-black-tree/main
 .gitignoreow
 compare
 src/unsorted_bucket
+src/red-black-tree/main.cpp
+src/red-black-tree/.vscode/settings.json
+src/red-black-tree/main
