@@ -413,10 +413,14 @@ public:
             MARK(target);
             target = target->children_[key > target->key_];
             //If the input key is in the tree, it used that as the target instead.
-            if (target->key_ == key) break;
+            if (target->key_ == key) {
+                CLEAN();
+                break;
+            }
         }
         
         if (target->key_ < key){
+            CLEAN();
             return some_key_type(target->key_);
         }
 
@@ -429,6 +433,7 @@ public:
                 pred = pred->children_[1];
                 MARK(pred);
             }
+            CLEAN();
             return some_key_type(pred->key_);
         }
         
@@ -516,10 +521,14 @@ public:
             MARK(target);
             target = target->children_[key > target->key_];
             //If the input key is in the tree, it used that as the target instead.
-            if (target->key_ == key) break;
+            if (target->key_ == key) {
+                CLEAN();
+                break;
+            }
         }
         
         if (target->key_ > key){
+            CLEAN();
             return some_key_type(target->key_);
         }
 
@@ -532,6 +541,7 @@ public:
                 pred = pred->children_[0];
                 MARK(pred);
             }
+            CLEAN();
             return some_key_type(pred->key_);
         }
         
