@@ -5,7 +5,6 @@ void VisualizerState::initFonts() {
         throw std::runtime_error("Could not load Dosis-Medium.ttf (VisualizerState Font)");
 }
 
-
 void VisualizerState::initKeyBinds() {
     std::ifstream file("config/visualizer-state-keys.ini");
 
@@ -37,6 +36,10 @@ VisualizerState::~VisualizerState() {
     delete this->console_menu;
 }
 
+std::string VisualizerState::getStateID() {
+    return "VISUALIZER_STATE";
+}
+
 void VisualizerState::updateInput(const float &dt) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("CLOSE"))) && this->getKeyTimer()) {
         if (!this->is_in_console)
@@ -44,10 +47,32 @@ void VisualizerState::updateInput(const float &dt) {
         else
             this->outConsoleState();
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("ENTER_VALUE"))) && this->getKeyTimer())
-        std::cout << "Enter key pressed" << std::endl;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("ENTER_VALUE"))) && this->getKeyTimer()) {
+        yfast.insert(1);
+    }
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("DELETE_CHARACTER"))) && this->getKeyTimer())
         std::cout << "Backspace key pressed" << std::endl;
+}
+
+void VisualizerState::writeFile(const std::string to_dot) {
+    std::ofstream output_file("../resource/image/visualizer.dot");
+    output_file << to_dot;
+    output_file.close();
+}
+
+void VisualizerState::updateBackground() {
+    std::string to_dot = yfast.to_dot();
+    this->writeFile(to_dot);
+    system("dot -Tpng -Gsize=1920,1080\! -Gdpi=1 ../resource/image/visualizer.dot -o ../resource/image/background/visualizer.png");
+
+    this->background.setSize(sf::Vector2f(this->window->getSize().x, this->window->getSize().y));
+    //this->background.setFillColor(sf::Color::White);
+
+    if (!this->background_texture.loadFromFile("../resource/image/background/visualizer.png"))
+        throw std::runtime_error("Could not load Visualizer background texture!");
+    
+    this->background.setTexture(&this->background_texture);
 }
 
 void VisualizerState::updateConsoleButtons() {

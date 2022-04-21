@@ -52,6 +52,10 @@ MainMenuState::~MainMenuState() {
 
     delete this->trie_types_list;
 }
+
+std::string MainMenuState::getStateID() {
+    return "MAIN_MENU";
+}
  
 void MainMenuState::updateInput(const float &dt) {
 }
