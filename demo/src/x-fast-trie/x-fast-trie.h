@@ -8,6 +8,11 @@
 #include <type_traits>
 #include <sstream>
 #include <string>
+#include <iostream>
+#include <algorithm>
+#include "../../main.h"
+
+void UPDATE_GUI();
 
 /**
  * @brief Data structure for fast dynamic ordered set operations on a bounded universe.
@@ -62,7 +67,7 @@ private:
 	 * @param level to get the prefix on.
 	 * @return the prefix of the key on the level.
 	 */
-	inline key_type get_prefix(key_type key, size_type level_index) const noexcept(NEX) {
+	inline key_type get_prefix(key_type key, size_type level_index)  noexcept(NEX) {
 		assert((level_index >= 0) && (level_index <= bit_length_));
 		if (level_index == 0) return 0;
 		return key >> (bit_length_ - level_index);
@@ -73,7 +78,7 @@ private:
 	 * 
 	 * @return the direction from the prefix.
 	 */
-	inline bool get_direction(key_type prefix) const noexcept {
+	inline bool get_direction(key_type prefix)  noexcept {
 		return prefix & 1;
 	}
 
@@ -83,7 +88,7 @@ private:
 	 * @param key to find the longest matching prefix with.
 	 * @return level index of the longest matching prefix.
 	 */
-	size_type get_level_index_of_longest_matching_prefix(key_type key) const noexcept(NEX) {
+	size_type get_level_index_of_longest_matching_prefix(key_type key)  noexcept(NEX) {
 		size_type low_level = 0;
 		size_type high_level = bit_length_;
 
@@ -92,8 +97,8 @@ private:
 		while (low_level <= high_level) {
 			size_type mid_level = (low_level + high_level) >> 1;
 			auto prefix = get_prefix(key, mid_level);
-			if (lss_.at(mid_level).contains(prefix)) 
-				low_level = mid_level + 1;
+			if (lss_.at(mid_level).contains(prefix))
+                low_level = mid_level + 1;
 			else 
 				high_level = mid_level - 1;
 		}
@@ -107,14 +112,16 @@ private:
 	 * @param key to get the closest leaf to.
 	 * @return closest leaf node to the key.
 	 */
-	node_ptr get_closest_leaf(key_type key) const noexcept(NEX) {
+	node_ptr get_closest_leaf(key_type key)  noexcept(NEX) {
 		// If the key is in the bottom layer, look up the node and return.
-		if (contains(key)) return lss_.at(bit_length_).at(key);
+		if (contains(key)) 
+            return lss_.at(bit_length_).at(key);
 
 		// Otherwise, search for the longest matching prefix node.
 		auto level_index = get_level_index_of_longest_matching_prefix(key);
 		auto prefix = get_prefix(key, level_index);
 		auto node = lss_.at(level_index).at(prefix);
+        MARK_AND_UPDATE(node, "1");
 
 		// Get the direction of the child.
 		auto child_prefix = get_prefix(key, level_index + 1);
@@ -146,11 +153,14 @@ private:
 	 * @param key to get the predecessor node of.
 	 * @return the predecessor node.
 	 */
-	node_ptr get_predecessor_node(key_type key) const noexcept(NEX) {
+	node_ptr get_predecessor_node(key_type key)  noexcept(NEX) {
 		if (empty()) return nullptr;
 		auto node = get_closest_leaf(key);
-		if (key <= node->key())
+		if (key <= node->key()) {
+            MARK_AND_UPDATE(node->get_left(), "2");
 			return node->get_left();
+        }
+        MARK_AND_UPDATE(node, "3");
 		return node;
 	}
 
@@ -160,11 +170,14 @@ private:
 	 * @param key to get the successor node of.
 	 * @return the successor node.
 	 */
-	node_ptr get_successor_node(key_type key) const noexcept(NEX) {
+	node_ptr get_successor_node(key_type key)  noexcept(NEX) {
 		if (empty()) return nullptr;
 		auto node = get_closest_leaf(key);
-		if (key >= node->key())
+		if (key >= node->key()) {
+            MARK_AND_UPDATE(node->get_right(), "4");
 			return node->get_right();
+        }  
+        MARK_AND_UPDATE(node, "5");
 		return node;
 	}
 
@@ -174,13 +187,22 @@ private:
 	 * @param key to get the predecessor and successor nodes of.
 	 * @return pair containing the predecessor and successor nodes of a given key. 
 	 */
-	node_ptr_pair get_predecessor_and_successor_nodes(key_type key) const noexcept(NEX) {
+	node_ptr_pair get_predecessor_and_successor_nodes(key_type key)  noexcept(NEX) {
 		if (empty()) return node_ptr_pair(nullptr, nullptr);
 		auto node = get_closest_leaf(key);
-		if (key < node->key())
+		if (key < node->key()) {
+            MARK(node->get_left());
+            MARK_AND_UPDATE(node, "5");
 			return node_ptr_pair(node->get_left(), node);
-		if (key > node->key())
+        }
+		if (key > node->key()) {
+            MARK(node);
+            MARK_AND_UPDATE(node->get_right(), "6");
 			return node_ptr_pair(node, node->get_right());
+        }
+        MARK(node);
+        MARK(node->get_right());
+        MARK_AND_UPDATE(node->get_left(), "7");
 		return node_ptr_pair(node->get_left(), node->get_right());
 	}
 
@@ -228,7 +250,7 @@ public:
 	 * 
 	 * @return size_type number of keys in stored the trie.
 	 */
-	inline size_type size() const noexcept {
+	inline size_type size()  noexcept {
 		return size_;
 	}
 
@@ -238,7 +260,7 @@ public:
 	 * @return true if the trie contains no keys.
 	 * @return false if the trie contains some keys.
 	 */
-	inline bool empty() const noexcept {
+	inline bool empty()  noexcept {
 		return size() == 0;
 	}
 
@@ -249,7 +271,9 @@ public:
 	 * @return true if the trie contains the key.
 	 * @return false if the trie does not contain the key.
 	 */
-	inline bool contains(key_type key) const noexcept(NEX) {
+	inline bool contains(key_type key)  noexcept(NEX) {
+        if (lss_.at(bit_length_).contains(key))
+            MARK_AND_UPDATE(lss_.at(bit_length_).at(key), "8");
 		return lss_.at(bit_length_).contains(key);
 	}
 
@@ -260,7 +284,7 @@ public:
 	 * @return some_key_type predecessor key if the predecessor exists. 
 	 * @return none_key_type if the predecessor does not exist.
 	 */
-	some_key_type predecessor(key_type key) const noexcept(NEX) {
+	some_key_type predecessor(key_type key)  noexcept(NEX) {
 		auto node = get_predecessor_node(key);
 		if (node != nullptr) 
 			return some_key_type(node->key());
@@ -274,7 +298,7 @@ public:
 	 * @return some_key_type successor key if the successor exists.
 	 * @return none_key_type if the successor does not exist.
 	 */
-	some_key_type successor(key_type key) const noexcept(NEX) {
+	some_key_type successor(key_type key)  noexcept(NEX) {
 		auto node = get_successor_node(key);
 		if (node != nullptr)
 			return some_key_type(node->key());
@@ -287,7 +311,7 @@ public:
 	 * @return some_key_type minimum key if trie is not empty.
 	 * @return none_key_type if the trie is empty.
 	 */
-	some_key_type min() const noexcept(NEX) {
+	some_key_type min()  noexcept(NEX) {
 		if (contains(lower_bound()))
 			return lower_bound();
 		return successor(lower_bound());
@@ -299,7 +323,7 @@ public:
 	 * @return some_key_type maximum key if trie is not empty.
 	 * @return none_key_type if the trie is empty.
 	 */
-	some_key_type max() const noexcept(NEX) {
+	some_key_type max()  noexcept(NEX) {
 		if (contains(upper_bound()))
 			return upper_bound();
 		return predecessor(upper_bound());
@@ -330,6 +354,8 @@ public:
 
 		if (succ != nullptr) 
 			succ->set_left(leaf);
+        
+        MARK_AND_UPDATE(leaf, "9");
 
 		// Create the root if it does not exist.
 		if (!lss_.at(0).contains(0))
@@ -337,6 +363,8 @@ public:
 		
 		// Insert new internal nodes and update skip links.
 		auto parent = lss_.at(0).at(0);
+        MARK_AND_UPDATE(parent, "10");
+
 		for (int level_index = 1; level_index < bit_length_; ++level_index) {
 			auto prefix = get_prefix(key, level_index);
 			auto direction = get_direction(prefix);
@@ -387,6 +415,8 @@ public:
 				// Set the parent to the right child because we traversed to the right.
 				parent = parent->get_right();
 			}
+
+            MARK_AND_UPDATE(parent, "11");
 		}
 
 		// Link the last inserted node to the leaf nodes.
@@ -421,6 +451,7 @@ public:
 		// Remove the leaf node.
 		lss_.at(bit_length_).remove(key);
 		size_ -= 1;
+        MARK_AND_UPDATE(leaf);
 
 		// Update the linked list on the bottom layer.
 		if (pred != nullptr) 
@@ -447,7 +478,7 @@ public:
 				continue;
 
 			// Compute the parent.
-			auto parent = lss_.at(level).at(prefix);	
+			auto parent = lss_.at(level).at(prefix);
 
 			// If neither child is in the level search structure, delete the parent.
 			if (!left_child_exists && !right_child_exists) {
@@ -466,6 +497,8 @@ public:
 					parent->set_right_skip_link(pred);
 				}
 			}
+
+            MARK_AND_UPDATE(parent);
 		}
 		delete leaf;
 	}
@@ -482,4 +515,91 @@ public:
 
 public:
 	template <typename, typename> friend class YFastTrie;
+
+private:
+    // Extra private members for the demo program.
+
+    std::vector<node_ptr> marked_;
+
+private:
+	// Extra private methods for the demo program.
+
+	/**
+	 * @brief Converts a pointer into a DOT string.
+	 * 
+	 * @param ptr to convert. 
+	 * @return DOT string of the pointer.
+	 */
+    std::string ptr_to_str(void* ptr)  noexcept {
+        std::ostringstream ss;
+        ss << ptr;
+        return "n" + ss.str();
+    }
+
+	/**
+	 * @brief Converts a key into a DOT string.
+	 * 
+	 * @param key to convert
+	 * @return DOT string of the key.
+	 */
+    std::string key_to_str(key_type key)  noexcept {
+        std::ostringstream ss;
+        ss << int(key);
+        return ss.str();
+    }
+
+    void MARK_AND_UPDATE(node_ptr ptr, std::string debug = "") {
+        if (debug != "")
+            std::cout << "*** DEBUG ***\n" <<  debug << "\n\n";
+        MARK(ptr);
+        UPDATE_GUI();
+    }
+
+    void MARK(node_ptr ptr) {
+        marked_.push_back(ptr);
+    }
+
+    void CLEAN() {
+        std::cout << "clean";
+        marked_.clear();
+        UPDATE_GUI();
+    }
+
+public:
+	// Extra public methods for the demo program.
+
+	/**
+	 * @brief Get the DOT string representation of the trie.
+	 * 
+	 * @return DOT string of the trie.
+	 */
+    std::string to_dot()  noexcept {
+        std::string output;
+        output += "digraph {\n";
+        output += "\tnode[style=filled, fillcolor=white];\n";
+
+        for ( auto& level : this->lss_) {
+            std::string level_output;
+            level_output += "{rank = same; ";
+
+            for (auto& key_node_pair : level) {
+                auto key = key_node_pair.first;
+                auto node = key_node_pair.second;
+                if (node->get_left()) 
+                    output += "\t" + ptr_to_str(node) + " -> " + ptr_to_str(node->get_left()) + "\n";
+                if (node->get_right()) 
+                    output += "\t" + ptr_to_str(node) + " -> " + ptr_to_str(node->get_right()) + "\n";    
+                output += "\t" + ptr_to_str(node) + "[label=\"" + key_to_str(key) + "\"]";
+                if (std::find(std::begin(marked_), std::end(marked_), node) != std::end(marked_))
+                    output += "[fillcolor=\"#90ee90\"]";
+                output += "\n";
+                level_output += ptr_to_str(node) + "; ";
+            }
+
+            level_output += "}";
+            output += "\t" + level_output + "\n"; 
+        }
+        output += "}";
+        return output;
+    }
 };

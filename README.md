@@ -239,7 +239,7 @@ Does the predecessor of 7 exist? 0.
 ```
 
 ## X-Fast Trie
-X-Fast Tries are bitwise tries that implement ordered set operations in O(log(log(M))) time and dynamic set operations in O(log(M)) time in O(N) space.
+X-Fast Tries are bitwise tries that implement ordered set operations in O(log(log(M))) time and dynamic set operations in O(log(M)) time in O(N\*log(M)) space.
 
 ### Interface
 The X-Fast Trie provides the following interface:

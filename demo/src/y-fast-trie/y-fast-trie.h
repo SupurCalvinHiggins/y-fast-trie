@@ -183,7 +183,8 @@ public:
 		// the key then the trie contains that key. Otherwise, the trie does not contain the key.
 		auto partition_and_node = get_partition_and_node(key);
 		auto partition = partition_and_node.first;
-		return partition != nullptr && partition->contains(key);
+		auto res = partition != nullptr && partition->contains(key);
+        index_.CLEAN();
 	}
 
 	/**
@@ -227,7 +228,9 @@ public:
 		}
 
 		// Compute the predecessor.
-		return partition->predecessor(key);
+		auto res = partition->predecessor(key);
+        index_.CLEAN();
+        return res;
 	}
 
 	/**
@@ -266,7 +269,9 @@ public:
 		}
 
 		// Compute the successor.
-		return partition->successor(key);
+		auto res =  partition->successor(key);
+        index_.CLEAN();
+        return res;
 	}
 
 	/**
@@ -340,6 +345,8 @@ public:
     	}
 
     	size_ += 1;
+
+        index_.CLEAN();
 	}
 
 	/**
@@ -435,6 +442,46 @@ public:
 		}
 
 		size_ -= 1;
+        index_.CLEAN();
+	}
+
+private:
+	// Extra private methods for the demo program.
+
+	/**
+	 * @brief Converts a pointer into a DOT string.
+	 * 
+	 * @param ptr to convert. 
+	 * @return DOT string of the pointer.
+	 */
+    std::string ptr_to_str(void* ptr) const noexcept {
+        std::ostringstream ss;
+        ss << ptr;
+        return "n" + ss.str();
+    }
+
+public:
+	// Extra public methods for the demo program.
+
+	/**
+	 * @brief Build a string in the DOT format representing the trie.
+	 * 
+	 * @return DOT string of the trie.
+	 */
+	std::string to_dot() noexcept {
+		std::string output;
+		output += index_.to_dot();
+		output.pop_back();
+		for (const auto& pair : partitions_) {
+			auto partition_output = pair.second->to_dot();
+			partition_output.erase(0, 7);
+			auto found = partition_output.find("n");
+			auto root_str  = partition_output.substr(found, 15);
+			auto index_str = ptr_to_str(index_.lss_.back().at(pair.first));
+			output += index_str + " -> " + root_str + ";\n";
+			output += "subgraph" + partition_output + "\n";
+		}
+		return output + "}";
 	}
 };
 
