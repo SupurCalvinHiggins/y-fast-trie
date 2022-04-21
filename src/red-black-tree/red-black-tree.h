@@ -293,7 +293,7 @@ public:
      * 
      * @param out_fpath The full path of the created destination file, which includes the directory and the file name.
      */
-    void generate_dot(std::string out_fpath) {
+    std::string to_dot() const noexcept {
         std::string text;
         if (!root_){
             text += "digraph RBTree0x00000000 {\n\n\n}";
@@ -312,13 +312,8 @@ public:
             text = write_dot(root_,text);
             text += "\n}";
         }
-        
-        std::ofstream out(out_fpath);
-
-        out << text;
-
-        out.close();
-    };
+        return text;        
+    }
 
 //Accessors
 public:
@@ -876,7 +871,7 @@ private:
      * @param text The return text as it is during the current recursive call.
      * @return std::string 
      */
-    std::string write_dot(node_ptr node, std::string text = "") {
+    std::string write_dot(node_ptr node, std::string text = "") const noexcept {
         if (node){
             //Gets the text representation of the node's memory address
             std::stringstream sstream;

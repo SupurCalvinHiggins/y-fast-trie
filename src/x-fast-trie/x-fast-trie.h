@@ -6,6 +6,8 @@
 #include <vector>
 #include <assert.h>
 #include <type_traits>
+#include <sstream>
+#include <string>
 
 /**
  * @brief Data structure for fast dynamic ordered set operations on a bounded universe.
@@ -29,7 +31,7 @@ private:
 	using level_type = map_wrapper<key_type, node_ptr>;
 	using lss_type = std::vector<level_type>;
 
-private:
+protected:
 	size_type size_;
 	lss_type lss_;
 
@@ -480,4 +482,65 @@ public:
 
 public:
 	template <typename, typename> friend class YFastTrie;
+
+private:
+	// Extra private methods for the demo program.
+
+	/**
+	 * @brief Converts a pointer into a DOT string.
+	 * 
+	 * @param ptr to convert. 
+	 * @return DOT string of the pointer.
+	 */
+    std::string ptr_to_str(void* ptr) const noexcept {
+        std::ostringstream ss;
+        ss << ptr;
+        return "n" + ss.str();
+    }
+
+	/**
+	 * @brief Converts a key into a DOT string.
+	 * 
+	 * @param key to convert
+	 * @return DOT string of the key.
+	 */
+    std::string key_to_str(key_type key) const noexcept {
+        std::ostringstream ss;
+        ss << int(key);
+        return ss.str();
+    }
+
+public:
+	// Extra public methods for the demo program.
+
+	/**
+	 * @brief Get the DOT string representation of the trie.
+	 * 
+	 * @return DOT string of the trie.
+	 */
+    std::string to_dot() const noexcept {
+        std::string output;
+        output += "digraph {\n";
+
+        for (const auto& level : this->lss_) {
+            std::string level_output;
+            level_output += "{rank = same; ";
+
+            for (const auto& key_node_pair : level) {
+                auto key = key_node_pair.first;
+                auto node = key_node_pair.second;
+                if (node->get_left()) 
+                    output += "\t" + ptr_to_str(node) + " -> " + ptr_to_str(node->get_left()) + "\n";
+                if (node->get_right()) 
+                    output += "\t" + ptr_to_str(node) + " -> " + ptr_to_str(node->get_right()) + "\n";    
+                output += "\t" + ptr_to_str(node) + "[label=\"" + key_to_str(key) + "\"]\n";
+                level_output += ptr_to_str(node) + "; ";
+            }
+
+            level_output += "}";
+            output += "\t" + level_output + "\n"; 
+        }
+        output += "}";
+        return output;
+    }
 };
