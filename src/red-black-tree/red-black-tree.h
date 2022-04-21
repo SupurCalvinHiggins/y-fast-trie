@@ -11,6 +11,7 @@
 #include <cassert>
 #include <filesystem>
 #include <ctime>
+#include <array>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -19,7 +20,6 @@
 #include <cmath>
 #include <optional>
 #include <algorithm>
-#include <utility>
 
 template <typename Key_>
 class RedBlackTree {
@@ -33,7 +33,6 @@ public:
 
     using node_type = Node<key_type>;
     using node_ptr = node_type*;
-    using node_pair = std::pair<node_ptr,node_ptr>;
     using size_type = size_t;
 
 //Aliases
@@ -72,6 +71,7 @@ public:
      * @param key The key of the new node to be inserted into the tree
      */
     void insert(key_type key) {
+        //See insert by node ptr for the implementation
         insert(new Node<key_type>(key,1));
     };
 
@@ -624,10 +624,10 @@ public:
      * The first tree that is returned is all nodes less than <key>, and the other tree is all nodes greater than it.
      * 
      * @param pivot The pivot for the tree to split about.
-     * @return std::pair<RedBlackTree<key_type>*,RedBlackTree<key_type>*> The first tree that is returned is all 
+     * @return std::array<RedBlackTree<key_type>*,2> The first tree that is returned is all 
      * nodes less than <key>, and the other tree is all nodes greater than it.
      */
-    std::vector<RedBlackTree<key_type>*>  split(key_type pivot) {
+    std::array<RedBlackTree<key_type>*,2>  split(key_type pivot) {
         RedBlackTree<key_type>* tree1 = new RedBlackTree<key_type>();
         RedBlackTree<key_type>* tree2 = new RedBlackTree<key_type>();
         
@@ -636,7 +636,7 @@ public:
 
         root_ = nullptr;
         size_ = 0;
-        return std::vector<RedBlackTree<key_type>*>{tree1, tree2}; 
+        return std::array<RedBlackTree<key_type>*,2>{tree1, tree2}; 
     };
 
     /**
