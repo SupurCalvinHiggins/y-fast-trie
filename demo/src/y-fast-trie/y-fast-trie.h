@@ -183,7 +183,8 @@ public:
 		// the key then the trie contains that key. Otherwise, the trie does not contain the key.
 		auto partition_and_node = get_partition_and_node(key);
 		auto partition = partition_and_node.first;
-		return partition != nullptr && partition->contains(key);
+		auto res = partition != nullptr && partition->contains(key);
+        index_.CLEAN();
 	}
 
 	/**
@@ -227,7 +228,9 @@ public:
 		}
 
 		// Compute the predecessor.
-		return partition->predecessor(key);
+		auto res = partition->predecessor(key);
+        index_.CLEAN();
+        return res;
 	}
 
 	/**
@@ -266,7 +269,9 @@ public:
 		}
 
 		// Compute the successor.
-		return partition->successor(key);
+		auto res =  partition->successor(key);
+        index_.CLEAN();
+        return res;
 	}
 
 	/**
@@ -340,6 +345,8 @@ public:
     	}
 
     	size_ += 1;
+
+        index_.CLEAN();
 	}
 
 	/**
@@ -435,6 +442,7 @@ public:
 		}
 
 		size_ -= 1;
+        index_.CLEAN();
 	}
 
 private:
@@ -460,7 +468,7 @@ public:
 	 * 
 	 * @return DOT string of the trie.
 	 */
-	std::string to_dot() const noexcept {
+	std::string to_dot() noexcept {
 		std::string output;
 		output += index_.to_dot();
 		output.pop_back();
