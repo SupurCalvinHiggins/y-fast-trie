@@ -14,6 +14,10 @@ sudo apt -y install cpupower
 # Install termcolor library
 sudo pip3 install termcolor
 
+# Install SFML and DOT program for SFML GUI
+sudo apt -y install libsfml-dev
+sudo apt -y install graphviz
+
 # Install google benchmark for benchmarking support
 # Script provided by the google benchmark documentation
 git clone https://github.com/google/benchmark.git
