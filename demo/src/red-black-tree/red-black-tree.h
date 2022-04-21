@@ -271,7 +271,7 @@ public:
     }
 
     void UPDATE_GUI()  noexcept{
-        std::cout << to_dot() << "\n\n\n\n";
+        return;
     };
 
     void CLEAN()  noexcept{
