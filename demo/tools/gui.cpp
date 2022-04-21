@@ -72,13 +72,13 @@ void GUI::Button::render(sf::RenderTarget &target) {
 
 
 ////////////////// DROP DOWN LIST //////////////////
-GUI::DropDownList::DropDownList(float x, float y, float width, float height, sf::Font &font, std::vector<std::string> button_names, unsigned default_index) : font(font), is_list_open(false), key_timer_max(0.25f), key_timer(0.f) {
+GUI::DropDownList::DropDownList(float x, float y, float width, float height, sf::Font &font, std::vector<std::string> button_names) : font(font), is_list_open(false), key_timer_max(0.25f), key_timer(0.f) {
 
     for (size_t i = 0; i < button_names.size(); i++) {
         this->list.push_back(new GUI::Button(x, y + (i * height), width, height, &this->font, button_names[i], 12, sf::Color(255,255,255,150), sf::Color(255, 255, 255, 255), sf::Color(20, 20, 20, 50), sf::Color(70, 70, 70, 200), sf::Color(150, 150, 150, 200), sf::Color(20, 20, 20, 200)));
     }
 
-    //this->slection = new GUI::Button(*this->list[default_index]);
+    this->slection = new Button(*this->list[0]);
 }
 
 GUI::DropDownList::~DropDownList() {

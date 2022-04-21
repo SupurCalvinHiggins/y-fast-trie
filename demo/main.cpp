@@ -1,3 +1,5 @@
+#include "visualizer.h"
+
 int main() {
     Visualizer visualizer;
     
