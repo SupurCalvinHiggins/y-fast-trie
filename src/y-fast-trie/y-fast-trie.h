@@ -7,6 +7,7 @@
 #include <vector>
 #include <assert.h>
 #include <type_traits>
+#include <string>
 
 /**
  * @brief Data structure for fast dynamic ordered set operations on a bounded universe.
@@ -434,6 +435,45 @@ public:
 		}
 
 		size_ -= 1;
+	}
+
+private:
+	// Extra private methods for the demo program.
+
+	/**
+	 * @brief Converts a pointer into a DOT string.
+	 * 
+	 * @param ptr to convert. 
+	 * @return DOT string of the pointer.
+	 */
+    std::string ptr_to_str(void* ptr) const noexcept {
+        std::ostringstream ss;
+        ss << ptr;
+        return "n" + ss.str();
+    }
+
+public:
+	// Extra public methods for the demo program.
+
+	/**
+	 * @brief Build a string in the DOT format representing the trie.
+	 * 
+	 * @return DOT string of the trie.
+	 */
+	std::string to_dot() const noexcept {
+		std::string output;
+		output += index_.to_dot();
+		output.pop_back();
+		for (const auto& pair : partitions_) {
+			auto partition_output = pair.second->to_dot();
+			partition_output.erase(0, 7);
+			auto found = partition_output.find("n");
+			auto root_str  = partition_output.substr(found, 15);
+			auto index_str = ptr_to_str(index_.lss_.back().at(pair.first));
+			output += index_str + " -> " + root_str + ";\n";
+			output += "subgraph" + partition_output + "\n";
+		}
+		return output + "}";
 	}
 };
 
