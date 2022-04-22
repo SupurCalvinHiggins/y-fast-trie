@@ -1,4 +1,5 @@
 #include "visualizer-state.h"
+#include <iostream>
 
 void VisualizerState::initFonts() {
     if (!this->font.loadFromFile("resource/font/Dosis-Medium.ttf"))
@@ -48,7 +49,7 @@ void VisualizerState::updateInput(const float &dt) {
             this->outConsoleState();
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("ENTER_VALUE"))) && this->getKeyTimer()) {
-        yfast.insert(1);
+        yfast.insert(std::rand() % 256);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("DELETE_CHARACTER"))) && this->getKeyTimer())
@@ -56,7 +57,7 @@ void VisualizerState::updateInput(const float &dt) {
 }
 
 void VisualizerState::writeFile(const std::string to_dot) {
-    std::ofstream output_file("../resource/image/visualizer.dot");
+    std::ofstream output_file("visualizer.dot");
     output_file << to_dot;
     output_file.close();
 }
@@ -64,15 +65,17 @@ void VisualizerState::writeFile(const std::string to_dot) {
 void VisualizerState::updateBackground() {
     std::string to_dot = yfast.to_dot();
     this->writeFile(to_dot);
-    system("dot -Tpng -Gsize=1920,1080\! -Gdpi=1 ../resource/image/visualizer.dot -o ../resource/image/background/visualizer.png");
+    system("dot -Tpng visualizer.dot -o visualizer.png");
+    system("python3 make_png.py");
 
-    this->background.setSize(sf::Vector2f(this->window->getSize().x, this->window->getSize().y));
+   // this->background.setPosition(sf::Vector2f(0,0));
+    //this->background.setSize(sf::Vector2f(this->window->getSize().x, this->window->getSize().y));
     //this->background.setFillColor(sf::Color::White);
 
-    if (!this->background_texture.loadFromFile("../resource/image/background/visualizer.png"))
+    if (!this->background_texture.loadFromFile("visualizer.png"))
         throw std::runtime_error("Could not load Visualizer background texture!");
-    
-    this->background.setTexture(&this->background_texture);
+    //this->background_texture.setSmooth(false);
+    this->background.setTexture(this->background_texture);
 }
 
 void VisualizerState::updateConsoleButtons() {
@@ -94,6 +97,8 @@ void VisualizerState::render(sf::RenderTarget *target) {
     if (!target) {
         target = this->window;
     }
+
+    target->draw(this->background);
 
     if (this->is_in_console) { // Render console
         this->console_menu->render(*target);

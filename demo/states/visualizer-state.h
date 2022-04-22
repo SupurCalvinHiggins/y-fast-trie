@@ -9,7 +9,7 @@
 class VisualizerState : public State {
 private:
     sf::Texture background_texture;
-    sf::RectangleShape background;
+    sf::Sprite background;
     ConsoleMenu *console_menu;
     sf::Font font;
     

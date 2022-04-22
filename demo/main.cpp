@@ -1,6 +1,8 @@
 #include "visualizer.h"
 
-int main() {
+Visualizer visualizer;
+
+int main() {    
     visualizer.run();
 
     return 0;
