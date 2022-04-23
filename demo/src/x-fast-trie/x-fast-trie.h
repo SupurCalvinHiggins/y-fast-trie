@@ -97,8 +97,10 @@ private:
 		while (low_level <= high_level) {
 			size_type mid_level = (low_level + high_level) >> 1;
 			auto prefix = get_prefix(key, mid_level);
-			if (lss_.at(mid_level).contains(prefix))
-                low_level = mid_level + 1;
+			if (lss_.at(mid_level).contains(prefix)) {
+				low_level = mid_level + 1;
+				MARK_AND_UPDATE(lss_.at(mid_level).at(prefix));
+			}
 			else 
 				high_level = mid_level - 1;
 		}
