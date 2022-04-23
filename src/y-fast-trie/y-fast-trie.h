@@ -201,14 +201,13 @@ public:
 		auto partition = partition_and_node.first;
 		auto node = partition_and_node.second;
 
-		// TODO: For succ/pred, tests should hit this.
-		if (node == nullptr) return some_key_type();
+		// If the partition does not exist, then any key less than the given key cannot be in the
+		// trie. In other words, there are no possible predecessors. This also handles the case
+		// where the representative node does not exist because the partition does not exist, if
+		// and only if the representative node does not exist.
+		if (partition == nullptr) return some_key_type();
 
 		auto rep_key = node->key();
-
-		// If the partition does not exist, then any key less than the given key cannot be in the
-		// trie. In other words, there are no possible predecessors.
-		if (partition == nullptr) return some_key_type();
 		
 		// If the current partition does not contain the predecessor, then the predecessor must be 
 		// in the partition to the left. This happens when the key is the smallest value in the 
@@ -245,7 +244,11 @@ public:
 		auto partition = partition_and_node.first;
 		auto node = partition_and_node.second;
 
-		if (node == nullptr) return some_key_type();
+		// If the partition does not exist, then any key greater than the given key cannot be in the
+		// trie. In other words, there are no possible successors. This also handles the case
+		// where the representative node does not exist because the partition does not exist, if
+		// and only if the representative node does not exist.
+		if (partition == nullptr) return some_key_type();
 
 		auto rep_key = node->key();
 

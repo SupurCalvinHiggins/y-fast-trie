@@ -19,7 +19,7 @@
 #include <cmath>
 #include <optional>
 #include <algorithm>
-#include "../../main.h"
+#include "../../visualizer.h"
 
 template <typename Key_>
 class RedBlackTree {
@@ -274,10 +274,6 @@ public:
         node_path_.push_back(node);
         UPDATE_GUI();
     }
-
-    void UPDATE_GUI()  noexcept{
-        return;
-    };
 
     void CLEAN()  noexcept{
         node_path_.clear();
@@ -1187,7 +1183,7 @@ public:
     std::vector<node_ptr> get_layer(int layer) {
         try{
             std::vector<node_ptr> layer1({root_});
-            std::vector<node_ptr> layer2();
+            std::vector<node_ptr> layer2;
             //Puts the children of the nodes from the first layer into the second layer, and the process is repeated using
             //The second layer as the first layer. This stops when there are no more children or if the target layer is reached.
             for (int layer_num = 0; layer_num < layer; layer++) {

@@ -68,6 +68,20 @@ Visualizer::~Visualizer() {
 
 }
 
+bool Visualizer::isVisualizerState() {
+    if (states.top()->getStateID() == "VISUALIZER_STATE") {
+        return true;
+    }
+    return false;
+}
+
+void Visualizer::updateVisualizerBackground() {
+    if (this->isVisualizerState()) {
+        VisualizerState *visualizer_state = (VisualizerState*)states.top();
+        visualizer_state->updateBackground();
+    }
+}
+
 // Functions
 void Visualizer::updateDt() {
     // Update delta time with the time it took to update and render the last frame.
@@ -126,6 +140,10 @@ void Visualizer::endApplication() {
     this->window->close();
 }
 
+void UPDATE_GUI() {
+    visualizer.updateVisualizerBackground();
+    visualizer.render();
+}
 
 /*
 // TODO Make it work with dot converter function directly rather than generating before
