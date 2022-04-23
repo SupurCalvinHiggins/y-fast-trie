@@ -10,13 +10,12 @@ private:
     sf::Font button_font;
 
     std::map<std::string, GUI::Button*> buttons;
-
     GUI::DropDownList *trie_types_list;
 
     void initBackground();
     void initFonts();
     void initKeyBinds();
-    void initButtons();
+    void initGUI();
     
 public:
     MainMenuState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states);
@@ -25,8 +24,8 @@ public:
     // Functions
     std::string getStateID();
     void updateInput(const float &dt);
-    void updateButtons();
+    void updateGUI(const float &dt);
     void update(const float &dt);
-    void renderButtons(sf::RenderTarget &target);
+    void renderGUI(sf::RenderTarget &target);
     void render(sf::RenderTarget *target = nullptr);
 };

@@ -8,19 +8,26 @@
 
 class VisualizerState : public State {
 private:
+    sf::Image trie_image;
+    sf::Image background_image;
     sf::Texture background_texture;
     sf::Sprite background;
     ConsoleMenu *console_menu;
     sf::Font font;
-    
-    YFastTrie<uint8_t> yfast;
 
+    short unsigned trie_type;
+    YFastTrie<uint8_t> yfast_8;
+    YFastTrie<uint16_t> yfast_16;
+    YFastTrie<uint32_t> yfast_32;
+    YFastTrie<uint64_t> yfast_64;
+
+    void initBackground();
     void initFonts();
     void initKeyBinds();
     void initConsoleMenu();
     
 public:
-    VisualizerState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states);
+    VisualizerState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states, unsigned short trie_type);
     virtual ~VisualizerState();
 
     std::string getStateID();
@@ -28,7 +35,6 @@ public:
     // Functions
     void updateInput(const float &dt);
     void updateConsoleButtons();
-    void writeFile(const std::string to_dot);
     void updateBackground();
     void update(const float &dt);
     void render(sf::RenderTarget *target = nullptr);

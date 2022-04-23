@@ -25,6 +25,7 @@ namespace GUI
         sf::Text text;
 
         short unsigned button_state;
+        short unsigned button_id;
 
         sf::Color text_color;
         sf::Color text_hover_color;
@@ -32,15 +33,23 @@ namespace GUI
         sf::Color button_color;
         sf::Color hover_color;
         sf::Color active_color;
+        sf::Color outline_color;
+        sf::Color outline_hover_color;
+        sf::Color outline_active_color;
 
     public:
-        Button(float x, float y, float width, float height, sf::Font *font, std::string text, unsigned charecter_size, sf::Color text_color, sf::Color text_hover_color, sf::Color text_active_color, sf::Color button_color, sf::Color hover_color, sf::Color active_color);
+        Button(float x, float y, float width, float height, sf::Font *font, std::string text, unsigned charecter_size,
+        sf::Color text_color, sf::Color text_hover_color, sf::Color text_active_color,
+        sf::Color button_color, sf::Color hover_color, sf::Color active_color,
+        short unsigned button_id = 0, sf::Color outline_color = sf::Color::Transparent, sf::Color outline_hover_color = sf::Color::Transparent, sf::Color outline_active_color = sf::Color::Transparent);
         ~Button();
 
         // Accessors
         const bool isClicked() const;
         const std::string getText() const;
+        const short unsigned &getButtonID() const;
 
+        void setID(const short unsigned button_id);
         void setText(const std::string text);
 
         void update(const sf::Vector2f &mouse_pos);
@@ -62,6 +71,7 @@ namespace GUI
         ~DropDownList();
 
         const bool getKeyTimer();
+        const short unsigned &getSelectionID() const;
 
         void updateKeyTime(const float &dt);
         void update(const sf::Vector2f &mouse_pos, const float &dt);

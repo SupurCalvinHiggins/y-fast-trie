@@ -11,7 +11,7 @@ ConsoleMenu::ConsoleMenu(sf::RenderWindow &window, sf::Font &font) : font(font) 
     this->console_text.setFont(font);
     this->console_text.setFillColor(sf::Color(255, 255, 255, 200));
     this->console_text.setCharacterSize(60);
-    this->console_text.setString("Tree Editor");
+    this->console_text.setString("Trie Editor");
     this->console_text.setPosition(this->console.getPosition().x + this->console.getSize().x / 2.f - this->console_text.getGlobalBounds().width / 2.f, this->console.getPosition().y + 15.f);
 }
 
