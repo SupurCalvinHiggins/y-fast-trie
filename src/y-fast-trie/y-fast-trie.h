@@ -439,5 +439,7 @@ public:
 
 		size_ -= 1;
 	}
+
+	virtual ~YFastTrie() = default;
 };
 
