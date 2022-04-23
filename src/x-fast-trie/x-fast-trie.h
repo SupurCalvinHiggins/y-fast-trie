@@ -63,9 +63,9 @@ private:
 	 * @return the prefix of the key on the level.
 	 */
 	inline key_type get_prefix(key_type key, size_type level_index) const noexcept(NEX) {
-		assert((level_index >= 0) && (level_index <= bit_length_));
+		assert((level_index >= 0) && (level_index <= bit_length()));
 		if (level_index == 0) return 0;
-		return key >> (bit_length_ - level_index);
+		return key >> (bit_length() - level_index);
 	}
 
 	/**
@@ -83,9 +83,9 @@ private:
 	 * @param key to find the longest matching prefix with.
 	 * @return level index of the longest matching prefix.
 	 */
-	size_type get_level_index_of_longest_matching_prefix(key_type key) const noexcept(NEX) {
+	size_type get_lmp_level(key_type key) const noexcept(NEX) {
 		size_type low_level = 0;
-		size_type high_level = bit_length_;
+		size_type high_level = bit_length();
 
 		// Binary search for the transition between levels 
 		// containing the prefix and not containing the prefix.
@@ -102,42 +102,26 @@ private:
 	}
 
 	/**
-	 * @brief Get the closest leaf node.
+	 * @brief Get a leaf that is close to a given key. 
 	 * 
-	 * @param key to get the closest leaf to.
-	 * @return closest leaf node to the key.
+	 * @param key to find a close leaf to.
+	 * @return the close leaf.
 	 */
-	node_ptr get_closest_leaf(key_type key) const noexcept(NEX) {
-		// If the key is in the bottom layer, look up the node and return.
-		if (contains(key)) return lss_.at(bit_length_).at(key);
+	node_ptr get_close_leaf(key_type key) const noexcept(NEX) {
 
-		// Otherwise, search for the longest matching prefix node.
-		auto level_index = get_level_index_of_longest_matching_prefix(key);
-		auto prefix = get_prefix(key, level_index);
-		auto node = lss_.at(level_index).at(prefix);
+		// Get the node with the longest matching prefix.
+		auto lmp_level = get_lmp_level(key);
+		auto prefix = get_prefix(key, lmp_level);
+		auto lmp_node = lss_.at(lmp_level).at(prefix);
 
-		// Get the direction of the child.
-		auto child_prefix = get_prefix(key, level_index + 1);
-		bool direction = get_direction(child_prefix);
-
-		// Compute the two possible leaves.
-		auto leaf = (direction == right_) ? node->get_right() : node->get_left();
-		auto other_leaf = (direction == right_) ? leaf->get_right() : leaf->get_left();
-
-		// If the other leaf is nullptr, we can shortcut and return.
-		if (other_leaf == nullptr)
-			return leaf;
-
-		// Otherwise, compute the distance between the key and each leaf.
-		auto leaf_key = leaf->key();
-		auto leaf_dist = leaf_key > key ? leaf_key - key : key - leaf_key;
-		auto other_leaf_key = other_leaf->key();
-		auto other_leaf_dist = other_leaf_key > key ? other_leaf_key - key : key - other_leaf_key;
-
-		// Then, return the leaf that is closest to the key.
-		if (leaf_dist < other_leaf_dist)
-			return leaf;
-		return other_leaf;
+		// If the node is an internal node, we need to traverse down the skip link.
+		// Otherwise, the node is already a leaf node so we do nothing.
+		if (lmp_node->is_left_skip_link())
+			lmp_node = lmp_node->get_left();
+		else if (lmp_node->is_right_skip_link())
+			lmp_node = lmp_node->get_right();
+		
+		return lmp_node;
 	}
 
 	/**
@@ -148,7 +132,7 @@ private:
 	 */
 	node_ptr get_predecessor_node(key_type key) const noexcept(NEX) {
 		if (empty()) return nullptr;
-		auto node = get_closest_leaf(key);
+		auto node = get_close_leaf(key);
 		if (key <= node->key())
 			return node->get_left();
 		return node;
@@ -162,7 +146,7 @@ private:
 	 */
 	node_ptr get_successor_node(key_type key) const noexcept(NEX) {
 		if (empty()) return nullptr;
-		auto node = get_closest_leaf(key);
+		auto node = get_close_leaf(key);
 		if (key >= node->key())
 			return node->get_right();
 		return node;
@@ -176,7 +160,7 @@ private:
 	 */
 	node_ptr_pair get_predecessor_and_successor_nodes(key_type key) const noexcept(NEX) {
 		if (empty()) return node_ptr_pair(nullptr, nullptr);
-		auto node = get_closest_leaf(key);
+		auto node = get_close_leaf(key);
 		if (key < node->key())
 			return node_ptr_pair(node->get_left(), node);
 		if (key > node->key())
@@ -218,8 +202,8 @@ public:
 	 * 
 	 */
 	XFastTrie() : size_(0) {
-		lss_.reserve(bit_length_);
-		for (size_type i = 0; i <= bit_length_; ++i)
+		lss_.reserve(bit_length());
+		for (size_type i = 0; i <= bit_length(); ++i)
 			lss_.push_back(level_type());
 	}
 
@@ -250,7 +234,7 @@ public:
 	 * @return false if the trie does not contain the key.
 	 */
 	inline bool contains(key_type key) const noexcept(NEX) {
-		return lss_.at(bit_length_).contains(key);
+		return lss_.at(bit_length()).contains(key);
 	}
 
 	/**
@@ -321,7 +305,7 @@ public:
 
 		// Create the new leaf node.
 		auto leaf = new node_type(key, pred, succ);
-		lss_.at(bit_length_)[key] = leaf;
+		lss_.at(bit_length())[key] = leaf;
 		size_ += 1;
 
 		// Insert the new leaf node into the bottom of the trie.
@@ -337,7 +321,7 @@ public:
 		
 		// Insert new internal nodes and update skip links.
 		auto parent = lss_.at(0).at(0);
-		for (int level_index = 1; level_index < bit_length_; ++level_index) {
+		for (int level_index = 1; level_index < bit_length(); ++level_index) {
 			auto prefix = get_prefix(key, level_index);
 			auto direction = get_direction(prefix);
 
@@ -414,12 +398,12 @@ public:
 		if (!contains(key)) return;
 
 		// Get the leaf node that we are removing as well as the predecessor and successor nodes.
-		auto leaf = lss_.at(bit_length_).at(key);
+		auto leaf = lss_.at(bit_length()).at(key);
 		auto pred = leaf->get_left();
 		auto succ = leaf->get_right();
 
 		// Remove the leaf node.
-		lss_.at(bit_length_).remove(key);
+		lss_.at(bit_length()).remove(key);
 		size_ -= 1;
 
 		// Update the linked list on the bottom layer.
@@ -431,7 +415,7 @@ public:
 
 		// Remove internal nodes and update skip links.
 		// TODO: Include a parent pointer in the internal nodes to avoid hash table lookups.
-		for (int level = bit_length_ - 1; level >= 0; --level) {
+		for (int level = bit_length() - 1; level >= 0; --level) {
 			auto prefix = get_prefix(key, level);
 
 			// Compute the prefix of the left and right children.

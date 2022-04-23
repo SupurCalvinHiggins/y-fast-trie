@@ -23,6 +23,7 @@ public:
     virtual ~MainMenuState();
 
     // Functions
+    std::string getStateID();
     void updateInput(const float &dt);
     void updateButtons();
     void update(const float &dt);

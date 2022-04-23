@@ -1,8 +1,9 @@
 #pragma once
 
 #include "states/main-menu-state.h"
+#include "states/visualizer-state.h"
 
-class Visualizer{
+class Visualizer {
 private:
     // Variables
     sf::RenderWindow *window;
@@ -28,6 +29,9 @@ public:
     Visualizer();
     ~Visualizer();
 
+    bool isVisualizerState();
+    void updateVisualizerBackground();
+
     // Functions //
 
     // Update
@@ -43,3 +47,6 @@ public:
     void endApplication();
 
 };
+
+extern Visualizer visualizer;
+extern void UPDATE_GUI();
