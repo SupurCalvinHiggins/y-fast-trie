@@ -84,7 +84,10 @@ public:
      */
 	void remove(key_type key) {
         auto node = find(key);
-        if (node == nullptr) {return;}
+        if (node == nullptr) {
+            CLEAN();
+            return;
+        }
         if (max_ && key == max_->key_){
             if (!max_->parent_){
                 max_ = max_->children_[0];
@@ -378,6 +381,7 @@ public:
             MARK(target_node);
             target_node = target_node->children_[key > target_node->key_];
         }
+        CLEAN();
         return target_node;
     };
 
@@ -390,7 +394,6 @@ public:
      */
     bool contains(key_type key) {
         bool has = find(key) != nullptr;
-        CLEAN();
         return has;
     };
 
@@ -646,6 +649,7 @@ private:
         node_ptr succ = node->children_[1];
         if (succ){
             while (succ->children_[0] != nullptr) {
+                MARK(succ);
                 succ = succ->children_[0];
             }
         }
