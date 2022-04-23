@@ -264,6 +264,9 @@ private:
                     target_node = target_node->children_[dir];
                 }
             }
+            if (target_node->key_ == key){
+                delete node;
+            }
         }
        
     };
