@@ -21,7 +21,7 @@ This library implements the following data structures:
 
 ### C++ Version
 
-The library requires at least C++17. With some tweaks, the library will work for lower C++ version given a custom std::optional implementation.
+The library requires at least C++17. With some tweaks, the library will work for a lower C++ version given a custom std::optional implementation.
 
 ### Linux
 To install dependencies on Linux systems, execute
@@ -138,6 +138,8 @@ to benchmark/my-data-structure/insert.benchmark.cpp.
 
 Benchmark subsumption is currently unsupported.
 
+## Demo
+TODO
 
 ## Red-Black Tree
 Red-Black Trees are balanced binary search trees that provide dynamic ordered set operations in O(log(N)) time with O(N) space.
