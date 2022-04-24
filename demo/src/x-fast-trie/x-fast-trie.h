@@ -566,7 +566,8 @@ private:
     void CLEAN() {
         // std::cout << "clean";
         marked_.clear();
-        UPDATE_GUI();
+		if (animate_)
+        	UPDATE_GUI();
     }
 
 	void CLEAN_NO_UPDATE() {
