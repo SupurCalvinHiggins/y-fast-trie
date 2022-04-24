@@ -482,7 +482,6 @@ public:
 	 * @return DOT string of the trie.
 	 */
 	std::string to_dot() noexcept {
-		set_animate(true);
 		std::string output;
 		output += index_.to_dot();
 		output.pop_back();
