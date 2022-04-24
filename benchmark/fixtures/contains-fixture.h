@@ -1,3 +1,12 @@
+/**
+ * @file contains-fixture.h
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Benchmark fixture for contains.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #pragma once
 #include "base/full-base-fixture.h"
 

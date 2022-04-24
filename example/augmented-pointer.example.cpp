@@ -1,3 +1,12 @@
+/**
+ * @file augmented-pointer.example.cpp
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Example program using AugmentedPointer.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #include "../src/augmented-pointer/augmented-pointer.h"
 #include <iostream>
 

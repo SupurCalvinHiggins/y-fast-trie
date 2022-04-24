@@ -1,3 +1,12 @@
+/**
+ * @file fixtures.h
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Helpful macros for specializing text fixtures.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #pragma once
 #include <cstdint>
 #include "size-fixture.h"

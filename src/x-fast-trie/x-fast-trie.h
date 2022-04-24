@@ -1,3 +1,12 @@
+/**
+ * @file x-fast-trie.h
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief XFastTrie class template.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #pragma once
 #include "x-fast-trie-node.h"
 #include "x-fast-trie-map-wrapper.h"
@@ -108,7 +117,6 @@ private:
 	 * @return the close leaf.
 	 */
 	node_ptr get_close_leaf(key_type key) const noexcept(NEX) {
-
 		// Get the node with the longest matching prefix.
 		auto lmp_level = get_lmp_level(key);
 		auto prefix = get_prefix(key, lmp_level);
@@ -120,7 +128,7 @@ private:
 			lmp_node = lmp_node->get_left();
 		else if (lmp_node->is_right_skip_link())
 			lmp_node = lmp_node->get_right();
-		
+
 		return lmp_node;
 	}
 
@@ -153,6 +161,20 @@ private:
 	}
 
 	/**
+	 * @brief Get the inclusive successor node of a given key.
+	 * 
+	 * @param key to get the successor node of.
+	 * @return the successor node.
+	 */
+	node_ptr get_inclusive_successor_node(key_type key) const noexcept(NEX) {
+		if (empty()) return nullptr;
+		auto node = get_close_leaf(key);
+		if (key > node->key())
+			return node->get_right();
+		return node;
+	}
+
+	/**
 	 * @brief Get the predecessor and successor nodes of a given key.
 	 * 
 	 * @param key to get the predecessor and successor nodes of.
@@ -166,6 +188,16 @@ private:
 		if (key > node->key())
 			return node_ptr_pair(node, node->get_right());
 		return node_ptr_pair(node->get_left(), node->get_right());
+	}
+
+	/**
+	 * @brief Get leaf node from a given key.
+	 * 
+	 * @param key to get the leaf node of.
+	 * @return the leaf node.
+	 */
+	node_ptr get_leaf_node(key_type key) const noexcept {
+		return lss_.back().at(key);
 	}
 
 public:
@@ -378,13 +410,13 @@ public:
 		if (direction == left_) {
 			parent->set_left(leaf);
 			if (parent->get_right() == nullptr)
-				parent->set_right(leaf);
+				parent->set_right_skip_link(leaf);
 		} 
 		// Otherwise, the direction must be RIGHT.
 		else {
 			parent->set_right(leaf);
 			if (parent->get_left() == nullptr)
-				parent->set_left(leaf);
+				parent->set_left_skip_link(leaf);
 		}
 	}
 

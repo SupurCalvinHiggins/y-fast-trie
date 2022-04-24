@@ -280,9 +280,10 @@ private:
 //Visualization
 public:
     void MARK(node_ptr node){
-        node_path_.push_back(node);
-        if (animate_) 
-            UPDATE_GUI();
+        if (animate_) {
+            node_path_.push_back(node);
+            UPDATE_GUI();          
+        }
     }
 
     void CLEAN() noexcept{

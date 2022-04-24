@@ -1,3 +1,12 @@
+/**
+ * @file red-black-tree.example.cpp
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Example program using RedBlackTree.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #include "../src/red-black-tree/red-black-tree.h"
 #include <iostream>
 #include <cstdint>

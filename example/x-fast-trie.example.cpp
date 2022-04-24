@@ -1,3 +1,12 @@
+/**
+ * @file x-fast-trie.example.cpp
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Example program using XFastTrie.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #include "../src/x-fast-trie/x-fast-trie.h"
 #include <iostream>
 #include <cstdint>
