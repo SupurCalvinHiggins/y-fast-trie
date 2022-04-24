@@ -57,7 +57,7 @@ private:
 	 * @param key to get the representative of.
 	 * @return representative of the key.
 	 */
-	inline key_type get_representative(key_type key) const noexcept {
+	inline key_type get_representative(key_type key) noexcept {
 		return (key & ~partition_mask_) + partition_mask_;
 	}
 
@@ -67,7 +67,7 @@ private:
 	 * @param key to get the partition and representative node of.
 	 * @return the partition and representative node.
 	 */
-	partition_and_node_ptr_pair get_partition_and_node(key_type key) const noexcept(NEX) {
+	partition_and_node_ptr_pair get_partition_and_node(key_type key) noexcept(NEX) {
 		// Since the index searches for strict successors, we need to subtract 1. However, we do not
 		// need to subtract 1 from 0 since the representative keys are strictly greater than zero.
 		auto pred_key = key == 0 ? 0 : key - 1;
@@ -156,7 +156,7 @@ public:
 	 * 
 	 * @return size_type number of keys in stored the trie.
 	 */
-	inline size_type size() const noexcept {
+	inline size_type size() noexcept {
 		return size_;
 	}
 
@@ -166,7 +166,7 @@ public:
 	 * @return true if the trie contains no keys.
 	 * @return false if the trie contains some keys.
 	 */
-	inline bool empty() const noexcept {
+	inline bool empty() noexcept {
 		return size_ == 0;
 	}
 
@@ -177,7 +177,7 @@ public:
 	 * @return true if the trie contains the key.
 	 * @return false if the trie does not contain the key.
 	 */
-	bool contains(key_type key) const noexcept(NEX) {
+	bool contains(key_type key) noexcept(NEX) {
 		if (empty()) return false;
 		// Compute the partition that the key would belong to. If the partition exists and contains
 		// the key then the trie contains that key. Otherwise, the trie does not contain the key.
@@ -194,7 +194,7 @@ public:
 	 * @return some_key_type predecessor key if the predecessor exists. 
 	 * @return none_key_type if the predecessor does not exist.
 	 */
-	some_key_type predecessor(key_type key) const noexcept(NEX) {
+	some_key_type predecessor(key_type key) noexcept(NEX) {
 		if (empty()) return some_key_type();
 
 		// Compute the partition and representative node that the key would belong to.
@@ -240,7 +240,7 @@ public:
 	 * @return some_key_type successor key if the successor exists.
 	 * @return none_key_type if the successor does not exist.
 	 */
-	some_key_type successor(key_type key) const noexcept(NEX) { 
+	some_key_type successor(key_type key) noexcept(NEX) { 
 		if (empty()) return some_key_type();
 
 		// Compute the partition and representative node that the key would belong to.
@@ -280,7 +280,7 @@ public:
 	 * @return some_key_type minimum key if trie is not empty.
 	 * @return none_key_type if the trie is empty.
 	 */
-	some_key_type min() const noexcept(NEX) { 
+	some_key_type min() noexcept(NEX) { 
 		if (empty()) return some_key_type(); 
 		auto min_rep_key = index_.min().value();
 		return partitions_.at(min_rep_key)->min();
@@ -292,7 +292,7 @@ public:
 	 * @return some_key_type maximum key if trie is not empty.
 	 * @return none_key_type if the trie is empty.
 	 */
-	some_key_type max() const noexcept(NEX) { 
+	some_key_type max() noexcept(NEX) { 
 		if (empty()) return some_key_type(); 
 		auto max_rep_key = index_.max().value();
 		return partitions_.at(max_rep_key)->max(); 
@@ -454,20 +454,27 @@ private:
 	 * @param ptr to convert. 
 	 * @return DOT string of the pointer.
 	 */
-    std::string ptr_to_str(void* ptr) const noexcept {
+    std::string ptr_to_str(void* ptr) noexcept {
         std::ostringstream ss;
         ss << ptr;
         return "n" + ss.str();
     }
 
     void CLEAN() {
-        index_.CLEAN();
+        index_.CLEAN_NO_UPDATE();
         for (auto& pair : partitions_) 
-            pair.second->CLEAN();
+            pair.second->CLEAN_NO_UPDATE();
+		UPDATE_GUI();
     }
 
 public:
 	// Extra public methods for the demo program.
+
+	void set_animate(bool animate) {
+		index_.set_animate(animate);
+		for (auto pair : partitions_)
+			pair.second->set_animate(animate);
+	}
 
 	/**
 	 * @brief Build a string in the DOT format representing the trie.

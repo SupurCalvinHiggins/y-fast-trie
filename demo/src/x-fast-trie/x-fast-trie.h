@@ -97,8 +97,10 @@ private:
 		while (low_level <= high_level) {
 			size_type mid_level = (low_level + high_level) >> 1;
 			auto prefix = get_prefix(key, mid_level);
-			if (lss_.at(mid_level).contains(prefix))
-                low_level = mid_level + 1;
+			if (lss_.at(mid_level).contains(prefix)) {
+				low_level = mid_level + 1;
+				MARK_AND_UPDATE(lss_.at(mid_level).at(prefix));
+			}
 			else 
 				high_level = mid_level - 1;
 		}
@@ -239,7 +241,7 @@ public:
 	 * @brief Construct a new XFastTrie object.
 	 * 
 	 */
-	XFastTrie() : size_(0) {
+	XFastTrie() : size_(0), animate_(true) {
 		lss_.reserve(bit_length_);
 		for (size_type i = 0; i <= bit_length_; ++i)
 			lss_.push_back(level_type());
@@ -520,6 +522,7 @@ private:
     // Extra private members for the demo program.
 
     std::vector<node_ptr> marked_;
+	bool animate_;
 
 private:
 	// Extra private methods for the demo program.
@@ -549,10 +552,11 @@ private:
     }
 
     void MARK_AND_UPDATE(node_ptr ptr, std::string debug = "") {
-        if (debug != "")
-            std::cout << "*** DEBUG ***\n" <<  debug << "\n\n";
+        // if (debug != "")
+        //     std::cout << "*** DEBUG ***\n" <<  debug << "\n\n";
         MARK(ptr);
-        UPDATE_GUI();
+		if (animate_)
+        	UPDATE_GUI();
     }
 
     void MARK(node_ptr ptr) {
@@ -560,13 +564,22 @@ private:
     }
 
     void CLEAN() {
-        std::cout << "clean";
+        // std::cout << "clean";
         marked_.clear();
         UPDATE_GUI();
     }
 
+	void CLEAN_NO_UPDATE() {
+        // std::cout << "clean";
+        marked_.clear();
+    }
+
 public:
 	// Extra public methods for the demo program.
+
+	void set_animate(bool animate) {
+		animate_ = animate;
+	}
 
 	/**
 	 * @brief Get the DOT string representation of the trie.
