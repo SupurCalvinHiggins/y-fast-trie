@@ -88,15 +88,16 @@ namespace GUI
 
         bool is_active;
         bool is_entered;
+        bool show_cursor;
+
         float key_timer;
         float key_timer_max;
+        float cursor_timer;
+        float cursor_timer_max;
+        
         unsigned short char_limit;
         unsigned short ascii_range_min;
         unsigned short ascii_range_max;
-
-        float cursor_timer;
-        float cursor_timer_max;
-        bool show_cursor;
 
         sf::Color text_color;
         sf::Color shape_color;
@@ -113,10 +114,10 @@ namespace GUI
 
         void animateCursor(const float &dt);
         void updateKeyTime(const float &dt);
-        void deleteCharacter(); // When backspace is pressed
-        void deleteString(); // When enter is pressed return and erase the string that was typed
-        void updateInput(const float &dt, sf::Event event, std::string &user_input);
-        void update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input);
+        void deleteCharacter();
+        void deleteString();
+        void updateInput(const float &dt, sf::Event event, std::string &user_input, bool &other_box_active);
+        void update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input, bool &other_box_active);
         void render(sf::RenderTarget &target);
     };
 }

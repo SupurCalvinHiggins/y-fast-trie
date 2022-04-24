@@ -22,7 +22,7 @@ public:
     virtual ~AboutState();
 
     // Functions
-    std::string getStateID();
+    unsigned short getStateID();
     void updateInput(const float &dt);
     void updateButtons();
     void update(const float &dt, sf::Event event);

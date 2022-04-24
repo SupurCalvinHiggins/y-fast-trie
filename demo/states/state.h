@@ -48,10 +48,11 @@ public:
     void inConsoleState();
     void outConsoleState();
     
-    virtual std::string getStateID() = 0;
     virtual void updateMousePositions();
     virtual void updateKeyTime(const float &dt);
     virtual void updateInput(const float &dt) = 0;
     virtual void update(const float &dt, sf::Event event) = 0;
     virtual void render(sf::RenderTarget *target = nullptr) = 0;
+    
+    virtual unsigned short getStateID() = 0;
 };

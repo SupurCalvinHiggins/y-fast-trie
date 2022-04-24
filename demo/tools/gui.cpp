@@ -20,7 +20,8 @@ GUI::Button::Button(float x, float y, float width, float height, sf::Font *font,
     this->text.setString(text);
     this->text.setFillColor(text_color);
     this->text.setCharacterSize(charecter_size);
-    this->text.setPosition(x + (width / 2) - (this->text.getGlobalBounds().width / 2), y + (height / 2) - (this->text.getGlobalBounds().height / 2));
+    this->text.setPosition(this->rect_shape.getPosition().x + this->rect_shape.getGlobalBounds().width /2.f - this->text.getGlobalBounds().width / 2.f,
+        this->rect_shape.getPosition().y + this->rect_shape.getGlobalBounds().height /2.f - this->text.getGlobalBounds().height / 2.f);
 
     this->text_color = text_color;
     this->text_hover_color = text_hover_color;
@@ -92,7 +93,7 @@ void GUI::Button::render(sf::RenderTarget &target) {
 
 ////////////////// DROP DOWN LIST //////////////////
 GUI::DropDownList::DropDownList(float x, float y, float width, float height, sf::Font &font, std::vector<std::string> button_names) : font(font), is_list_open(false), key_timer_max(0.25f), key_timer(0.f) {
-    this->slection = new GUI::Button(x, y, width, height, &this->font, button_names[0], 35, sf::Color(255,255,255,150), sf::Color(255, 255, 255, 255), sf::Color(20, 20, 20, 50), sf::Color(70, 70, 70, 200), sf::Color(150, 150, 150, 200), sf::Color(20, 20, 20, 200), 0, sf::Color(255,255,255,200), sf::Color::White, sf::Color(20, 20, 20, 50));
+    this->slection = new GUI::Button(x, y, width, height, &this->font, button_names[0], 35, sf::Color(238, 238, 238), sf::Color(255, 255, 255, 255), sf::Color(20, 20, 20, 50), sf::Color(70, 70, 70, 200), sf::Color(150, 150, 150, 200), sf::Color(20, 20, 20, 200), 0, sf::Color(255,255,255,200), sf::Color::White, sf::Color(20, 20, 20, 50));
 
     for (size_t i = 0; i < button_names.size(); i++) {
         this->list.push_back(new GUI::Button(x, y + ((i+1) * height), width, height, &this->font, button_names[i], 35, sf::Color(255,255,255,150), sf::Color(255, 255, 255, 255), sf::Color(20, 20, 20, 50), sf::Color(70, 70, 70, 200), sf::Color(150, 150, 150, 200), sf::Color(20, 20, 20, 200), i));
@@ -237,14 +238,15 @@ void GUI::TextBox::deleteString() {
     this->text.setString(this->text_str);
 }
 
-void GUI::TextBox::updateInput(const float &dt, sf::Event event, std::string &user_input) {
+void GUI::TextBox::updateInput(const float &dt, sf::Event event, std::string &user_input, bool &other_box_active) {
     this->animateCursor(dt);
 
     if (event.text.unicode == 8 && this->getKeyTimer())
         this->deleteCharacter();
-    else if (event.key.code == sf::Keyboard::Return && this->getKeyTimer()) { //! Return string then delete when enter is hit somehow... make sure to check if string is empty when it's returned
+    else if (event.key.code == sf::Keyboard::Return && this->getKeyTimer()) {
         this->is_active = false;
         this->is_entered = true;
+        other_box_active = false;
         user_input = this->text_str;
         this->deleteString();
     }
@@ -256,18 +258,19 @@ void GUI::TextBox::updateInput(const float &dt, sf::Event event, std::string &us
     }
 }
 
-void GUI::TextBox::update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input) {
+void GUI::TextBox::update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input, bool &other_box_active) {
     this->updateKeyTime(dt);
 
-    if (this->rect_shape.getGlobalBounds().contains(mouse_pos)) {
+    if (this->rect_shape.getGlobalBounds().contains(mouse_pos) && !other_box_active) {
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             this->is_active = true;
+            other_box_active = true;
         }
     }
 
     if (this->is_active) {
         rect_shape.setOutlineColor(this->outline_color);
-        this->updateInput(dt, event, user_input);
+        this->updateInput(dt, event, user_input, other_box_active);
     }
     else {
         rect_shape.setOutlineColor(sf::Color(128,128,128));

@@ -35,11 +35,32 @@ void VisualizerState::initConsoleMenu() {
 
     this->console_menu->addButton("EXIT", 900.f, "Exit");
 
-    this->console_menu->addTextBox("INSERT", 200.f);
-    this->console_menu->addTextBox("REMOVE", 300.f);
-    this->console_menu->addTextBox("PREDECESSOR", 400.f);
-    this->console_menu->addTextBox("SUCCESSOR", 500.f);
-    this->console_menu->addTextBox("CONTAINS", 600.f);
+    this->console_menu->addTextBox("INSERT", 210.f);
+    this->console_menu->addTextBox("REMOVE", 325.f);
+    this->console_menu->addTextBox("PREDECESSOR", 435.f);
+    this->console_menu->addTextBox("SUCCESSOR", 550.f);
+    this->console_menu->addTextBox("CONTAINS", 665.f);
+}
+
+// Display a message on the screen that shows if animation status is on or off for one second and then clear the screen
+void VisualizerState::displayAnimationStatus() {
+    if (this->is_animated) {
+        this->animation_status.setString("Animation: ON");
+        this->animation_status.setFillColor(sf::Color::Green);
+    } else {
+        this->animation_status.setString("Animation: OFF");
+        this->animation_status.setFillColor(sf::Color::Red);
+    }
+    this->animation_status.setFont(this->font);
+    this->animation_status.setCharacterSize(50);
+    this->animation_status.setPosition(this->window->getSize().x / 2.f - this->animation_status.getGlobalBounds().width / 2.f, this->window->getSize().y / 2.f - this->animation_status.getGlobalBounds().height / 2.f);
+
+    this->window->draw(this->animation_status);
+    this->window->display();
+
+    sf::sleep(sf::seconds(1.f));
+
+    this->window->clear();
 }
 
 VisualizerState::VisualizerState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states, short unsigned trie_type) : State(window, valid_keys, states) {
@@ -48,14 +69,16 @@ VisualizerState::VisualizerState(sf::RenderWindow *window, std::map<std::string,
     this->initFonts();
     this->initConsoleMenu();
     this->trie_type = trie_type;
+
+    this->is_animated = true;
 }
 
 VisualizerState::~VisualizerState() {
     delete this->console_menu;
 }
 
-std::string VisualizerState::getStateID() {
-    return "VISUALIZER_STATE";
+unsigned short VisualizerState::getStateID() {
+    return 2;
 }
 
 void VisualizerState::updateInput(const float &dt) {
@@ -65,20 +88,38 @@ void VisualizerState::updateInput(const float &dt) {
         else
             this->outConsoleState();
     }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("ANIMATION_ON_OFF"))) && this->getKeyTimer()) {
+        this->is_animated = !this->is_animated;
+        yfast_8.set_animate(this->is_animated);
+        yfast_16.set_animate(this->is_animated);
+        yfast_32.set_animate(this->is_animated);
+        yfast_64.set_animate(this->is_animated);
+        this->displayAnimationStatus();
+    }
 }
 
 void VisualizerState::updateRandomInsert() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("INSERT_RANDOM"))) && this->getKeyTimer()) {
-        if (this->trie_type == 0)
-            yfast_8.insert(std::rand() % 256);
-        else if (this->trie_type == 1)
-            yfast_16.insert(std::rand() % 65536);
-        else if (this->trie_type == 2)
-            yfast_32.insert(std::rand() % 4294967296);
-        else if (this->trie_type == 3)
-            std::cout << "Inserting random number into uint64_t trie is not supported yet!" << std::endl;
-            //yfast_64.insert(std::rand() % 18446744073709551616);
-            // FIX
+        std::random_device rd;
+        std::mt19937_64 gen(rd());
+
+        if (this->trie_type == 0) {
+            std::uniform_int_distribution<uint8_t> dis;
+            yfast_8.insert(dis(gen));
+        }
+        else if (this->trie_type == 1) {
+            std::uniform_int_distribution<uint16_t> dis;
+            yfast_16.insert(dis(gen));
+        }
+        else if (this->trie_type == 2) {
+            std::uniform_int_distribution<uint32_t> dis;
+            yfast_32.insert(dis(gen));
+        }
+        else if (this->trie_type == 3) {
+            std::uniform_int_distribution<uint64_t> dis;
+            yfast_64.insert(dis(gen));
+        }
     }
 }
 
@@ -100,7 +141,7 @@ void VisualizerState::updateBackground() {
     system("dot -Tpng -Gsize=1920,1080\! -Gdpi=1 resource/image/visualizer.dot -o resource/image/background/visualizer.png");
 
     if (!this->trie_image.loadFromFile("resource/image/background/visualizer.png"))
-        throw std::runtime_error("Could not load Y-Fast Trie Visualizer background texture!");
+        throw std::runtime_error("Could not load Y-Fast Trie PNG!");
 
     this->background_image.create(this->window->getSize().x, this->window->getSize().y, sf::Color::White);
     this->background_image.copy(this->trie_image, (this->background_image.getSize().x - this->trie_image.getSize().x)/2, (this->background_image.getSize().y - this->trie_image.getSize().y)/2);
@@ -109,26 +150,15 @@ void VisualizerState::updateBackground() {
     this->background.setTexture(this->background_texture);
 }
 
-void VisualizerState::updateConsoleInput() { // ! CONDENSE PLEASE
+void VisualizerState::updateConsoleInput() {
     if (this->console_menu->isButtonClicked("EXIT") && this->getKeyTimer())
         this->exitState();
-    /*
-    if (this->console_menu->isTextBoxEntered("INSERT")) {
-        if (this->trie_type == 0) {
-            this->outConsoleState();
-            yfast_8.insert(std::stoi(user_input));
-        }
-        else if (this->trie_type == 1)
-            std::cout << "YFAST-16 INSERT: " << user_input << std::endl;
-        else if (this->trie_type == 2)
-            std::cout << "YFAST-32 INSERT: " << user_input << std::endl;
-        else if (this->trie_type == 3)
-            std::cout << "YFAST-64 INSERT: " << user_input << std::endl;
-    }
-    */
-
     
     if (this->console_menu->isTextBoxEntered("INSERT")) {
+        if (this->user_input.empty())
+            return;
+
+        this->outConsoleState();
         if (this->trie_type == 0) {
             if (std::stoul(this->user_input) <= yfast_8.upper_bound())
                 yfast_8.insert(std::stoul(this->user_input));
@@ -155,6 +185,10 @@ void VisualizerState::updateConsoleInput() { // ! CONDENSE PLEASE
         }
     }
     else if (this->console_menu->isTextBoxEntered("REMOVE")) {
+        if (this->user_input.empty())
+            return;
+
+        this->outConsoleState();
         if (this->trie_type == 0) {
             if (std::stoul(this->user_input) <= yfast_8.upper_bound())
                 yfast_8.remove(std::stoul(this->user_input));
@@ -181,6 +215,10 @@ void VisualizerState::updateConsoleInput() { // ! CONDENSE PLEASE
         }
     }
     else if (this->console_menu->isTextBoxEntered("PREDECESSOR")) {
+        if (this->user_input.empty())
+            return;
+
+        this->outConsoleState();
         if (this->trie_type == 0) {
             if (std::stoul(this->user_input) <= yfast_8.upper_bound())
                 yfast_8.predecessor(std::stoul(this->user_input));
@@ -207,6 +245,10 @@ void VisualizerState::updateConsoleInput() { // ! CONDENSE PLEASE
         }
     }
     else if (this->console_menu->isTextBoxEntered("SUCCESSOR")) {
+        if (this->user_input.empty())
+            return;
+
+        this->outConsoleState();
         if (this->trie_type == 0) {
             if (std::stoul(this->user_input) <= yfast_8.upper_bound())
                 yfast_8.successor(std::stoul(this->user_input));
@@ -233,6 +275,10 @@ void VisualizerState::updateConsoleInput() { // ! CONDENSE PLEASE
         }
     }
     else if (this->console_menu->isTextBoxEntered("CONTAINS")) {
+        if (this->user_input.empty())
+            return;
+            
+        this->outConsoleState();
         if (this->trie_type == 0) {
             if (std::stoul(this->user_input) <= yfast_8.upper_bound())
                 yfast_8.contains(std::stoul(this->user_input));

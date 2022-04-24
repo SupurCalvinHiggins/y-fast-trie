@@ -30,9 +30,9 @@ void AboutState::initKeyBinds() {
 
 void AboutState::initButtons() {
     // TODO: Make this button the GitHub logo
-    this->buttons["GITHUB"] = new GUI::Button(500.f, 475.f, 150.f, 50.f, &this->button_font, "Github", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
+    this->buttons["GITHUB"] = new GUI::Button(500.f, 475.f, 150.f, 50.f, &this->button_font, "Github", 50, sf::Color(37, 197, 230, 200), sf::Color::Cyan, sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
     
-    this->buttons["BACK"] = new GUI::Button(1412.f, 800.f, 160.f, 50.f, &this->button_font, "Go Back", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
+    this->buttons["BACK"] = new GUI::Button(1412.f, 800.f, 160.f, 50.f, &this->button_font, "Go Back", 50, sf::Color(212, 17, 17), sf::Color::Red, sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
 }
 
 AboutState::AboutState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states) : State(window, valid_keys, states) {
@@ -48,8 +48,8 @@ AboutState::~AboutState() {
     }
 }
  
-std::string AboutState::getStateID() {
-    return "ABOUT_STATE";
+unsigned short AboutState::getStateID() {
+    return 1;
 }
 
 void AboutState::updateInput(const float &dt) {

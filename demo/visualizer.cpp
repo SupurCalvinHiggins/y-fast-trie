@@ -7,7 +7,7 @@ void Visualizer::initWindow() {
     
     this->videoModes = sf::VideoMode::getFullscreenModes();
 
-    std::string title = "None";
+    std::string title = "";
     sf::VideoMode window_size = sf::VideoMode::getDesktopMode();
 
     unsigned framerate_limit = 120;
@@ -69,10 +69,7 @@ Visualizer::~Visualizer() {
 }
 
 bool Visualizer::isVisualizerState() {
-    if (states.top()->getStateID() == "VISUALIZER_STATE") {
-        return true;
-    }
-    return false;
+    return states.top()->getStateID() == 2;
 }
 
 void Visualizer::updateVisualizerBackground() {
@@ -136,7 +133,6 @@ void Visualizer::run() {
 }
 
 void Visualizer::endApplication() {
-    std::cout << "Ending Application!" << std::endl;
     this->window->close();
 }
 

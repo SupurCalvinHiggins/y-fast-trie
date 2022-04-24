@@ -22,7 +22,7 @@ public:
     virtual ~MainMenuState();
 
     // Functions
-    std::string getStateID();
+    unsigned short getStateID();
     void updateInput(const float &dt);
     void updateGUI(const float &dt);
     void update(const float &dt, sf::Event event);

@@ -19,10 +19,14 @@ private:
     sf::RectangleShape background;
     sf::RectangleShape console;
     sf::Font &font;
-    sf::Text console_text;
+    sf::Text title_text;
+    sf::Text text_box_names;
 
     std::map<std::string, GUI::Button*> buttons; // ! Don't need map since textboxes immediately return the text
     std::map<std::string, GUI::TextBox*> text_boxes;
+    bool text_box_active;
+
+    void initText();
 
 public:
     ConsoleMenu(sf::RenderWindow &window, sf::Font &font);

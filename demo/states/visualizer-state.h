@@ -14,6 +14,9 @@ private:
     sf::Sprite background;
     ConsoleMenu *console_menu;
     sf::Font font;
+    sf::Text animation_status;
+    
+    bool is_animated;
 
     short unsigned trie_type;
     YFastTrie<uint8_t> yfast_8;
@@ -26,12 +29,13 @@ private:
     void initFonts();
     void initKeyBinds();
     void initConsoleMenu();
+    void displayAnimationStatus();
     
 public:
     VisualizerState(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states, unsigned short trie_type);
     virtual ~VisualizerState();
 
-    std::string getStateID();
+    unsigned short getStateID();
     
     // Functions
     void updateInput(const float &dt);

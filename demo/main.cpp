@@ -8,8 +8,7 @@ int main() {
     return 0;
 }
 
-//TODO: Redesign button colors, make them more consistent and change fonts
-    // Courier New
+//TODO: Add message print when fast animation enable/disable
 //TODO: Fix uint_64t random number generation and make other random number generators more accurate... check uniform_int_distribution
 //TODO: Change backgrounds to Images then textures not rectangles (like in visualizerstate updateBackground())
 //TODO: Commet everything in GUI

@@ -30,9 +30,9 @@ void MainMenuState::initKeyBinds() {
 }
 
 void MainMenuState::initGUI() {
-    this->buttons["ABOUT"] = new GUI::Button(320.f, 800.f, 150.f, 50.f, &this->button_font, "About", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
-    this->buttons["EXIT"] = new GUI::Button(1450.f, 800.f, 150.f, 50.f, &this->button_font, "Quit", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
-    this->buttons["START"] = new GUI::Button(860.f, 650.f, 150.f, 50.f, &this->button_font, "Generate", 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
+    this->buttons["ABOUT"] = new GUI::Button(320.f, 800.f, 150.f, 50.f, &this->button_font, "About", 50, sf::Color(230, 209, 28), sf::Color::Yellow, sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
+    this->buttons["EXIT"] = new GUI::Button(1450.f, 800.f, 150.f, 50.f, &this->button_font, "Quit", 50, sf::Color(212, 17, 17), sf::Color::Red, sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
+    this->buttons["START"] = new GUI::Button(860.f, 650.f, 150.f, 50.f, &this->button_font, "Generate", 50, sf::Color(83, 209, 33), sf::Color::Green, sf::Color((20, 20, 20, 50)), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
 
     std::vector<std::string> drop_down_button_names {"uint8_t", "uint_16t", "uint32_t", "uint64_t"};
     this->trie_types_list = new GUI::DropDownList(860.f, 400.f, 150.f, 50.f, this->button_font, drop_down_button_names);
@@ -53,8 +53,8 @@ MainMenuState::~MainMenuState() {
     delete this->trie_types_list;
 }
 
-std::string MainMenuState::getStateID() {
-    return "MAIN_MENU";
+unsigned short MainMenuState::getStateID() {
+    return 0;
 }
  
 void MainMenuState::updateInput(const float &dt) {
