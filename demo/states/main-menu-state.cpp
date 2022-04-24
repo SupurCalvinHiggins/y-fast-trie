@@ -66,18 +66,19 @@ void MainMenuState::updateGUI(const float &dt) {
         it.second->update(this->mouse_pos_view);
     }
 
-    if (this->buttons["ABOUT"]->isClicked())
+    if (this->buttons["ABOUT"]->isClicked() && this->getKeyTimer())
         this->states->push(new AboutState(this->window, this->valid_keys, this->states));
-    if (this->buttons["EXIT"]->isClicked())
+    if (this->buttons["EXIT"]->isClicked() && this->getKeyTimer())
         this->exitState();
-    if (this->buttons["START"]->isClicked())
+    if (this->buttons["START"]->isClicked() && this->getKeyTimer())
         this->states->push(new VisualizerState(this->window, this->valid_keys, this->states, this->trie_types_list->getSelectionID()));
 
     this->trie_types_list->update(this->mouse_pos_view, dt);
 }
 
-void MainMenuState::update(const float &dt) {
+void MainMenuState::update(const float &dt, sf::Event event) {
     this->updateMousePositions();
+    this->updateKeyTime(dt);
     this->updateInput(dt);
 
     this->updateGUI(dt);

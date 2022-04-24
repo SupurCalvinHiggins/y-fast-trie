@@ -102,7 +102,7 @@ void Visualizer::update() {
     this->updateEvents();
 
     if (!this->states.empty()) {
-        this->states.top()->update(this->dt);
+        this->states.top()->update(this->dt, this->event);
 
         if (this->states.top()->getExit()) {
             this->states.top()->exitState();

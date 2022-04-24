@@ -25,7 +25,7 @@ public:
     std::string getStateID();
     void updateInput(const float &dt);
     void updateButtons();
-    void update(const float &dt);
+    void update(const float &dt, sf::Event event);
     void renderButtons(sf::RenderTarget &target);
     void render(sf::RenderTarget *target = nullptr);
 };

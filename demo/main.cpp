@@ -8,11 +8,6 @@ int main() {
     return 0;
 }
 
-
-//TODO: Update console to have buttons
-//TODO: Add appropriate actions to console buttons
-//TODO: Update image after button in console is pressed (or update when console is closed)
-//TODO: Add timer to limit how often buttons can be clicked
 //TODO: Redesign button colors, make them more consistent and change fonts
     // Courier New
 //TODO: Fix uint_64t random number generation and make other random number generators more accurate... check uniform_int_distribution

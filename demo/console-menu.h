@@ -21,7 +21,8 @@ private:
     sf::Font &font;
     sf::Text console_text;
 
-    std::map<std::string, GUI::Button*> buttons;
+    std::map<std::string, GUI::Button*> buttons; // ! Don't need map since textboxes immediately return the text
+    std::map<std::string, GUI::TextBox*> text_boxes;
 
 public:
     ConsoleMenu(sf::RenderWindow &window, sf::Font &font);
@@ -31,7 +32,10 @@ public:
 
     // Functions
     const bool isButtonClicked(const std::string key);
+    const bool isTextBoxEntered(const std::string key);
+
+    void addTextBox(const std::string key, float y);
     void addButton(const std::string key, float y, const std::string text);
-    void update(const sf::Vector2f &mouse_pos);
+    void update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input);
     void render(sf::RenderTarget &target);
 };

@@ -61,14 +61,15 @@ void AboutState::updateButtons() {
         it.second->update(this->mouse_pos_view);
     }
 
-    if (this->buttons["GITHUB"]->isClicked())
+    if (this->buttons["GITHUB"]->isClicked() && this->getKeyTimer())
         system("open https://github.com/SupurCalvinHiggins/y-fast-trie");
-    if (this->buttons["BACK"]->isClicked())
+    if (this->buttons["BACK"]->isClicked() && this->getKeyTimer())
         this->exitState();
 }
 
-void AboutState::update(const float &dt) {
+void AboutState::update(const float &dt, sf::Event event) {
     this->updateMousePositions();
+    this->updateKeyTime(dt);
     this->updateInput(dt);
 
     this->updateButtons();

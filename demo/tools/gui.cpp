@@ -5,7 +5,7 @@
 GUI::Button::Button(float x, float y, float width, float height, sf::Font *font, std::string text, unsigned charecter_size,
     sf::Color text_color, sf::Color text_hover_color, sf::Color text_active_color,
     sf::Color button_color, sf::Color hover_color, sf::Color active_color,
-    short unsigned button_id, sf::Color outline_color, sf::Color outline_hover_color, sf::Color outline_active_color) {
+    unsigned short button_id, sf::Color outline_color, sf::Color outline_hover_color, sf::Color outline_active_color) {
     this->button_state = button_state_normal;
     this->button_id = button_id;
 
@@ -44,11 +44,11 @@ const std::string GUI::Button::getText() const {
     return this->text.getString();
 }
 
-const short unsigned &GUI::Button::getButtonID() const {
+const unsigned short &GUI::Button::getButtonID() const {
     return this->button_id;
 }
 
-void GUI::Button::setID(const short unsigned button_id) {
+void GUI::Button::setID(const unsigned short button_id) {
     this->button_id = button_id;
 }
 
@@ -116,7 +116,7 @@ const bool GUI::DropDownList::getKeyTimer() {
     return false;
 }
 
-const short unsigned &GUI::DropDownList::getSelectionID() const {
+const unsigned short &GUI::DropDownList::getSelectionID() const {
     return this->slection->getButtonID();
 }
 
@@ -155,4 +155,126 @@ void GUI::DropDownList::render(sf::RenderTarget &target) {
             button->render(target);
         }
     }
+}
+
+////////////////// TEXT BOXES //////////////////
+GUI::TextBox::TextBox(float x, float y, float width, float height, unsigned short char_limit, unsigned short charecter_size, unsigned short ascii_range_min, unsigned short ascii_range_max, sf::Font &font, sf::Color text_color, sf::Color shape_color, sf::Color outline_color) : key_timer_max(0.225f), key_timer(0.f), cursor_timer_max(0.5f), cursor_timer(0.f) {
+    this->is_active = false;
+    this->is_entered = false;
+    this->show_cursor = true;
+
+    this->rect_shape.setPosition(sf::Vector2f(x, y));
+    this->rect_shape.setSize(sf::Vector2f(width, height));
+    this->rect_shape.setFillColor(shape_color);
+    this->rect_shape.setOutlineColor(outline_color);
+    this->rect_shape.setOutlineThickness(1.f);
+    
+    this->text.setFont(font);
+    this->text.setFillColor(text_color);
+    this->text.setCharacterSize(charecter_size);
+    this->text.setPosition(sf::Vector2f(x, y));
+
+    this->char_limit = char_limit;
+    this->ascii_range_min = ascii_range_min;
+    this->ascii_range_max = ascii_range_max;
+
+    this->text_color = text_color;
+    this->shape_color = shape_color;
+    this->outline_color = outline_color;
+}
+
+GUI::TextBox::~TextBox() {
+}
+
+const bool GUI::TextBox::getKeyTimer() {
+    if (this->key_timer >= this->key_timer_max) {
+        this->key_timer = 0.f;
+        return true;
+    }
+
+    return false;
+}
+
+const std::string GUI::TextBox::getText() const {
+    return this->text.getString();
+}
+
+const bool GUI::TextBox::isTextEntered() {
+    if (this->is_entered) {
+        this->is_entered = false;
+        return true;
+    }
+    
+    return false;
+}
+
+void GUI::TextBox::animateCursor(const float &dt) {
+    if (this->cursor_timer < this->cursor_timer_max) {
+        this->cursor_timer += dt;
+    } else {
+        show_cursor = !show_cursor;
+        this->cursor_timer = 0.f;
+    }
+
+    text.setString(text_str + (show_cursor ? '_' : ' '));
+}
+
+void GUI::TextBox::updateKeyTime(const float &dt) {
+    if (this->key_timer < this->key_timer_max) {
+        this->key_timer += dt;
+    }
+}
+
+void GUI::TextBox::deleteCharacter() {
+    if (this->text_str.size() > 0) {
+        this->text_str.pop_back();
+        this->text.setString(this->text_str);
+    }
+}
+
+void GUI::TextBox::deleteString() {
+    this->text_str.clear();
+    this->text.setString(this->text_str);
+}
+
+void GUI::TextBox::updateInput(const float &dt, sf::Event event, std::string &user_input) {
+    this->animateCursor(dt);
+
+    if (event.text.unicode == 8 && this->getKeyTimer())
+        this->deleteCharacter();
+    else if (event.key.code == sf::Keyboard::Return && this->getKeyTimer()) { //! Return string then delete when enter is hit somehow... make sure to check if string is empty when it's returned
+        this->is_active = false;
+        this->is_entered = true;
+        user_input = this->text_str;
+        this->deleteString();
+    }
+    else if (this->text_str.size() < this->char_limit) {
+        if (event.text.unicode >= this->ascii_range_min && event.text.unicode <= this->ascii_range_max && this->getKeyTimer()) {
+            this->text_str.push_back(event.text.unicode);
+            this->text.setString(this->text_str);
+        }
+    }
+}
+
+void GUI::TextBox::update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input) {
+    this->updateKeyTime(dt);
+
+    if (this->rect_shape.getGlobalBounds().contains(mouse_pos)) {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            this->is_active = true;
+        }
+    }
+
+    if (this->is_active) {
+        rect_shape.setOutlineColor(this->outline_color);
+        this->updateInput(dt, event, user_input);
+    }
+    else {
+        rect_shape.setOutlineColor(sf::Color(128,128,128));
+    }
+}
+
+void GUI::TextBox::render(sf::RenderTarget &target) {
+    target.draw(this->rect_shape);
+    target.draw(this->text);
 }

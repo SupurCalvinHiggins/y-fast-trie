@@ -20,6 +20,7 @@ private:
     YFastTrie<uint16_t> yfast_16;
     YFastTrie<uint32_t> yfast_32;
     YFastTrie<uint64_t> yfast_64;
+    std::string user_input;
 
     void initBackground();
     void initFonts();
@@ -34,8 +35,9 @@ public:
     
     // Functions
     void updateInput(const float &dt);
-    void updateConsoleButtons();
+    void updateRandomInsert();
+    void updateConsoleInput();
     void updateBackground();
-    void update(const float &dt);
+    void update(const float &dt, sf::Event event);
     void render(sf::RenderTarget *target = nullptr);
 };

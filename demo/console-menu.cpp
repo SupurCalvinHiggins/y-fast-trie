@@ -19,6 +19,10 @@ ConsoleMenu::~ConsoleMenu() {
     for (auto it = this->buttons.begin(); it != this->buttons.end(); it++) {
         delete it->second;
     }
+
+    for (auto it = this->text_boxes.begin(); it != this->text_boxes.end(); it++) {
+        delete it->second;
+    }
 }
 
 std::map<std::string, GUI::Button*>& ConsoleMenu::getButtons() {
@@ -29,6 +33,10 @@ const bool ConsoleMenu::isButtonClicked(const std::string key) {
     return this->buttons.at(key)->isClicked();
 }
 
+const bool ConsoleMenu::isTextBoxEntered(const std::string key) {
+    return this->text_boxes.at(key)->isTextEntered();
+}
+
 void ConsoleMenu::addButton(const std::string key, float y, const std::string text) {
     float width = 150.f;
     float height = 50.f;
@@ -37,9 +45,21 @@ void ConsoleMenu::addButton(const std::string key, float y, const std::string te
     this->buttons[key] = new GUI::Button(x, y, width, height, &this->font, text, 50, sf::Color(70,70,70,200), sf::Color(250, 250, 250, 250), sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
 }
 
-void ConsoleMenu::update(const sf::Vector2f &mouse_pos) {
+void ConsoleMenu::addTextBox(const std::string key, float y) {
+    float width = 250.f;
+    float height = 50.f;
+    float x = this->console.getPosition().x + this->console.getSize().x / 2.f - width / 2.f;
+
+    this->text_boxes[key] = new GUI::TextBox(x, y, width, height, 20, 25, 48, 57, this->font, sf::Color::Black, sf::Color::White, sf::Color::Blue);
+}
+
+void ConsoleMenu::update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input) {
     for (auto &it : this->buttons) {
         it.second->update(mouse_pos);
+    }
+
+    for (auto &it : this->text_boxes) {
+        it.second->update(mouse_pos, dt, event, user_input);
     }
 }
 
@@ -48,6 +68,10 @@ void ConsoleMenu::render(sf::RenderTarget &target) {
     target.draw(this->console);
 
     for (auto &it : this->buttons) {
+        it.second->render(target);
+    }
+
+    for (auto &it : this->text_boxes) {
         it.second->render(target);
     }
 
