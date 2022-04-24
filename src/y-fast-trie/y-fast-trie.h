@@ -1,3 +1,12 @@
+/**
+ * @file y-fast-trie.h
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief YFastTrie class template.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #pragma once 
 #include "../x-fast-trie/x-fast-trie.h"
 #include "../x-fast-trie/x-fast-trie-map-wrapper.h"
@@ -52,26 +61,15 @@ private:
 private:
 
 	/**
-	 * @brief Get the representative key from a given key.
-	 * 
-	 * @param key to get the representative of.
-	 * @return representative of the key.
-	 */
-	inline key_type get_representative(key_type key) const noexcept {
-		return (key & ~partition_mask_) + partition_mask_;
-	}
-
-	/**
 	 * @brief Get the partition and representative node of a key.
 	 * 
 	 * @param key to get the partition and representative node of.
 	 * @return the partition and representative node.
 	 */
 	partition_and_node_ptr_pair get_partition_and_node(key_type key) const noexcept(NEX) {
-		// Since the index searches for strict successors, we need to subtract 1. However, we do not
-		// need to subtract 1 from 0 since the representative keys are strictly greater than zero.
-		auto pred_key = key == 0 ? 0 : key - 1;
-		auto node = index_.get_successor_node(pred_key);
+		// First, we compute the inclusive successor node of the key. This is the representative 
+		// node of the partition that the key should be in.
+		auto node = index_.get_inclusive_successor_node(key);
 
 		// Now that we have computed the representative node, we can compute the partition that
 		// the representative node belongs to. If the node does not exist, then the partition also
@@ -81,7 +79,6 @@ private:
 		
 		// Compute the partition.
 		auto partition = partitions_.at(node->key());
-
 		return partition_and_node_ptr_pair(partition, node);
 	}
 
@@ -92,27 +89,29 @@ private:
 	 * @return the partition and representative node.
 	 */
 	partition_and_node_ptr_pair create_partition_and_node(key_type key) noexcept(NEX) {
-		// Since the index searches for strict successors, we need to subtract 1. However, we do not
-		// need to subtract 1 from 0 since the representative keys are strictly greater than zero.
-		auto pred_key = key == 0 ? 0 : key - 1;
-		auto node = index_.get_successor_node(pred_key);
+		// First, we compute the inclusive successor node of the key. This is the representative 
+		// node of the partition that the key should be in.
+		auto node = index_.get_inclusive_successor_node(key);
 
 		// Now that we have computed the representative node, we can compute the partition that
 		// the representative node belongs to. If the node does not exist, then the partition also
 		// does not exist and we must create them. Otherwise, we may return as normal.
 		if (node == nullptr) {
-			// Insert the representative key into the index.
-			auto rep_key = get_representative(key);
-			index_.insert(rep_key);
-			// Compute the representative node.
-			node = index_.get_successor_node(rep_key - 1);
+			// If there are no partitions, we must create the default partition.
+		 	key = partitions_.size() == 0 ? upper_bound() : key;
+
+			// Create the representative node.
+			index_.insert(key);
+			node = index_.get_leaf_node(key);
+
 			// Create the new partition.
-			partitions_[rep_key] = new partition_type();
+			auto partition = new partition_type();
+			partitions_[key] = partition;
+			return partition_and_node_ptr_pair(partition, node);
 		}
 
 		// Compute the partition.
 		auto partition = partitions_.at(node->key());
-
 		return partition_and_node_ptr_pair(partition, node);
 	}
 
@@ -302,7 +301,6 @@ public:
 	 * @param key to insert into the trie.
 	 */
 	void insert(key_type key) noexcept(NEX) {
-
 		// Compute the partition and representative node that the key would belong to.
 		auto partition_and_node = create_partition_and_node(key);
 		auto partition = partition_and_node.first;
@@ -328,17 +326,15 @@ public:
 			// element. The maximum partition size is choosen such that the new partitions will 
 			// always be nonempty.
 			auto median = partition->median();
-			auto pivot = get_representative(median);
-			auto new_partitions = partition->split(pivot);
+			auto new_partitions = partition->split(median);
 
 			// Insert the new partitions.
 			for (auto new_partition : new_partitions) {
 				assert(new_partition->size() > 0);
 				// Insert the new partition.
 				auto new_partition_max = new_partition->max().value();
-				auto new_rep_key = get_representative(new_partition_max);
-				index_.insert(new_rep_key);
-				partitions_[new_rep_key] = new_partition;
+				index_.insert(new_partition_max);
+				partitions_[new_partition_max] = new_partition;
 			}
     	}
 
@@ -415,29 +411,28 @@ public:
 				// element. The maximum partition size is choosen such that the new partitions will 
 				// always be nonempty.
 				auto median = merged_partition->median();
-				auto pivot = get_representative(median);
-				auto new_partitions = merged_partition->split(pivot);
+				auto new_partitions = merged_partition->split(median);
 
 				// Insert the new partitions.
 				for (auto new_partition : new_partitions) {
 					assert(new_partition->size() > 0);
 					// Insert the new partition.
-					auto new_partition_max = new_partition->max().value();
-					auto new_rep_key = get_representative(new_partition_max);
-					index_.insert(new_rep_key);
-					partitions_[new_rep_key] = new_partition;
+					auto new_max_key = new_partition->max().value();
+					index_.insert(new_max_key);
+					partitions_[new_max_key] = new_partition;
 				}
 			} 
 			// Otherwise, simply insert the merged partition
 			else {
 				auto new_max_key = merged_partition->max().value();
-				auto new_rep_key = get_representative(new_max_key);
-				index_.insert(new_rep_key);
-				partitions_[new_rep_key] = merged_partition;
+				index_.insert(new_max_key);
+				partitions_[new_max_key] = merged_partition;
 			}
 		}
 
 		size_ -= 1;
 	}
+
+	virtual ~YFastTrie() = default;
 };
 

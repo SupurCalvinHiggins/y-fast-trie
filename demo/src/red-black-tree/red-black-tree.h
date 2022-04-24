@@ -42,6 +42,11 @@ public:
 
 //Contructor and destructor
 public:
+    bool animate_;
+
+    void set_animate(bool animate) {
+        animate_ = animate;
+    }
 
     /**
      * @brief ruct a new RedBlackTree object
@@ -52,6 +57,7 @@ public:
         max_ = nullptr;
         min_ = nullptr;
         size_ = 0;
+        animate_ = true;
         std::vector<node_ptr> node_path_;
     };
 
@@ -274,13 +280,20 @@ private:
 //Visualization
 public:
     void MARK(node_ptr node){
-        node_path_.push_back(node);
-        UPDATE_GUI();
+        if (animate_) {
+            node_path_.push_back(node);
+            UPDATE_GUI();          
+        }
     }
 
-    void CLEAN()  noexcept{
+    void CLEAN() noexcept{
         node_path_.clear();
-        UPDATE_GUI();
+        if (animate_)
+            UPDATE_GUI();
+    }
+
+    void CLEAN_NO_UPDATE() noexcept{
+        node_path_.clear();
     }
 
     /**

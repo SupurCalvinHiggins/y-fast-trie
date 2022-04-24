@@ -1,3 +1,12 @@
+/**
+ * @file augmented-pointer.h
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Provides easy bit packing into pointers.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #pragma once
 #include <cstdint>
 #include <assert.h>

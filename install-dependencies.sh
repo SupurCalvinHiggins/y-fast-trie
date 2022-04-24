@@ -1,3 +1,10 @@
+# @file install-dependencies.sh
+# @author Calvin Higgins (calvin_higgins2@uri.edu)
+# @author Robert Oganesian
+# @version 1.0
+# @date 2022-04-24
+
+
 # Enter temporary directory
 mkdir .temporary
 cd .temporary
