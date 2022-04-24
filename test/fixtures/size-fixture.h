@@ -1,3 +1,12 @@
+/**
+ * @file size-fixture.h
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Test fixture for size.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #include "base/empty-base-fixture.h"
 #include "base/constants.h"
 

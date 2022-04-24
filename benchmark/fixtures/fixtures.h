@@ -1,3 +1,12 @@
+/**
+ * @file fixtures.h
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Some helpful macros for specializing benchmark fixtures.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #pragma once
 #include <cstdint>
 #include "base/constants.h"

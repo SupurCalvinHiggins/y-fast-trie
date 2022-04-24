@@ -560,7 +560,8 @@ private:
     }
 
     void MARK(node_ptr ptr) {
-        marked_.push_back(ptr);
+		if (animate_)
+       		marked_.push_back(ptr);
     }
 
     void CLEAN() {

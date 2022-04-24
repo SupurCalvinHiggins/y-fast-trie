@@ -1,3 +1,12 @@
+/**
+ * @file successor-fixture.h
+ * @author Calvin Higgins (calvin_higgins2@uri.edu)
+ * @brief Test fixture for successor.
+ * @version 1.0
+ * @date 2022-04-24
+ * 
+ */
+
 #pragma once
 #include "base/empty-base-fixture.h"
 #include "base/constants.h"
