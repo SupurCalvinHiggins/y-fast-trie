@@ -23,20 +23,18 @@
 
 template <typename Key_>
 class RedBlackTree {
-    template <typename> friend class Node;
-
 //Implicit types
 public:
-
     using key_type = Key_;
     using some_key_type = std::optional<Key_>;
 
+private:
     using node_type = Node<key_type>;
     using node_ptr = node_type*;
     using size_type = size_t;
 
 //Aliases
-public:
+private:
     static constexpr bool black_ = 0;
     static constexpr bool red_ = 1;
 
@@ -263,60 +261,6 @@ private:
         }
        
     };
-
-//Visualization
-public:
-    /**
-     * @brief Prints out a text based representation of the tree by calling the recursive function to do so.
-     * Each node has its key, color and memory address shown.
-     * 
-     */
-    void show(){
-        show(root_,0);
-    };
-    
-    /**
-     * @brief Prints out the keys of each layer on a seperate line, from the first layer to the last layer.
-     * This method will crash if not enough contiguous memory is present to store each layer in an array.
-     * 
-     */
-    void show_layers() {
-        std::vector<std::vector<node_ptr>> layers = make_2d_vector();
-        
-        for (std::vector<node_ptr> layer : layers) {
-            for (auto node : layer) {
-                std::cout << std::to_string(node->key_) << ' ';
-            }
-            std::cout << '\n';
-        }
-    };
-
-    /**
-     * @brief Generates a DOT file (a format for GraphViz) which can be used to visualize the tree.
-     * 
-     * @param out_fpath The full path of the created destination file, which includes the directory and the file name.
-     */
-    std::string to_dot() const noexcept {
-        std::string text;
-        if (!root_){
-            text += "digraph RBTree0x00000000 {\n\n\n}";
-        }
-        else{
-            std::stringstream sstream;
-            sstream << root_;
-            std::string root_ptr = sstream.str();
-            sstream.str("");
-
-            std::string colors[2] = {"black","red"};
-
-            text += "digraph RBTree" + root_ptr + " {\n\n";
-            text += "\tn" + root_ptr + " [label=\"" + std::to_string(root_->key_) + "\", color=black];\n";
-            //Most of this method is done in a recursive submethod, so see that for details on the implementation.
-            text = write_dot(root_,text);
-            text += "\n}";
-        }
-        return text;        
-    }
 
 //Accessors
 public:
@@ -602,33 +546,6 @@ private:
     //The minimum value for the type that Key_ is using.
 	static constexpr key_type lower_bound_ = std::numeric_limits<key_type>::min();
 
-//Recursive submethods
-public:
-
-    /**
-     * @brief Recursively prints out a text based representation of the tree. Each node has its key, color and memory address shown.
-     * 
-     * @param node The node of the current recursive call
-     * @param depth The layer of the node of the current recursive call.
-     */
-    void show(node_ptr node, int depth = 0) {
-        std::string colors[2] = { "Black","Red"};
-        std::string lines = "";
-        for (int i = 0; i < depth; i++) {
-            lines += "--";
-        }
-        if (node) {
-            //Format: (layer) + (lines based on depth) + (color) + (key) + (memory address)
-            std::cout << std::to_string(depth) << lines << ' ' << colors[node->color_] << ' ' << std::to_string(node->key_) << ' ' << node << '\n';
-            show(node->left(),depth + 1);
-            show(node->right(),depth + 1);
-        }
-        else{
-            std::cout << std::to_string(depth) << lines << " Null\n";
-        }
-        
-        
-    };
 
     /**
      * @brief Recursively fills the referenced input vector with all nodes from a tree of the input root.
@@ -800,78 +717,6 @@ private:
     };
 
     /**
-     * @brief Recursively generates the text for the DOT file
-     * 
-     * @param node The node of the current recursive call.
-     * @param text The return text as it is during the current recursive call.
-     * @return std::string 
-     */
-    std::string write_dot(node_ptr node, std::string text = "") const noexcept {
-        if (node){
-            //Gets the text representation of the node's memory address
-            std::stringstream sstream;
-            sstream << node;
-            //The id of each node is the memory address preceeded by 'n'.
-            std::string node_id = 'n' + sstream.str();
-            sstream.str("");
-
-            //For converting color booleans to color words.
-            std::string colors[2] = {"black","red"};
-
-            if (node->children_[0]||node->children_[1]){
-                //Director is the string that represents the relationship to the node's children.
-                std::string director = "";
-                std::string left_id = "";
-                std::string right_id = "";
-
-                //If there's a left child, make the definition for the left child, and add it to the parent's relationship.
-                if(node->children_[0]) {
-                    
-                    sstream << node->children_[0];
-                    left_id = 'n' + sstream.str();
-                    sstream.str("");
-
-                    //Format: (tab) (left node id) [label="(left node's key)", color=(left node's color)];
-                    text += '\t' + left_id + " [label=\"" + std::to_string(node->children_[0]->key_) +  + "\", color=" + colors[node->children_[0]->color_] + "];\n";
-                    director += " -> {" + left_id;
-
-                    //If there's also a right child, define it and add it to the parent's relationship as well.
-                    if (node->children_[1]){
-                        sstream << node->children_[1];
-                        right_id = 'n' + sstream.str();
-                        sstream.str("");
-                        
-                        //Format: (tab) (right node id) [label="(right node's key)", color=(right node's color)];
-                        text += '\t' + right_id + " [label=\"" + std::to_string(node->children_[1]->key_) + "\", color=" + colors[node->children_[1]->color_] + "];\n";
-                        director += ", " + right_id;
-                    }
-
-                }
-                //If there's only a right child define it and add it to the parent's relationship.
-                else{
-                    sstream << node->children_[1];
-                    right_id = 'n' + sstream.str();
-                    sstream.str("");
-
-                    //Format: (tab) (right node id) [label="(right node's key)", color=(right node's color)];
-                    text += '\t' + right_id + " [label=\"" + std::to_string(node->children_[1]->key_) + "\", color=" + colors[node->children_[1]->color_] + "];\n";
-                    director += " -> {"+ right_id;
-                }
-                text += '\t' + node_id + director + "};\n";
-            }
-            //Do the same process for each child
-            if(node->children_[0]) {
-                text = write_dot(node->children_[0],text);
-            }
-            if(node->children_[1]) {
-                text = write_dot(node->children_[1],text);
-            }
-            
-        }
-        return text;
-    };
-
-    /**
      * @brief Recursively inserts all nodes into <destination> from the subtree starting at the first <node> and 
      * traversing to the end of each path inserting each node.
      *
@@ -976,15 +821,6 @@ private:
 //Member getters
 public:
     /**
-     * @brief Gives the root of the tree
-     * 
-     * @return node_ptr The root of the tree
-     */
-    node_ptr root() {
-        return root_;
-    };
-
-    /**
      * @brief Gives the size of the tree
      * 
      * @return node_ptr The size of the tree
@@ -998,7 +834,7 @@ public:
      * 
      * @return key_type The lower bound.
      */
-    static constexpr key_type upper_bound(){
+    static constexpr key_type upper_bound() {
         return upper_bound_;
     };
 
@@ -1007,142 +843,12 @@ public:
      * 
      * @return key_type The upper bound.
      */
-    static constexpr key_type lower_bound(){
+    static constexpr key_type lower_bound() {
         return lower_bound_;
-    };
-
-    
-
-//Member setters
-public:
-    /**
-     * @brief Sets the root of the tree. Clears the tree if a root alredy exists.
-     * 
-     * @param node The new root of the tree.
-     */
-    void root(node_ptr node) {
-        if (root_){
-            clear();
-        }
-        root_ = node;
-
     };
 
 //Node accessors
 public:
-
-    /**
-     * @brief Tries to make a vector with the nodes of a given layer of the tree. If the input layer is too large, 
-     * the last layer is returned. If the vector can't be made, it will return an empty vector and report the error.
-     * 
-     * @param layer The layer to get the nodes from.
-     * @return std::vector<node_ptr> The vector of nodes of the layer. Empty if the allocation fails.
-     */
-    std::vector<node_ptr> get_layer(int layer) {
-        try{
-            std::vector<node_ptr> layer1({root_});
-            std::vector<node_ptr> layer2();
-            //Puts the children of the nodes from the first layer into the second layer, and the process is repeated using
-            //The second layer as the first layer. This stops when there are no more children or if the target layer is reached.
-            for (int layer_num = 0; layer_num < layer; layer++) {
-                
-                for (auto node: layer1) {
-                    if (node->children_[0] != nullptr) {
-                        layer2.push_back(node->children_[0]);
-                    }
-                    if (node->children_[1] != nullptr) {
-                        layer2.push_back(node->children_[1]);
-                    }
-                }
-                if (layer2.size() == 0){
-                    return layer1;
-                }
-                layer1 = layer2; 
-            }
-
-            return layer2;
-        } catch (...) {
-            std::cout << "Sorry, but there were too many nodes to be stored into an array. Returning an empty vector";
-            return (std::vector<node_ptr>());
-        }
-        
-    };
-
-    /**
-     * @brief Tries to put all of the nodes from the tree into a vector in preorder order. Returns an empty vector upon failure, and
-     * states that an error has occured.
-     * 
-     * @return std::vector<node_ptr> The vector of the tree's nodes. Empty if the allocation fails.
-     */
-    std::vector<node_ptr> nodes() {
-        try{
-            std::vector<node_ptr> node_vector = std::vector<node_ptr>();
-            nodes(root_,&node_vector);
-            return node_vector;
-        } catch (...) {
-            std::cout << "Sorry, but there were too many nodes to be stored into an array. Returning an empty vector";
-            return (std::vector<node_ptr>());
-        }
-        
-    };
-
-    /**
-     * @brief Tries to store the vector representation of each of the tree's layers in a 2d vetcor. Will report the failure of this,
-     * and return an empty 2D vector.
-     * 
-     * @return std::vector<node_ptr> The 2D vector of the tree's node layers. Empty if the allocation fails.
-     */
-    std::vector<std::vector<node_ptr>> make_2d_vector() {
-        try{
-            std::vector<std::vector<node_ptr>> layers;
-            layers.push_back(std::vector<node_ptr>({ root_ }));
-            unsigned int layer = 0;
-            while (layers[layer].size() > 0) {
-                std::vector<node_ptr> new_layer;
-                new_layer.reserve(1 << layer);
-                for (auto node : layers[layer]) {
-                    if (node->left() != nullptr) {
-                        new_layer.push_back(node->left());
-                    }
-                    if (node->right() != nullptr) {
-                        new_layer.push_back(node->right());
-                    }
-
-                }
-                layers.push_back(new_layer);
-                layer += 1;
-            }
-            layers.pop_back();
-            return layers;
-        } catch (...) {
-            std::cout << "Sorry, but there were too many nodes to be stored into an array. Returning an empty 2D vector";
-            return (std::vector<std::vector<node_ptr>>());
-        }
-        
-    };
-
-//Debugging
-public:
-    /**
-     * @brief Prints true if there are no consequetive red nodes, and false if there are.
-     * 
-     * @return true if there are no consequetive red nodes.
-     * @return false if there are consequetive red nodes.
-     */
-    bool no_consecutive_reds() {
-        for (auto node : nodes()){
-            if ( node->color_ == red_){
-                if(node->parent_->color_ == red_ ||
-                (node->children_[0] && node->children_[0]->color_ == red_) ||
-                (node->children_[1] && node->children_[1]->color_ == red_)
-                )
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
-    };
     
     /**
      * @brief Checks if tree is empty.
@@ -1150,51 +856,10 @@ public:
      * @return true if tree is empty.
      * @return false if tree has one or more nodes.
      */
-    bool empty(){
+    bool empty() {
         return !root_;
     }
 
-//Tree attribute accessors
 public:
-    /**
-     * @brief Gets the height of the subtree about the input node, which is the number of nodes in the longest path of that subtree.
-     * 
-     * @param node The root of the subtree to find the height of.
-     * @return int The height of the subtree.
-     */
-    int height(node_ptr node) {
-        //If theres a left child...
-        if (node->children_[0]){
-            //Keep finding the height of the left path
-            int height1 = height(node->children_[0]);
-            //If there is both a left and right child, also keep finding the right path's height and return the height of the longest path.
-            if (node->children_[1]){
-                //Keep finding the height of the right path
-                int height2 = height(node->children_[1]);
-                if (height2 > height1) {
-                    return height2 + 1;
-                }
-                return height1 + 1;
-            }
-            //If there's only a left child, return the left paths's height.
-            else {
-                return height1 + 1;
-            }
-        }
-        //If there's only a right child, keep finding the right path's height.
-        else if (node->children_[1]) {
-            return height(node->children_[1]) + 1;
-        }
-        //Base case.
-        else {
-            return 1;
-        }
-    };
-    
-    /**
-     * @brief Returns the upper limit of the unsigned type of the tree's keys, which can be represented as -1;
-     * 
-     * @return key_type The upper limit of the unsigned type of the tree's keys (-1).
-     */
-    key_type limit() {return -1;};
+    template <typename> friend class Node;
 };
