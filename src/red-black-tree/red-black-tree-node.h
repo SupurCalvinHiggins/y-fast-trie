@@ -1,6 +1,6 @@
 /**
  * @file red-black-tree-node.h
- * @author your name (you@domain.com)
+ * @author Ethan Carlson
  * @brief This is the header for the node for RedBlackTree, an implementation of a red black tree.
  * @version 1.0
  * @date 2022-04-09
@@ -13,6 +13,8 @@
 template <typename T> 
 class Node {
 public:
+
+	using size_type = int;
 	Node();
 	~Node();
 	Node(T key, bool color);
@@ -33,8 +35,6 @@ public:
 	T key_;
 	//0 means black, 1 means red
 	bool color_;
-private:
-	
 };
 
 template <typename T> Node<T>::Node() {

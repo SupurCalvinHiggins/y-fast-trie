@@ -322,6 +322,46 @@ public:
 public:
 
     /**
+     * @brief Finds the nth element in the set of the RedBlackTree.
+     * 
+     * @param n The index of the desired element.
+     * @return some_key_type 
+     */
+    some_key_type get(size_type n) {
+        if (n >= size_){
+            if(max_){
+                return some_key_type(max_->key_);
+            }else{
+                return std::nullopt;
+            }
+        }
+        node_ptr target = min_;
+    
+        for (int i = 0; i < n; i++){
+            auto succ = target->children_[1];
+
+            //Case 1: Target node has right child, so find leftmost node from the subtree of the target node's right child
+            if(succ){
+                while(succ->children_[0]) {
+                    succ = succ->children_[0];
+                    target = succ;
+                }
+            }
+            else{
+                //Case 2: The target node has no right child, so find the parent with a value closest to but greater than the value.
+                auto parent = target->parent_;
+                while (parent) {
+                    if (target == parent->children_[0]) break;
+                    target = parent;
+                    parent = parent->parent_;
+                }
+            }
+        }
+        return some_key_type(target->key_);
+        
+    };
+
+    /**
      * @brief Returns the median key of the tree. If the tree has an even number of nodes, it gives the greater key of the two middle keys.
      * If the tree has no nodes, std::nullopt is returned.
      * 
@@ -329,15 +369,7 @@ public:
      */
     key_type median() {
         assert(root_ && "Use of median on an empty tree is not supported");
-        //Gets vector with all keys
-        std::vector<key_type> keys;
-        for (auto node : nodes()) {
-            keys.push_back(node->key_);
-        }
-        //Sets the "middle" of the vector to be the median
-        std::nth_element(keys.begin(), keys.begin() + keys.size()/2, keys.end());
-
-        return keys[keys.size() / 2];
+        return get(size_/2).value();
     };
 
     /**
@@ -379,56 +411,6 @@ public:
 
         //Finds the parent of the key if it were to be inserted into the tree.
         //The predecessor will be the same for this target node as the key.
-        node_ptr target = root_;
-        while (target->children_[key > target->key_] != nullptr) {
-            target = target->children_[key > target->key_];
-            //If the input key is in the tree, it used that as the target instead.
-            if (target->key_ == key) break;
-        }
-        
-        if (target->key_ < key){
-            return some_key_type(target->key_);
-        }
-
-        auto pred = target->children_[0];
-
-        //Case 1: Target node has left child, so find rightmost node from the subtree of the target node's left child
-        if(pred){
-            while(pred->children_[1]) {
-                pred = pred->children_[1];
-            }
-            return some_key_type(pred->key_);
-        }
-        
-        //Case 2: The target node has no left child, so find the parent with a value closest to but less than the value.
-        auto parent = target->parent_;
-
-        while (parent) {
-            if (target == parent->children_[1]) break;
-            target = parent;
-            parent = parent->parent_;
-        }
-
-        if (parent) return some_key_type(parent->key_);
-    
-        return std::nullopt;
-    };
-
-    /**
-     * @brief Finds the inclusive predecessor of the value, which is the value closest to and less than or equal to the input value.
-     * If there is no lesser or equal value, it returns nullopt.
-     * 
-     * @param node The value to find the inclusive predecessor of, which is less than or equal to the value.
-     * @return some_key_type The inclusive predecessor of the value.
-     * Returns nullopt if the teee is empty, or there is no value lesser than or equal to the input value.
-     * 
-     */
-    some_key_type inclusive_predecessor(key_type key) {
-        
-        if(!root_) return std::nullopt;
-
-        //Finds the parent of the key if it were to be inserted into the tree.
-        //The predecessor will be the same for this target node as the key.
         auto target = root_;
         while (target->children_[key > target->key_] != nullptr) {
             target = target->children_[key > target->key_];
@@ -436,7 +418,7 @@ public:
             if (target->key_ == key) break;
         }
         
-        if (target->key_ <= key){
+        if (target->key_ < key){
             return some_key_type(target->key_);
         }
 
@@ -489,64 +471,14 @@ public:
             return some_key_type(target->key_);
         }
 
-        auto pred = target->children_[1];
+        auto succ = target->children_[1];
 
         //Case 1: Target node has right child, so find leftmost node from the subtree of the target node's right child
-        if(pred){
-            while(pred->children_[0]) {
-                pred = pred->children_[0];
+        if(succ){
+            while(succ->children_[0]) {
+                succ = succ->children_[0];
             }
-            return some_key_type(pred->key_);
-        }
-        
-        //Case 2: The target node has no right child, so find the parent with a value closest to but greater than the value.
-        auto parent = target->parent_;
-
-        while (parent) {
-            if (target == parent->children_[0]) break;
-            target = parent;
-            parent = parent->parent_;
-        }
-
-        if (parent) return some_key_type(parent->key_);
-    
-        return std::nullopt;
-    };
-
-    /**
-     * @brief Finds the inclusive successor of the value, which is the value closest to and greater than the input value.
-     * If there is no greater than or equal to the value, returns nullopt.
-     * 
-     * @param node The value to find the inclusive successor of.
-     * @return some_key_type The inclusive succecessor of the value, which might be itself.
-     * Returns nullopt if the tree is empty, or there is no value greater than or equal to the input value.
-     * 
-     */
-    some_key_type inclusive_successor(key_type key) {
-        
-        if(!root_) return std::nullopt;
-
-        //Finds the parent of the key if it were to be inserted into the tree.
-        //The successor will be the same for this target node as the key.
-        auto target = root_;
-        while (target->children_[key > target->key_] != nullptr) {
-            target = target->children_[key > target->key_];
-            //If the input key is in the tree, it used that as the target instead.
-            if (target->key_ == key) break;
-        }
-        
-        if (target->key_ >= key){
-            return some_key_type(target->key_);
-        }
-
-        auto pred = target->children_[1];
-
-        //Case 1: Target node has right child, so find leftmost node from the subtree of the target node's right child
-        if(pred){
-            while(pred->children_[0]) {
-                pred = pred->children_[0];
-            }
-            return some_key_type(pred->key_);
+            return some_key_type(succ->key_);
         }
         
         //Case 2: The target node has no right child, so find the parent with a value closest to but greater than the value.
@@ -806,7 +738,7 @@ private:
                 }
                 //Case 4: The deleted node's sibling is red, so swap the colors of the sibling and parent, and do
                 //a rotation in the direction of the deleted node on the parent. Then, redo the cases on the parent.
-                if (parent->children_[!dir] != nullptr && parent->children_[!dir]->color_ == red_) {
+                if (parent->children_[!dir] != nullptr) {
                     bool temp_color = parent->children_[!dir]->color_;
                     parent->children_[!dir]->color_ = parent->color_;
                     parent->color_ = temp_color;
