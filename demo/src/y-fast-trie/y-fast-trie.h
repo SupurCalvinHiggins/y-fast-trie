@@ -170,7 +170,7 @@ public:
 	 * @brief Construct a new YFastTrie object.
 	 * 
 	 */
-    YFastTrie() : size_(0), animate_(0) {  }
+    YFastTrie() : size_(0), animate_(true) {  }
 
 	/**
 	 * @brief Get the number of keys stored in the trie.
@@ -236,6 +236,7 @@ public:
 		if (partition->min().value() >= key) {
 			// Compute the left representative node.
 			auto left_node = node->get_left();
+			index_.MARK_AND_UPDATE(left_node);
 
 			// Make sure the left partition actually exists.
 			if (left_node == nullptr) return some_key_type();
@@ -277,6 +278,8 @@ public:
 		if (partition->max().value() <= key) {
 			// Compute the right representative node.
 			auto right_node = node->get_right();
+			index_.MARK_AND_UPDATE(right_node);
+
 
 			// Make sure the right partition actually exists.
 			if (right_node == nullptr) return some_key_type();
