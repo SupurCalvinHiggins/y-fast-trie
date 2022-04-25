@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <type_traits>
 #include <string>
+#include <array>
 
 /**
  * @brief Data structure for fast dynamic ordered set operations on a bounded universe.
@@ -39,8 +40,7 @@ private:
 
 	using partition_type = Bucket_;
 	using partition_ptr = partition_type*;
-	using partition_and_node_ptr_pair = std::pair<partition_ptr, node_ptr>;
-
+	using partition_ptrs = std::array<partition_ptr, 2>;
 	using partition_index_type = map_wrapper<key_type, partition_ptr>;
 
 private:
@@ -61,58 +61,89 @@ private:
 private:
 
 	/**
-	 * @brief Get the partition and representative node of a key.
+	 * @brief Get the representative node for a given key.
 	 * 
-	 * @param key to get the partition and representative node of.
-	 * @return the partition and representative node.
+	 * @param key to get the representative node for.
+	 * @return representative node.
 	 */
-	partition_and_node_ptr_pair get_partition_and_node(key_type key) const noexcept(NEX) {
-		// First, we compute the inclusive successor node of the key. This is the representative 
-		// node of the partition that the key should be in.
-		auto node = index_.get_inclusive_successor_node(key);
-
-		// Now that we have computed the representative node, we can compute the partition that
-		// the representative node belongs to. If the node does not exist, then the partition also
-		// does not exist.
-		if (node == nullptr)
-			return partition_and_node_ptr_pair(nullptr, nullptr);
-		
-		// Compute the partition.
-		auto partition = partitions_.at(node->key());
-		return partition_and_node_ptr_pair(partition, node);
+	inline node_ptr get_representative_node(key_type key) const noexcept {
+		// We compute the inclusive successor node of the key. This is the representative node of 
+		// the partition that the key should be in.
+		return index_.get_inclusive_successor_node(key);
 	}
 
 	/**
-	 * @brief Create the partition and representative node of a key if they do not exist.
+	 * @brief Get the partition from a representative node.
 	 * 
-	 * @param key to create the partition and representative node of.
-	 * @return the partition and representative node.
+	 * @param representative node of the partition.
+	 * @return the partition of the node.
 	 */
-	partition_and_node_ptr_pair create_partition_and_node(key_type key) noexcept(NEX) {
-		// First, we compute the inclusive successor node of the key. This is the representative 
-		// node of the partition that the key should be in.
-		auto node = index_.get_inclusive_successor_node(key);
+	inline partition_ptr get_partition(node_ptr node) const noexcept {
+		// We check to make sure the representative node exists and then we find the partition.
+		if (node == nullptr) return nullptr;
+		return partitions_.at(node->key());
+	}
 
-		// Now that we have computed the representative node, we can compute the partition that
-		// the representative node belongs to. If the node does not exist, then the partition also
-		// does not exist and we must create them. Otherwise, we may return as normal.
-		if (node == nullptr) {
-			// If there are no partitions, we must create the default partition.
-		 	key = partitions_.size() == 0 ? upper_bound() : key;
+	/**
+	 * @brief Get the partition from a representative node.
+	 * 
+	 * @param representative node of the partition.
+	 * @return the partition of the node.
+	 */
+	inline partition_ptr get_partition(key_type key) const noexcept {
+		auto node = get_representative_node(key);
+		return get_partition(node);
+	}
 
-			// Create the representative node.
-			index_.insert(key);
-			node = index_.get_leaf_node(key);
+	/**
+	 * @brief Insert a partition into the trie.
+	 * 
+	 * @param rep_key of the partition.
+	 * @param partition to insert.
+	 */
+	inline void insert_partition(key_type rep_key, partition_ptr partition) noexcept {
+		index_.insert(rep_key);
+		partitions_[rep_key] = partition;
+	}
 
-			// Create the new partition.
-			auto partition = new partition_type();
-			partitions_[key] = partition;
-			return partition_and_node_ptr_pair(partition, node);
-		}
+	/**
+	 * @brief Insert a partition into the trie.
+	 * 
+	 * @param partition to insert.
+	 */
+	inline void insert_partition(partition_ptr partition) noexcept {
+		auto rep_key = partition->max().value();
+		insert_partition(rep_key, partition);
+	}
 
-		// Compute the partition.
-		auto partition = partitions_.at(node->key());
-		return partition_and_node_ptr_pair(partition, node);
+	/**
+	 * @brief Remove a partition from the trie.
+	 * 
+	 * @param rep_key of the partition to remove.
+	 */
+	inline void remove_partition(key_type rep_key) noexcept {
+		index_.remove(rep_key);
+		partitions_.remove(rep_key);
+	}
+
+	/**
+	 * @brief Remove a partition from the trie.
+	 * 
+	 * @param representative node of the partition to remove.
+	 */
+	inline void remove_partition(node_ptr node) noexcept {
+		remove_partition(node->key());
+	}
+
+	/**
+	 * @brief Create the default partition.
+	 * 
+	 * @return the default partition.
+	 */
+	inline partition_ptr create_default_partition() noexcept {
+		auto partition = new partition_type();
+		insert_partition(upper_bound(), partition);
+		return partition;
 	}
 
 public:
@@ -180,8 +211,8 @@ public:
 		if (empty()) return false;
 		// Compute the partition that the key would belong to. If the partition exists and contains
 		// the key then the trie contains that key. Otherwise, the trie does not contain the key.
-		auto partition_and_node = get_partition_and_node(key);
-		auto partition = partition_and_node.first;
+		auto node = get_representative_node(key);
+		auto partition = get_partition(node);
 		return partition != nullptr && partition->contains(key);
 	}
 
@@ -196,9 +227,8 @@ public:
 		if (empty()) return some_key_type();
 
 		// Compute the partition and representative node that the key would belong to.
-		auto partition_and_node = get_partition_and_node(key);
-		auto partition = partition_and_node.first;
-		auto node = partition_and_node.second;
+		auto node = get_representative_node(key);
+		auto partition = get_partition(node);
 
 		// If the partition does not exist, then any key less than the given key cannot be in the
 		// trie. In other words, there are no possible predecessors. This also handles the case
@@ -206,8 +236,6 @@ public:
 		// and only if the representative node does not exist.
 		if (partition == nullptr) return some_key_type();
 
-		auto rep_key = node->key();
-		
 		// If the current partition does not contain the predecessor, then the predecessor must be 
 		// in the partition to the left. This happens when the key is the smallest value in the 
 		// partition because the predecessor cannot be in the partition. We also know that 
@@ -220,8 +248,7 @@ public:
 			if (left_node == nullptr) return some_key_type();
 
 			// Set the partition to the left partition.
-			auto left_key = left_node->key();
-			partition = partitions_.at(left_key);
+			partition = get_partition(left_node);
 		}
 
 		// Compute the predecessor.
@@ -239,17 +266,14 @@ public:
 		if (empty()) return some_key_type();
 
 		// Compute the partition and representative node that the key would belong to.
-		auto partition_and_node = get_partition_and_node(key);
-		auto partition = partition_and_node.first;
-		auto node = partition_and_node.second;
+		auto node = get_representative_node(key);
+		auto partition = get_partition(node);
 
 		// If the partition does not exist, then any key greater than the given key cannot be in the
 		// trie. In other words, there are no possible successors. This also handles the case
 		// where the representative node does not exist because the partition does not exist, if
 		// and only if the representative node does not exist.
 		if (partition == nullptr) return some_key_type();
-
-		auto rep_key = node->key();
 
 		// If the current partition does not contain the successor, then the successor must be 
 		// in the partition to the right. This happens when the key is the smallest value in the 
@@ -263,8 +287,7 @@ public:
 			if (right_node == nullptr) return some_key_type();
 
 			// Set the partition to the right partition.
-			auto right_key = right_node->key();
-			partition = partitions_.at(right_key);
+			partition = get_partition(right_node);
 		}
 
 		// Compute the successor.
@@ -280,7 +303,7 @@ public:
 	some_key_type min() const noexcept(NEX) { 
 		if (empty()) return some_key_type(); 
 		auto min_rep_key = index_.min().value();
-		return partitions_.at(min_rep_key)->min();
+		return get_partition(min_rep_key)->min();
 	}
 
 	/**
@@ -292,7 +315,7 @@ public:
 	some_key_type max() const noexcept(NEX) { 
 		if (empty()) return some_key_type(); 
 		auto max_rep_key = index_.max().value();
-		return partitions_.at(max_rep_key)->max(); 
+		return get_partition(max_rep_key)->max(); 
 	}
 
 	/**
@@ -302,10 +325,8 @@ public:
 	 */
 	void insert(key_type key) noexcept(NEX) {
 		// Compute the partition and representative node that the key would belong to.
-		auto partition_and_node = create_partition_and_node(key);
-		auto partition = partition_and_node.first;
-		auto node = partition_and_node.second;
-		auto rep_key = node->key();
+		auto node = get_representative_node(key);
+		auto partition = !node ? create_default_partition() : get_partition(node);
 
 		// Prevent double inserts.
 		if (partition->contains(key)) return;
@@ -316,26 +337,12 @@ public:
 		// If the partition has exceeded the maximum size, then we must split the partition or we
 		// will be unable to meet the correct time complexity bounds.
 		if (partition->size() > max_partition_size_) {
-
-			// Remove the old partition.
-			partitions_.remove(rep_key);
-			index_.remove(rep_key);
-
-			// TODO: Attempt to create 0 size after split condition in test cases.
-			// Split the partition into two new partitions about the representative of the  median 
-			// element. The maximum partition size is choosen such that the new partitions will 
-			// always be nonempty.
-			auto median = partition->median();
-			auto new_partitions = partition->split(median);
-
-			// Insert the new partitions.
-			for (auto new_partition : new_partitions) {
-				assert(new_partition->size() > 0);
-				// Insert the new partition.
-				auto new_partition_max = new_partition->max().value();
-				index_.insert(new_partition_max);
-				partitions_[new_partition_max] = new_partition;
-			}
+			// First, we remove the original partition from the trie.
+			remove_partition(node);
+			// Then, we split the original partition and insert the new partitions.
+			auto new_partitions = partition->split();
+			for (auto new_partition : new_partitions)
+				insert_partition(new_partition);
     	}
 
     	size_ += 1;
@@ -351,82 +358,50 @@ public:
 		if (empty()) return;
 
 		// Compute the partition and representative node that the key would belong to.
-		auto partition_and_node = get_partition_and_node(key);
-		auto partition = partition_and_node.first;
-		auto node = partition_and_node.second;
+		auto node = get_representative_node(key);
+		auto partition = get_partition(node);
 
 		// Prevent double removes.
 		if (partition == nullptr || !partition->contains(key)) return;
 
-		// Get the representative key.
-		auto rep_key = node->key();
-
 		// Remove the key from the partition.
 		partition->remove(key);
-
-		// TODO: Add remove everything test case.
-		// TODO: Test edge cases when splitting on a representative for insert and remove.
 		
 		// If the partition is empty, delete it.
-		if (partition->empty()) {
-			partitions_.remove(rep_key);
-			index_.remove(rep_key);
-		} 
+		if (partition->empty()) 
+			remove_partition(node);
 		
 		// Otherwise, if the partition is below the minimum size and we can merge it, do so.
 		else if (partition->size() < min_partition_size_ && partitions_.size() > 1) {
 
 			// Compute the two representatives of the partitions to merge. The particular choice 
 			// does not matter, as long as we get two valid partitions to merge.
-			node_ptr left_node = nullptr;
-			node_ptr right_node = nullptr;
-			if (node->get_left() != nullptr) {
-				left_node = node->get_left();
-				right_node = node;
-			} else {
-				left_node = node;
-				right_node = node->get_right();
-			}
-
-			// Get the left and right partitions.
-			auto left_rep_key = left_node->key();
-			auto right_rep_key = right_node->key();
-			auto left_partition = partitions_.at(left_rep_key);
-			auto right_partition = partitions_.at(right_rep_key);
+			auto left_node  = node;
+			auto right_node = node->get_right() ? node->get_right() : node->get_left();
 			
-			// And remove them.
-			partitions_.remove(left_rep_key);
-			partitions_.remove(right_rep_key);
-			index_.remove(left_rep_key);
-			index_.remove(right_rep_key);
+			// Ensure that the left partition has keys that are < the right partition.
+			if (left_node->key() > right_node->key())
+				std::swap(left_node, right_node);
+			
+			// Remove the original partitions from the trie.
+			auto left_partition = get_partition(left_node);
+			auto right_partition = get_partition(right_node);
+			remove_partition(left_node);
+			remove_partition(right_node);
 
-			// TODO: Improve this interface.
-			// Merge the two partitions.
+			// Merge the two original partitions.
 			auto merged_partition = left_partition->merge(left_partition, right_partition);
 
 			// If the new merged partition exceeds the maximum size, we have to split it.
 			if (merged_partition->size() > max_partition_size_) {
-				
-				// Split the partition into two new partitions about the representative of the  median 
-				// element. The maximum partition size is choosen such that the new partitions will 
-				// always be nonempty.
-				auto median = merged_partition->median();
-				auto new_partitions = merged_partition->split(median);
-
-				// Insert the new partitions.
-				for (auto new_partition : new_partitions) {
-					assert(new_partition->size() > 0);
-					// Insert the new partition.
-					auto new_max_key = new_partition->max().value();
-					index_.insert(new_max_key);
-					partitions_[new_max_key] = new_partition;
-				}
+				// Split the partition and insert the new partitions.
+				auto new_partitions = partition->split();
+				for (auto new_partition : new_partitions)
+					insert_partition(new_partition);
 			} 
 			// Otherwise, simply insert the merged partition
 			else {
-				auto new_max_key = merged_partition->max().value();
-				index_.insert(new_max_key);
-				partitions_[new_max_key] = merged_partition;
+				insert_partition(merged_partition);
 			}
 		}
 
@@ -435,4 +410,3 @@ public:
 
 	virtual ~YFastTrie() = default;
 };
-
