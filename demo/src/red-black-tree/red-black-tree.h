@@ -393,6 +393,7 @@ public:
             MARK(target_node);
             target_node = target_node->children_[key > target_node->key_];
         }
+        MARK(target_node);
         return target_node;
     };
 
@@ -697,6 +698,8 @@ public:
     std::array<RedBlackTree<key_type>*,2>  split() {
         RedBlackTree<key_type>* tree1 = new RedBlackTree<key_type>();
         RedBlackTree<key_type>* tree2 = new RedBlackTree<key_type>();
+        tree1->set_animate(animate_);
+        tree2->set_animate(animate_);
         
         //The majority of this function is done with the recursive submethod, so see that for more information.
         auto pivot = median();

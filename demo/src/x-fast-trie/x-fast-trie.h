@@ -244,7 +244,7 @@ public:
 	 * @brief Construct a new XFastTrie object.
 	 * 
 	 */
-	XFastTrie() : size_(0), animate_(0) {
+	XFastTrie() : size_(0), animate_(true) {
 		lss_.reserve(bit_length());
 		for (size_type i = 0; i <= bit_length(); ++i)
 			lss_.push_back(level_type());
