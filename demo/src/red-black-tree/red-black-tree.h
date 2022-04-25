@@ -695,11 +695,12 @@ public:
      * @return std::array<RedBlackTree<key_type>*,2> The first tree that is returned is all 
      * nodes less than <key>, and the other tree is all nodes greater than it.
      */
-    std::array<RedBlackTree<key_type>*,2>  split(key_type pivot) {
+    std::array<RedBlackTree<key_type>*,2>  split() {
         RedBlackTree<key_type>* tree1 = new RedBlackTree<key_type>();
         RedBlackTree<key_type>* tree2 = new RedBlackTree<key_type>();
         
         //The majority of this function is done with the recursive submethod, so see that for more information.
+        auto pivot = median();
         split(root_, pivot, tree1, tree2);
 
         root_ = nullptr;
