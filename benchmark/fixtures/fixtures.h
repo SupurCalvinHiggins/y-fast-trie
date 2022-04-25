@@ -17,6 +17,7 @@
 #include "max-fixture.h"
 #include "insert-fixture.h"
 #include "remove-fixture.h"
+#include "performance-fixture.h"
 
 #define DEFINE_BENCHMARK_HELPER(OBJ_TYPE, KEY_TYPE, FIXTURE_NAME, METHOD_NAME) \
 BENCHMARK_TEMPLATE_DEFINE_F(FIXTURE_NAME, METHOD_NAME ## _ ## KEY_TYPE, OBJ_TYPE<KEY_TYPE>) (benchmark::State& state) { \
@@ -50,3 +51,6 @@ BENCHMARK_REGISTER_F(FIXTURE_NAME, METHOD_NAME ## _ ## KEY_TYPE)->RangeMultiplie
 
 #define DEFINE_REMOVE_BENCHMARKS(OBJ_TYPE) \
     DEFINE_BENCHMARKS_HELPER(OBJ_TYPE, RemoveFixture, BM_remove);
+
+#define DEFINE_PERFORMANCE_BENCHMARKS(OBJ_TYPE) \
+    DEFINE_BENCHMARK_HELPER(OBJ_TYPE, uint64_t, PerformanceFixture, BM_performance);
