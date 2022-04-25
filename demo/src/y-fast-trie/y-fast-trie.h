@@ -326,7 +326,10 @@ public:
 		auto partition = !node ? create_default_partition() : get_partition(node);
 
 		// Prevent double inserts.
-		if (partition->contains(key)) return;
+		if (partition->contains(key))  {
+			CLEAN();
+			return;
+		}
 
 		// Insert the key into the partition.
 		partition->insert(key);
@@ -360,7 +363,10 @@ public:
 		auto partition = get_partition(node);
 
 		// Prevent double removes.
-		if (partition == nullptr || !partition->contains(key)) return;
+		if (partition == nullptr || !partition->contains(key)) {
+			CLEAN();
+			return;
+		} 
 
 		// Remove the key from the partition.
 		partition->remove(key);
