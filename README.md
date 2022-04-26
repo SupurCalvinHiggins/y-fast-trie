@@ -520,7 +520,7 @@ Resetting the raw pointer clears the data bits.
 ## Contributions
 Calvin Higgins implemented the YFastTrie and XFastTrie. He also implemented the benchmarking and testing suites and investigated the performance of other implementations. He wrote the README and structured the project on GitHub. He wrote the X-Fast Trie and Y-Fast Trie sections of the report as well as the introduction, preliminaries, abstract and results section. He also created the presentation.
 
-Ethan Carlson implemented the RedBlackTree and wrote the Red-Black Tree section of the report. Calvin Higgins assisted in the implemention of some RedBlackTree methods, namely predecessor and successor.
+Ethan Carlson implemented the RedBlackTree and wrote the Red-Black Tree section of the report. Calvin Higgins assisted in the implemention of some RedBlackTree methods, namely predecessor and successor. Calvin Higgins directly implemented O(n) split and merge.
 
 Robert Oganesian implemented a BinarySearchTree and the demo program. He wrote the Demo section of the report.
 
