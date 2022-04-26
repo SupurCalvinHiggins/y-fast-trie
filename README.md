@@ -38,6 +38,8 @@ sudo chmod +x install-dependencies.command
 ```
 
 ### Windows
+**WINDOWS IS NOT OFFICIALLY SUPPORTED**
+
 On Windows, ensure that the following dependencies are installed:
 1. python3
 2. pip
@@ -518,11 +520,32 @@ Resetting the raw pointer clears the data bits.
 ```
 
 ## Contributions
-Calvin Higgins implemented the YFastTrie and XFastTrie. He also implemented the benchmarking and testing suites and investigated the performance of other implementations. He wrote the README and structured the project on GitHub. He wrote the X-Fast Trie and Y-Fast Trie sections of the report as well as the introduction, preliminaries, abstract and results section. He also created the presentation.
+Calvin Higgins implemented the YFastTrie and XFastTrie. He also implemented the benchmarking and testing suites and investigated the performance of other implementations. He wrote the README and structured the project on GitHub. He wrote the X-Fast Trie and Y-Fast Trie sections of the report as well as the introduction, preliminaries, abstract and results section. He also created the presentation. Calvin created the run.py script.
 
-Ethan Carlson implemented the RedBlackTree and wrote the Red-Black Tree section of the report. Calvin Higgins assisted in the implemention of some RedBlackTree methods, namely predecessor and successor. Calvin Higgins directly implemented O(n) split and merge.
+Ethan Carlson implemented the RedBlackTree and wrote the Red-Black Tree section of the report. Calvin Higgins assisted in the implemention of some RedBlackTree methods, namely predecessor and successor. Calvin directly implemented O(n) split and merge. Calvin also implemented fixed versions of max and min.
 
-Robert Oganesian implemented a BinarySearchTree and the demo program. He wrote the Demo section of the report.
+Robert Oganesian implemented a BinarySearchTree and the demo program. He wrote the Demo section of the report. Robert wrote the installer script for MacOS and helped with the installer script for Linux. Robert also implemented the demo feature into run.py.
 
 ## References
-TODO
+[GS78] Leo J. Guibas and Robert Sedgewick. “A dichromatic framework
+for balanced trees”. In: 19th Annual Symposium on Foundations of
+Computer Science (sfcs 1978). 1978, pp. 8–21. doi: 10.1109/SFCS.1978.3.
+
+[Wil83] Dan E. Willard. “Log-logarithmic worst-case range queries are possi
+ble in space (N)”. In: Information Processing Letters 17.2 (1983),
+pp. 81–84. issn: 0020-0190. doi: https://doi.org/10.1016/0020-0190(83)90075-3. url: https://www.sciencedirect.com/science/article/pii/0020019083900753.
+
+[BFS16] Guy E. Blelloch, Daniel Ferizovic, and Yihan Sun. “Just Join for
+Parallel Ordered Sets”. In: Proceedings of the 28th ACM Symposium
+on Parallelism in Algorithms and Architectures. SPAA ’16. Pacific
+Grove, California, USA: Association for Computing Machinery, 2016,
+pp. 253–264. isbn: 9781450342100. doi: 10.1145/2935764.2935768.
+url: https://doi.org/10.1145/2935764.2935768.
+
+[NR20] Gonzalo Navarro and Javiel Rojas-Ledesma. “Predecessor Search”.
+In: ACM Comput. Surv. 53.5 (Sept. 2020). issn: 0360-0300. doi: 10.
+1145/3409371. url: https://doi.org/10.1145/3409371.
+
+[DFH21] Patrick Dinklage, Johannes Fischer, and Alexander Herlez. “Engi
+neering Predecessor Data Structures for Dynamic Integer Sets”. In:
+CoRR abs/2104.06740 (2021). arXiv: 2104.06740. url: https://arxiv.org/abs/2104.06740.
