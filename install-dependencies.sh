@@ -1,6 +1,6 @@
 # @file install-dependencies.sh
 # @author Calvin Higgins (calvin_higgins2@uri.edu)
-# @author Robert Oganesian
+# @author Robert Oganesian (roganesian@uri.edu)
 # @version 1.0
 # @date 2022-04-24
 
