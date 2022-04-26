@@ -453,7 +453,7 @@ public:
         output_file.close();
 
         // Convert dot file to png using Graphviz.
-        system("dot -Tpng -Gsize=1920,1080\! -Gdpi=1 demo/resource/image/visualizer.dot -o demo/resource/image/visualizer.png");
+        system("dot -Tpng -Gsize=1600,1000\! -Gdpi=1 demo/resource/image/visualizer.dot -o demo/resource/image/visualizer.png");
 
         if (!this->trie_image.loadFromFile("demo/resource/image/visualizer.png"))
             throw std::runtime_error("Could not load Y-Fast Trie PNG!");

@@ -16,7 +16,7 @@ sudo apt -y install git
 sudo apt -y install python3
 sudo apt -y install python3-pip
 sudo apt -y install build-essential
-sudo apt -y install cpupower
+sudo apt -y install cpupower-gui
 
 # Install termcolor library
 sudo pip3 install termcolor

@@ -127,16 +127,23 @@ private:
 	}
 
 	/**
+	 * @brief Insert a partition as the default.
+	 * 
+	 */
+	void insert_default_partition(partition_ptr partition) noexcept {
+		insert_partition(upper_bound(), partition);
+	}
+
+	/**
 	 * @brief Create the default partition.
 	 * 
 	 * @return the default partition.
 	 */
 	inline partition_ptr create_default_partition() noexcept {
 		auto partition = new partition_type();
-		insert_partition(upper_bound(), partition);
+		insert_default_partition(partition);
 		return partition;
 	}
-
 public:
 	/**
 	 * @brief Find the maximum possible key.
@@ -234,15 +241,19 @@ public:
 		// partition because the predecessor cannot be in the partition. We also know that 
 		// the predecessor exists because we would have already returned if it didn't.
 		if (partition->min().value() >= key) {
-			// Compute the left representative node.
-			auto left_node = node->get_left();
-			index_.MARK_AND_UPDATE(left_node);
+			// Check if the current partition is the default partition.
+			bool is_default = node->key() == upper_bound();
 
-			// Make sure the left partition actually exists.
-			if (left_node == nullptr) return some_key_type();
+			// Then, we remove the original partition from the trie.
+			remove_partition(node);
 
-			// Set the partition to the left partition.
-			partition = get_partition(left_node);
+			// Finally, we split the original partition and insert the new partitions.
+			auto new_partitions = partition->split();
+			insert_partition(new_partitions[0]);
+
+			// The second partition might need to be inserted as the default.
+			if (is_default) insert_default_partition(new_partitions[1]);
+			else insert_partition(new_partitions[1]);
 		}
 
 		// Compute the predecessor.
@@ -340,12 +351,19 @@ public:
 		// If the partition has exceeded the maximum size, then we must split the partition or we
 		// will be unable to meet the correct time complexity bounds.
 		if (partition->size() > max_partition_size_) {
-			// First, we remove the original partition from the trie.
+			// Check if the current partition is the default partition.
+			bool is_default = node->key() == upper_bound();
+
+			// Then, we remove the original partition from the trie.
 			remove_partition(node);
-			// Then, we split the original partition and insert the new partitions.
+
+			// Finally, we split the original partition and insert the new partitions.
 			auto new_partitions = partition->split();
-			for (auto new_partition : new_partitions)
-				insert_partition(new_partition);
+			insert_partition(new_partitions[0]);
+
+			// The second partition might need to be inserted as the default.
+			if (is_default) insert_default_partition(new_partitions[1]);
+			else insert_partition(new_partitions[1]);
     	}
 
     	size_ += 1;
@@ -390,9 +408,14 @@ public:
 			if (left_node->key() > right_node->key())
 				std::swap(left_node, right_node);
 			
-			// Remove the original partitions from the trie.
+			// Check if the current partition is the default partition.
+			bool is_default = node->key() == upper_bound();
+						
+			// Get the original partitions from the trie.
 			auto left_partition = get_partition(left_node);
 			auto right_partition = get_partition(right_node);
+
+			// Remove the partitions from the trie.
 			remove_partition(left_node);
 			remove_partition(right_node);
 
@@ -403,12 +426,19 @@ public:
 			if (merged_partition->size() > max_partition_size_) {
 				// Split the partition and insert the new partitions.
 				auto new_partitions = merged_partition->split();
-				for (auto new_partition : new_partitions)
-					insert_partition(new_partition);
+				
+				// Finally, we split the original partition and insert the new partitions.
+				insert_partition(new_partitions[0]);
+
+				// The second partition might need to be inserted as the default.
+				if (is_default) insert_default_partition(new_partitions[1]);
+				else insert_partition(new_partitions[1]);
 			} 
 			// Otherwise, simply insert the merged partition
 			else {
-				insert_partition(merged_partition);
+				// If needed, insert as the default.
+				if (is_default) insert_default_partition(merged_partition);
+				else insert_partition(merged_partition);
 			}
 		}
 

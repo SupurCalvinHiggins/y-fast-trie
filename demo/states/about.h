@@ -50,7 +50,7 @@ private:
      * 
      */
     void initKeyBinds() {
-        std::ifstream file("cdemo/onfig/about-state-keys.ini");
+        std::ifstream file("demo/config/about-state-keys.ini");
 
         if (file.is_open()) {
             std::string key_name;
@@ -123,9 +123,9 @@ public:
             it.second->update(this->mouse_pos_view);
 
         if (this->buttons["GITHUB"]->isClicked() && this->getKeyTimer()) {
-            #if __APPLE__
+            #ifdef __APPLE__ || __MACH__
                 system("open https://github.com/SupurCalvinHiggins/y-fast-trie");
-            #elif _linux_
+            #elif __linux__
                 system("xdg-open https://github.com/SupurCalvinHiggins/y-fast-trie");
             #elif _WIN32
                 system("start https://github.com/SupurCalvinHiggins/y-fast-trie");

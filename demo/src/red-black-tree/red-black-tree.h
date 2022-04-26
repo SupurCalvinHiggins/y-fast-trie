@@ -714,6 +714,9 @@ public:
         // Create the new trees from the node vectors.
         auto left_tree = nodes_to_balanced_tree(left_tree_nodes);
         auto right_tree = nodes_to_balanced_tree(right_tree_nodes);
+
+        left_tree->set_animate(animate_);
+        right_tree->set_animate(animate_);
         assert(left_tree->max().value() < right_tree->min().value());
 
         // Ensure that the current tree does not have any associated data.
@@ -749,6 +752,7 @@ public:
 
         // Create a new tree from the nodes.
         auto merged_tree = nodes_to_balanced_tree(tree_nodes);
+        merged_tree->set_animate(animate_);
 
         // Ensure that the current trees do not have any associated data.
         left_tree->root_ = nullptr;
