@@ -669,6 +669,24 @@ private:
         return succ;
     };
 
+private:
+
+    /**
+     * @brief Recursively fills the referenced input vector with all nodes from a tree of the input root.
+     * The order of the nodes is inorder
+     * 
+     * @param root The root of the tree to get the nodes from. 
+     * @param nodes The vector to store the tree's nodes in.
+     */
+    void nodes(node_ptr root, std::vector<node_ptr>& node_vector){
+        //If the current root exists...
+        if (root){
+            nodes(root->children_[0], node_vector);
+            node_vector.push_back(root);
+            nodes(root->children_[1], node_vector);
+        }
+    };
+
 //Split/merge
 public:
 
