@@ -19,7 +19,7 @@
 #include <cmath>
 #include <optional>
 #include <algorithm>
-#include "../../visualizer.h"
+#include "../../gui.h"
 
 template <typename Key_>
 class RedBlackTree {

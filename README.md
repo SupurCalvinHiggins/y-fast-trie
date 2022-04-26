@@ -26,12 +26,19 @@ The library requires at least C++17. With some tweaks, the library will work for
 ### Linux
 To install dependencies on Linux systems, execute
 ```
-sudo chmod +x install_dependencies.sh
-sudo ./install_dependencies.sh
+sudo chmod +x install-dependencies.sh
+sudo ./install-dependencies.sh
 ```
 
-### MacOS and Windows
-On MacOS and Windows, ensure that the following dependencies are installed:
+### macOS
+To install dependencies on macOS, execute
+```
+sudo chmod +x install-dependencies.command
+./install-dependencies.command
+```
+
+### Windows
+On Windows, ensure that the following dependencies are installed:
 1. python3
 2. pip
 3. GCC
@@ -139,7 +146,15 @@ to benchmark/my-data-structure/insert.benchmark.cpp.
 Benchmark subsumption is currently unsupported.
 
 ## Demo
-TODO
+The library implements a complete Y-Fast Trie visualizer using the Simple and Fast Multimedia Library (SFML) C++ framework.
+
+### Executing Demo
+The run.py Python script provides an easy method of compiling the demo.
+
+To run the demo, execute
+```
+python3 run.py demo
+```
 
 ## Red-Black Tree
 Red-Black Trees are balanced binary search trees that provide dynamic ordered set operations in O(log(N)) time with O(N) space.

@@ -1,8 +1,9 @@
 ###############################################################################
 # @file run.py                                                                #
 # @author Calvin Higgins (calvin_higgins2@uri.edu)                            #
+# @author Robert Oganesian (roganesian@uri.edu)                               #
 # @version 1.0                                                                #
-# @date 2022-04-24                                                            #
+# @date 2022-04-26                                                            #
 ############################################################################### 
 
 
@@ -101,6 +102,10 @@ def is_benchmark(fname):
     '''Checks if a file is a benchmark.'''
     return '.benchmark.cpp' in fname
 
+def is_demo(fname):
+    '''Checks if a file is a demo.'''
+    return '.demo.cpp' in fname
+
 
 def expand_directories(fnames):
     '''Expands directories into cpp files.'''
@@ -116,11 +121,11 @@ def expand_directories(fnames):
 
 
 def only_valid_fnames(fnames):
-    '''Filter out duplicates and only keep benchmarks and tests.'''
+    '''Filter out duplicates and only keep benchmarks, tests, and demo.'''
     new_fnames = []
     for fname in fnames:
         if fname in new_fnames: continue
-        if is_benchmark(fname) or is_test(fname):
+        if is_benchmark(fname) or is_test(fname) or is_demo(fname):
             new_fnames.append(fname)
     return new_fnames
 
@@ -162,6 +167,12 @@ def try_compile_benchmark(fname):
     subprocess.run(['g++', fname, '-std=c++17', '-O3', '-lbenchmark', 
                     '-lpthread', '-o', 'exec']) 
 
+def try_compile_demo(fname):
+    '''Try to compile the file as a demo.'''
+    if not is_demo(fname): return
+    subprocess.run(['g++', fname, '-std=c++17', '-O3', '-lsfml-graphics',
+                    '-lsfml-window', '-lsfml-system', '-lsfml-audio', 
+                    '-o', 'exec'])
 
 def did_compile():
     '''Tests if the file compiled.'''
@@ -220,6 +231,7 @@ if __name__ == '__main__':
         ok('*** COMPILING ***')
         try_compile_test(fname)
         try_compile_benchmark(fname)
+        try_compile_demo(fname)
 
         # Run the current file.
         if did_compile():

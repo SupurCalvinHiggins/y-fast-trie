@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include "../../visualizer.h"
+#include "../../gui.h"
 
 void UPDATE_GUI();
 
