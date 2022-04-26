@@ -402,7 +402,7 @@ public:
 			// If the new merged partition exceeds the maximum size, we have to split it.
 			if (merged_partition->size() > max_partition_size_) {
 				// Split the partition and insert the new partitions.
-				auto new_partitions = partition->split();
+				auto new_partitions = merged_partition->split();
 				for (auto new_partition : new_partitions)
 					insert_partition(new_partition);
 			} 

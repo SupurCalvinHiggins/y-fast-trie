@@ -95,20 +95,10 @@ public:
             return;
         }
         if (max_ && key == max_->key_){
-            if (!max_->parent_){
-                max_ = max_->children_[0];
-            }
-            else{
-                max_ = max_->parent_;
-            }
+            min_ = nullptr;  
         }
         if (min_ && key == min_->key_){
-            if (!min_->parent_){
-                min_ = min_->children_[1];
-            }
-            else{
-                min_ = min_->parent_;
-            }
+            min_ = nullptr;            
         }
         //<dir> carries the direction of the node relative to its parent
         bool dir;
@@ -630,21 +620,31 @@ public:
     /**
      * @brief Returns the maximum value of the tree. Returns nullopt if the tree is empty
      * 
+     * @author Calvin Higgins
+     * 
      * @return some_key_type The maximum of the tree, which may be none if the tree is empty.
      */
     some_key_type max() {
-        if (!max_) return std::nullopt;
-        return some_key_type(max_->key_);
-    }
+        if (max_) return some_key_type(max_->key());
+        if (!root_) return some_key_type();
+        auto max_ = root_;
+        while (max_->children_[1]) max_ = max_->children_[1];
+        return some_key_type(max_->key());
+    }  
 
     /**
      * @brief Returns the minimum value of the tree. Returns nullopt if the tree is empty
      * 
+     * @author Calvin Higgins
+     * 
      * @return some_key_type The minimum of the tree, which may be none if the tree is empty.
      */
     some_key_type min() {
-        if (!min_) return std::nullopt;
-        return some_key_type(min_->key_);
+        if (min_) return some_key_type(min_->key());
+        if (!root_) return some_key_type();
+        auto min_ = root_;
+        while (min_->children_[0]) min_ = min_->children_[0];
+        return some_key_type(min_->key());
     };
 
 private:
@@ -671,57 +671,173 @@ private:
 
 //Split/merge
 public:
-    /**
-     * @brief Gets all nodes from <tree2> and puts them into <tree1>, deleting <tree2> afterwards.
-     * 
-     * @param tree1 The first tree, which will have all nodes from <tree2> added to it.
-     * @param tree2 The second tree, which will have all of its nodes inserted into tree1, Is deleted after merging.
-     * @return RedBlackTree<key_type>* The pointer to the merged tree.
-     */
-    RedBlackTree<key_type>* merge(RedBlackTree<key_type>* tree1, RedBlackTree<key_type>* tree2){
-        //The bulk of this function is done in the recursive submethod, so see that function for a better understanding
-        tree1->merge(tree2->root_,tree1);
-        //Because the nodes of <tree2> are recycled, the root is set to nullptr so all of the nodes don't get deleted during deletion.
-        tree2->root_ = nullptr;
-        delete tree2;
-        return tree1;
-    };
 
     /**
-     * @brief Splits the tree into two trees about the input key. The original is practically cleared after the split.
-     * The first tree that is returned is all nodes less than <key>, and the other tree is all nodes greater than it.
+     * @brief Split the current tree into two new trees.
      * 
-     * @param pivot The pivot for the tree to split about.
-     * @return std::array<RedBlackTree<key_type>*,2> The first tree that is returned is all 
-     * nodes less than <key>, and the other tree is all nodes greater than it.
+     * @author Calvin Higgins (calvin_higgins2@uri.edu)
+     * 
+     * @return left tree with values less than the median and a right tree with all other values.
      */
     std::array<RedBlackTree<key_type>*,2>  split() {
-        RedBlackTree<key_type>* tree1 = new RedBlackTree<key_type>();
-        RedBlackTree<key_type>* tree2 = new RedBlackTree<key_type>();
-        tree1->set_animate(animate_);
-        tree2->set_animate(animate_);
-        
-        //The majority of this function is done with the recursive submethod, so see that for more information.
-        auto pivot = median();
-        split(root_, pivot, tree1, tree2);
+        assert(root_ && (size() > 1) && 
+               "Cannot split a tree with size 0 or 1");
 
+        // Collect all the nodes in the tree into a vector.
+        std::vector<node_ptr> tree_nodes;
+        tree_nodes.reserve(size());
+        nodes(root_, tree_nodes);
+
+        // Split the nodes into two new vectors.
+        auto mid = tree_nodes.size() / 2;
+        std::vector<node_ptr> left_tree_nodes(tree_nodes.begin(), tree_nodes.begin() + mid);
+        std::vector<node_ptr> right_tree_nodes(tree_nodes.begin() + mid, tree_nodes.end());
+
+        // Create the new trees from the node vectors.
+        auto left_tree = nodes_to_balanced_tree(left_tree_nodes);
+        auto right_tree = nodes_to_balanced_tree(right_tree_nodes);
+        assert(left_tree->max().value() < right_tree->min().value());
+
+        // Ensure that the current tree does not have any associated data.
         root_ = nullptr;
+        max_ = nullptr;
+        min_ = nullptr;
         size_ = 0;
-        return std::array<RedBlackTree<key_type>*,2>{tree1, tree2}; 
+
+        return std::array<RedBlackTree<key_type>*, 2>{left_tree, right_tree};
     };
 
     /**
-     * @brief Merges <tree2> into the tree that merge is called from. Deletes <tree2> afterwards.
+     * @brief Merge two red-black trees into an single red-black tree.
      * 
-     * @param tree2 The tree being merged into the tree merge is called from. Is deleted after merging.
+     * @author Calvin Higgins (calvin_higgins2@uri.edu)
+     * 
+     * @param left_tree with values strictly less than the right tree.
+     * @param right_tree with values strictly greater than the left tree.
+     * @return the merged tree.
      */
-    void merge(RedBlackTree<key_type>* tree2) {
-        //The bulk of this function is done in the recursive merge, so see that function for a better understanding
-        merge(tree2->root_,this);
-        //Because the nodes of <tree2> are recycled, the root is set to nullptr so all of the nodes don't get deleted.
-        tree2->root_ = nullptr;
-        delete tree2;
+    RedBlackTree<key_type>* merge(RedBlackTree<key_type>* left_tree, RedBlackTree<key_type>* right_tree) {
+        assert(left_tree->root_ && right_tree->root_ && (left_tree->size() > 0) && (right_tree->size() > 0) &&
+               "Cannot merge empty trees.");
+        assert(left_tree->max().value() < right_tree->min().value() &&
+               "The left tree must contain values strictly less than the right tree.");
+
+        // Collect all the nodes into a vector.
+        std::vector<node_ptr> tree_nodes;
+        tree_nodes.reserve(left_tree->size() + right_tree->size());
+        //bug must be sorted
+        nodes(left_tree->root_, tree_nodes);
+        nodes(right_tree->root_, tree_nodes);
+
+        // Create a new tree from the nodes.
+        auto merged_tree = nodes_to_balanced_tree(tree_nodes);
+
+        // Ensure that the current trees do not have any associated data.
+        left_tree->root_ = nullptr;
+        left_tree->max_ = nullptr;
+        left_tree->min_ = nullptr;
+        left_tree->size_ = 0;
+
+        right_tree->root_ = nullptr;
+        right_tree->max_ = nullptr;
+        right_tree->min_ = nullptr;
+        right_tree->size_ = 0;
+
+        return merged_tree;
     };
+
+private:
+    /**
+     * @brief Convert a sorted vector of nodes to a balanced red-black tree.
+     * 
+     * @author Calvin Higgins (calvin_higgins2@uri.edu)
+     * 
+     * @param tree_nodes to construct a red-black tree from.
+     * @return the red black tree.
+     */
+    RedBlackTree<key_type>* nodes_to_balanced_tree(std::vector<node_ptr>& tree_nodes) {
+        assert(!tree_nodes.empty() && "Cannot build a tree from 0 nodes.");
+
+        // Create a vector to store nodes that should be marked red.
+        std::vector<node_ptr> mark_red;
+        mark_red.reserve(tree_nodes.size());
+
+        // Construct a balanced tree without correct coloring.
+        int max_depth = 0;
+        auto merged_root = construct_all_black_balanced_tree(tree_nodes, mark_red, nullptr, 0, tree_nodes.size() - 1, 0, max_depth);
+
+        // Correct the coloring.
+        for (auto node : mark_red)
+            node->color_ = red_;
+        
+        // Initialize the merged tree.
+        auto merged_tree = new RedBlackTree<key_type>();
+        merged_tree->root_ = merged_root;
+        merged_tree->size_ = tree_nodes.size();
+        merged_tree->min_ = *tree_nodes.begin();
+        merged_tree->max_ = *(--tree_nodes.end());
+        
+        // Check some post conditions.
+        assert(!merged_tree->empty());
+        assert(merged_tree->max().value() == merged_tree->max_->key_);
+        assert(merged_tree->min().value() == merged_tree->min_->key_);
+
+        return merged_tree;
+    }  
+
+    /**
+     * @brief Construct an all black balanced binary tree from a vector of nodes.
+     * 
+     * @author Calvin Higgins (calvin_higgins2@uri.edu)
+     * 
+     * @param tree_nodes is the nodes to construct the tree from.
+     * @param mark_red is will contain all nodes that should be colored red.
+     * @param parent is the parent of the current node.
+     * @param start is the left bound of tree_nodes.
+     * @param end is the right bound of tree_nodes.
+     * @param depth is the current depth.
+     * @param max_depth is the maximum depth seen so far.
+     * @return node_ptr to an all black balanced tree.
+     */
+    node_ptr construct_all_black_balanced_tree(std::vector<node_ptr>& tree_nodes, std::vector<node_ptr>& mark_red, node_ptr parent, int start, int end, int depth, int& max_depth) {
+
+        // Compute the size of the slice.
+        auto size = end - start + 1;
+
+        // If the slice does not exist, return nullptr.
+        if (size <= 0)
+            return nullptr;
+        
+        // Check that the slice is valid.
+        assert(start >= 0 && start < tree_nodes.size());
+        assert(end >= 0 && end < tree_nodes.size());
+        
+        // Compute the current root.
+        auto mid = start + (size / 2);
+        auto root = tree_nodes.at(mid);
+
+        // Since we need to mark only the deepest nodes red, keep track of the deepest level and
+        // flag any nodes red that are on the deepest current level.
+        if (depth > max_depth) {
+            max_depth = depth;
+            mark_red.clear();
+            mark_red.push_back(root);
+        }
+        else if (depth == max_depth) {
+            mark_red.push_back(root);
+        }
+
+        // Compute the left and right subtrees from the left and right sections of the node vector.
+        root->children_[0] = construct_all_black_balanced_tree(tree_nodes, mark_red, root, start, mid - 1, depth + 1, max_depth);
+        root->children_[1] = construct_all_black_balanced_tree(tree_nodes, mark_red, root, mid + 1, end, depth + 1, max_depth);
+
+        // Update the parent and color of the current node.
+        root->parent_ = parent;
+        root->color_ = black_;
+
+        return root;   
+    }
+
 
 //Data members
 private:
@@ -1032,44 +1148,6 @@ private:
         return text;
     };
 
-    /**
-     * @brief Recursively inserts all nodes into <destination> from the subtree starting at the first <node> and 
-     * traversing to the end of each path inserting each node.
-     *
-     * @param node The node of the current recursive call.
-     * @param destination The tree that nodes are put into.
-     * 
-     */
-    static void merge(node_ptr node, RedBlackTree<key_type>* destination) {
-        if (node){
-            merge(node->children_[0],destination);
-            merge(node->children_[1],destination);
-            destination->insert(node);
-        }
-            
-    }
-
-    /**
-     * @brief Recursively inserts all nodes into either <tree1> or <tree2> from the subtree starting at the first <node> and 
-     * traversing to the end of each path inserting each node. <tree1> has the nodes less than <pivot>, and <tree2> has the rest.
-     * 
-     * @param node The targeted node of the current recursive call.
-     * @param pivot The value which the tree is being split about.
-     * @param tree1 The tree that contains all nodes less than the pivot.
-     * @param tree2 The tree that contains all nodes greater than or equal to the pivot.
-     */
-    static void split(node_ptr node, key_type pivot, RedBlackTree<key_type>* tree1, RedBlackTree<key_type>* tree2) {
-        if (node){
-            split(node->children_[0], pivot, tree1, tree2);
-            split(node->children_[1], pivot, tree1, tree2);
-            if (node->key_ < pivot){
-                tree1->insert(node);
-            }
-            else{
-                tree2->insert(node);
-            }
-        }
-    };
 
 //Rotation
 private:

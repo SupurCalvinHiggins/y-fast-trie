@@ -102,6 +102,7 @@ private:
 	 * @param partition to insert.
 	 */
 	inline void insert_partition(key_type rep_key, partition_ptr partition) noexcept {
+		assert(!partition->max().has_value() || (partition->max().value() <= rep_key));
 		index_.insert(rep_key);
 		partitions_[rep_key] = partition;
 	}
@@ -333,6 +334,7 @@ public:
 
 		// Insert the key into the partition.
 		partition->insert(key);
+		assert(!node || (partition->max().value() <= node->key()));
 
 		// If the partition has exceeded the maximum size, then we must split the partition or we
 		// will be unable to meet the correct time complexity bounds.
@@ -382,12 +384,24 @@ public:
 			// Ensure that the left partition has keys that are < the right partition.
 			if (left_node->key() > right_node->key())
 				std::swap(left_node, right_node);
+			assert(left_node->key() < right_node->key());
 			
 			// Remove the original partitions from the trie.
 			auto left_partition = get_partition(left_node);
 			auto right_partition = get_partition(right_node);
+
+			assert(left_partition->max().value() <= left_node->key());
+
+			if (right_partition->max().value() > right_node->key()) {
+				int y = 7;
+				y++;
+				assert(right_partition->max().value() <= right_node->key());
+			}
+
 			remove_partition(left_node);
 			remove_partition(right_node);
+
+			assert(left_partition->max().value() < right_partition->min().value());
 
 			// Merge the two original partitions.
 			auto merged_partition = left_partition->merge(left_partition, right_partition);
@@ -395,7 +409,7 @@ public:
 			// If the new merged partition exceeds the maximum size, we have to split it.
 			if (merged_partition->size() > max_partition_size_) {
 				// Split the partition and insert the new partitions.
-				auto new_partitions = partition->split();
+				auto new_partitions = merged_partition->split();
 				for (auto new_partition : new_partitions)
 					insert_partition(new_partition);
 			} 

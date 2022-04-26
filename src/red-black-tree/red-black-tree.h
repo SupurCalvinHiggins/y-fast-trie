@@ -13,6 +13,7 @@
 #include <ctime>
 #include <array>
 #include <vector>
+#include <valarray>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -20,21 +21,23 @@
 #include <cmath>
 #include <optional>
 #include <algorithm>
+#include <stdlib.h>
 
 template <typename Key_>
 class RedBlackTree {
+    template <typename> friend class Node;
+
 //Implicit types
 public:
     using key_type = Key_;
     using some_key_type = std::optional<Key_>;
 
-private:
     using node_type = Node<key_type>;
     using node_ptr = node_type*;
     using size_type = size_t;
 
 //Aliases
-private:
+public:
     static constexpr bool black_ = 0;
     static constexpr bool red_ = 1;
 
@@ -81,26 +84,16 @@ public:
 	void remove(key_type key) {
         auto node = find(key);
         if (node == nullptr) {return;}
-        if (max_ && key == max_->key_){
-            if (!max_->parent_){
-                max_ = max_->children_[0];
-            }
-            else{
-                max_ = max_->parent_;
-            }
-        }
-        if (min_ && key == min_->key_){
-            if (!min_->parent_){
-                min_ = min_->children_[1];
-            }
-            else{
-                min_ = min_->parent_;
-            }
-        }
         //<dir> carries the direction of the node relative to its parent
         bool dir;
         node_ptr parent = nullptr;
         bool color;
+        if (max_ && key == max_->key_){
+            min_ = nullptr;  
+        }
+        if (min_ && key == min_->key_){
+            min_ = nullptr;            
+        }
         
         if (node != root_) {
             //"node->parent_->children_[1] == node" will always return the direction of the node relative to its parent, so is used
@@ -157,7 +150,12 @@ public:
         }
         //Cases 5&6: The root is being deleted, so replace the root with either its successor or left child
         else {
-            auto succ = successor_node(node);
+            auto succ = node->children_[1];
+            if (succ){
+                while (succ->children_[0] != nullptr) {
+                    succ = succ->children_[0];
+                }
+            }
             //Case 5: Root has no successor, so replace it with its left child
             if (succ == nullptr) {
                 root_ = node->children_[0];
@@ -167,15 +165,12 @@ public:
                 }
                 //Case 5.5: Root has no children, so just delete the root.
                 else {
-                    parent = node->parent_;
-                    color = node->color_;
                     delete node;
                 }
                 
             }
             //Case 6: Root has successor, so replace the root's key with the successor's key and delete the successor
             else {
-                
                 node->key_ = succ->key_;
 
                 succ->parent_->children_[succ->parent_->children_[1] == succ] = succ->children_[1];
@@ -255,11 +250,11 @@ private:
                     target_node = target_node->children_[dir];
                 }
             }
+            // yeeet bug
             if (target_node->key_ == key){
                 delete node;
             }
         }
-       
     };
 
 //Accessors
@@ -272,36 +267,21 @@ public:
      * @return some_key_type 
      */
     some_key_type get(size_type n) {
-        if (n >= size_){
+        if(!min_) {return std::nullopt;}
+        if( n <= 0 && min_) {return some_key_type(min_->key_);}
+        if (n >= size_ - 1){
             if(max_){
                 return some_key_type(max_->key_);
             }else{
                 return std::nullopt;
             }
         }
-        node_ptr target = min_;
+        auto key = min_->key_;
     
-        for (int i = 0; i < n; i++){
-            auto succ = target->children_[1];
-
-            //Case 1: Target node has right child, so find leftmost node from the subtree of the target node's right child
-            if(succ){
-                while(succ->children_[0]) {
-                    succ = succ->children_[0];
-                    target = succ;
-                }
-            }
-            else{
-                //Case 2: The target node has no right child, so find the parent with a value closest to but greater than the value.
-                auto parent = target->parent_;
-                while (parent) {
-                    if (target == parent->children_[0]) break;
-                    target = parent;
-                    parent = parent->parent_;
-                }
-            }
+        for (int i = 1; i <= n; i++){
+            key = *successor(key);
         }
-        return some_key_type(target->key_);
+        return some_key_type(key);
         
     };
 
@@ -313,7 +293,15 @@ public:
      */
     key_type median() {
         assert(root_ && "Use of median on an empty tree is not supported");
-        return get(size_/2).value();
+        //Gets vector with all keys
+        std::vector<key_type> keys;
+        for (auto node : nodes()) {
+            keys.push_back(node->key_);
+        }
+        //Sets the "middle" of the vector to be the median
+        std::nth_element(keys.begin(), keys.begin() + keys.size()/2, keys.end());
+
+        return keys[keys.size() / 2];
     };
 
     /**
@@ -405,8 +393,8 @@ public:
         //Finds the parent of the key if it were to be inserted into the tree.
         //The successor will be the same for this target node as the key.
         auto target = root_;
-        while (target->children_[key > target->key_] != nullptr) {
-            target = target->children_[key > target->key_];
+        while (target->children_[key >= target->key_] != nullptr) {
+            target = target->children_[key >= target->key_];
             //If the input key is in the tree, it used that as the target instead.
             if (target->key_ == key) break;
         }
@@ -442,94 +430,36 @@ public:
     /**
      * @brief Returns the maximum value of the tree. Returns nullopt if the tree is empty
      * 
+     * @author Calvin Higgins
+     * 
      * @return some_key_type The maximum of the tree, which may be none if the tree is empty.
      */
     some_key_type max() {
-        if (!max_) return std::nullopt;
-        return some_key_type(max_->key_);
-    }
+        if (max_) return some_key_type(max_->key());
+        if (!root_) return some_key_type();
+        auto max_ = root_;
+        while (max_->children_[1]) max_ = max_->children_[1];
+        return some_key_type(max_->key());
+    }  
 
     /**
      * @brief Returns the minimum value of the tree. Returns nullopt if the tree is empty
      * 
+     * @author Calvin Higgins
+     * 
      * @return some_key_type The minimum of the tree, which may be none if the tree is empty.
      */
     some_key_type min() {
-        if (!min_) return std::nullopt;
-        return some_key_type(min_->key_);
-    };
-
-private:
-    /**
-     * @brief Finds the node with the closest key to the target node's key that is greater it.
-     * The value has to be in the the tree. Used in deletion.
-     * 
-     * @param node The node to find the successor of.
-     * @return node_ptr The successor of the node, which may be the node itself. The node must be in the tree
-     */
-    node_ptr successor_node(node_ptr node) {
-        if (!node) {return nullptr;}
-
-        node_ptr succ = node->children_[1];
-        if (succ){
-            while (succ->children_[0] != nullptr) {
-                succ = succ->children_[0];
-            }
-        }
-        
-        return succ;
+        if (min_) return some_key_type(min_->key());
+        if (!root_) return some_key_type();
+        auto min_ = root_;
+        while (min_->children_[0]) min_ = min_->children_[0];
+        return some_key_type(min_->key());
     };
 
 //Split/merge
 public:
-    /**
-     * @brief Gets all nodes from <tree2> and puts them into <tree1>, deleting <tree2> afterwards.
-     * 
-     * @param tree1 The first tree, which will have all nodes from <tree2> added to it.
-     * @param tree2 The second tree, which will have all of its nodes inserted into tree1, Is deleted after merging.
-     * @return RedBlackTree<key_type>* The pointer to the merged tree.
-     */
-    RedBlackTree<key_type>* merge(RedBlackTree<key_type>* tree1, RedBlackTree<key_type>* tree2){
-        //The bulk of this function is done in the recursive submethod, so see that function for a better understanding
-        tree1->merge(tree2->root_,tree1);
-        //Because the nodes of <tree2> are recycled, the root is set to nullptr so all of the nodes don't get deleted during deletion.
-        tree2->root_ = nullptr;
-        delete tree2;
-        return tree1;
-    };
 
-    /**
-     * @brief Splits the tree into two trees about the input key. The original is practically cleared after the split.
-     * The first tree that is returned is all nodes less than <key>, and the other tree is all nodes greater than it.
-     * 
-     * @param pivot The pivot for the tree to split about.
-     * @return std::array<RedBlackTree<key_type>*,2> The first tree that is returned is all 
-     * nodes less than <key>, and the other tree is all nodes greater than it.
-     */
-    std::array<RedBlackTree<key_type>*,2>  split(key_type pivot) {
-        RedBlackTree<key_type>* tree1 = new RedBlackTree<key_type>();
-        RedBlackTree<key_type>* tree2 = new RedBlackTree<key_type>();
-        
-        //The majority of this function is done with the recursive submethod, so see that for more information.
-        split(root_, pivot, tree1, tree2);
-
-        root_ = nullptr;
-        size_ = 0;
-        return std::array<RedBlackTree<key_type>*,2>{tree1, tree2}; 
-    };
-
-    /**
-     * @brief Merges <tree2> into the tree that merge is called from. Deletes <tree2> afterwards.
-     * 
-     * @param tree2 The tree being merged into the tree merge is called from. Is deleted after merging.
-     */
-    void merge(RedBlackTree<key_type>* tree2) {
-        //The bulk of this function is done in the recursive merge, so see that function for a better understanding
-        merge(tree2->root_,this);
-        //Because the nodes of <tree2> are recycled, the root is set to nullptr so all of the nodes don't get deleted.
-        tree2->root_ = nullptr;
-        delete tree2;
-    };
 
 //Data members
 private:
@@ -546,23 +476,27 @@ private:
     //The minimum value for the type that Key_ is using.
 	static constexpr key_type lower_bound_ = std::numeric_limits<key_type>::min();
 
+//Recursive submethods
+public:
 
     /**
      * @brief Recursively fills the referenced input vector with all nodes from a tree of the input root.
+     * The order of the nodes is inorder
      * 
      * @param root The root of the tree to get the nodes from. 
      * @param nodes The vector to store the tree's nodes in.
      */
-    void nodes(node_ptr root, std::vector<node_ptr>* node_vector){
+    static void nodes(node_ptr root, std::vector<node_ptr>& node_vector){
         //If the current root exists...
         if (root){
-            node_vector->push_back(root);
             nodes(root->children_[0], node_vector);
+            node_vector.push_back(root);
             nodes(root->children_[1], node_vector);
         }
     };
 
 private:
+
     /**
      * @brief Maintains the RedBlackTree invariant after standard binary search tree insertion. May call itself if needed.
      * 
@@ -715,45 +649,176 @@ private:
             delete node;
         }
     };
+public:
+
+    
 
     /**
-     * @brief Recursively inserts all nodes into <destination> from the subtree starting at the first <node> and 
-     * traversing to the end of each path inserting each node.
-     *
-     * @param node The node of the current recursive call.
-     * @param destination The tree that nodes are put into.
+     * @brief Split the current tree into two new trees.
      * 
+     * @author Calvin Higgins (calvin_higgins2@uri.edu)
+     * 
+     * @return left tree with values less than the median and a right tree with all other values.
      */
-    static void merge(node_ptr node, RedBlackTree<key_type>* destination) {
-        if (node){
-            merge(node->children_[0],destination);
-            merge(node->children_[1],destination);
-            destination->insert(node);
+    std::array<RedBlackTree<key_type>*,2>  split() {
+        assert(root_ && (size() > 1) && 
+               "Cannot split a tree with size 0 or 1");
+
+        // Collect all the nodes in the tree into a vector.
+        std::vector<node_ptr> tree_nodes;
+        tree_nodes.reserve(size());
+        nodes(root_, tree_nodes);
+
+        // Split the nodes into two new vectors.
+        auto mid = tree_nodes.size() / 2;
+        std::vector<node_ptr> left_tree_nodes(tree_nodes.begin(), tree_nodes.begin() + mid);
+        std::vector<node_ptr> right_tree_nodes(tree_nodes.begin() + mid, tree_nodes.end());
+
+        // Create the new trees from the node vectors.
+        auto left_tree = nodes_to_balanced_tree(left_tree_nodes);
+        auto right_tree = nodes_to_balanced_tree(right_tree_nodes);
+        assert(left_tree->max().value() < right_tree->min().value());
+
+        // Ensure that the current tree does not have any associated data.
+        root_ = nullptr;
+        max_ = nullptr;
+        min_ = nullptr;
+        size_ = 0;
+
+        return std::array<RedBlackTree<key_type>*, 2>{left_tree, right_tree};
+    };
+
+    /**
+     * @brief Merge two red-black trees into an single red-black tree.
+     * 
+     * @author Calvin Higgins (calvin_higgins2@uri.edu)
+     * 
+     * @param left_tree with values strictly less than the right tree.
+     * @param right_tree with values strictly greater than the left tree.
+     * @return the merged tree.
+     */
+    RedBlackTree<key_type>* merge(RedBlackTree<key_type>* left_tree, RedBlackTree<key_type>* right_tree) {
+        assert(left_tree->root_ && right_tree->root_ && (left_tree->size() > 0) && (right_tree->size() > 0) &&
+               "Cannot merge empty trees.");
+        assert(left_tree->max().value() < right_tree->min().value() &&
+               "The left tree must contain values strictly less than the right tree.");
+
+        // Collect all the nodes into a vector.
+        std::vector<node_ptr> tree_nodes;
+        tree_nodes.reserve(left_tree->size() + right_tree->size());
+        //bug must be sorted
+        nodes(left_tree->root_, tree_nodes);
+        nodes(right_tree->root_, tree_nodes);
+
+        // Create a new tree from the nodes.
+        auto merged_tree = nodes_to_balanced_tree(tree_nodes);
+
+        // Ensure that the current trees do not have any associated data.
+        left_tree->root_ = nullptr;
+        left_tree->max_ = nullptr;
+        left_tree->min_ = nullptr;
+        left_tree->size_ = 0;
+
+        right_tree->root_ = nullptr;
+        right_tree->max_ = nullptr;
+        right_tree->min_ = nullptr;
+        right_tree->size_ = 0;
+
+        return merged_tree;
+    };
+
+private:
+    /**
+     * @brief Convert a sorted vector of nodes to a balanced red-black tree.
+     * 
+     * @author Calvin Higgins (calvin_higgins2@uri.edu)
+     * 
+     * @param tree_nodes to construct a red-black tree from.
+     * @return the red black tree.
+     */
+    RedBlackTree<key_type>* nodes_to_balanced_tree(std::vector<node_ptr>& tree_nodes) {
+        assert(!tree_nodes.empty() && "Cannot build a tree from 0 nodes.");
+
+        // Create a vector to store nodes that should be marked red.
+        std::vector<node_ptr> mark_red;
+        mark_red.reserve(tree_nodes.size());
+
+        // Construct a balanced tree without correct coloring.
+        int max_depth = 0;
+        auto merged_root = construct_all_black_balanced_tree(tree_nodes, mark_red, nullptr, 0, tree_nodes.size() - 1, 0, max_depth);
+
+        // Correct the coloring.
+        for (auto node : mark_red)
+            node->color_ = red_;
+        
+        // Initialize the merged tree.
+        auto merged_tree = new RedBlackTree<key_type>();
+        merged_tree->root_ = merged_root;
+        merged_tree->size_ = tree_nodes.size();
+        merged_tree->min_ = *tree_nodes.begin();
+        merged_tree->max_ = *(--tree_nodes.end());
+        
+        // Check some post conditions.
+        assert(!merged_tree->empty());
+        assert(merged_tree->max().value() == merged_tree->max_->key_);
+        assert(merged_tree->min().value() == merged_tree->min_->key_);
+
+        return merged_tree;
+    }  
+
+    /**
+     * @brief Construct an all black balanced binary tree from a vector of nodes.
+     * 
+     * @author Calvin Higgins (calvin_higgins2@uri.edu)
+     * 
+     * @param tree_nodes is the nodes to construct the tree from.
+     * @param mark_red is will contain all nodes that should be colored red.
+     * @param parent is the parent of the current node.
+     * @param start is the left bound of tree_nodes.
+     * @param end is the right bound of tree_nodes.
+     * @param depth is the current depth.
+     * @param max_depth is the maximum depth seen so far.
+     * @return node_ptr to an all black balanced tree.
+     */
+    node_ptr construct_all_black_balanced_tree(std::vector<node_ptr>& tree_nodes, std::vector<node_ptr>& mark_red, node_ptr parent, int start, int end, int depth, int& max_depth) {
+
+        // Compute the size of the slice.
+        auto size = end - start + 1;
+
+        // If the slice does not exist, return nullptr.
+        if (size <= 0)
+            return nullptr;
+        
+        // Check that the slice is valid.
+        assert(start >= 0 && start < tree_nodes.size());
+        assert(end >= 0 && end < tree_nodes.size());
+        
+        // Compute the current root.
+        auto mid = start + (size / 2);
+        auto root = tree_nodes.at(mid);
+
+        // Since we need to mark only the deepest nodes red, keep track of the deepest level and
+        // flag any nodes red that are on the deepest current level.
+        if (depth > max_depth) {
+            max_depth = depth;
+            mark_red.clear();
+            mark_red.push_back(root);
         }
-            
+        else if (depth == max_depth) {
+            mark_red.push_back(root);
+        }
+
+        // Compute the left and right subtrees from the left and right sections of the node vector.
+        root->children_[0] = construct_all_black_balanced_tree(tree_nodes, mark_red, root, start, mid - 1, depth + 1, max_depth);
+        root->children_[1] = construct_all_black_balanced_tree(tree_nodes, mark_red, root, mid + 1, end, depth + 1, max_depth);
+
+        // Update the parent and color of the current node.
+        root->parent_ = parent;
+        root->color_ = black_;
+
+        return root;   
     }
 
-    /**
-     * @brief Recursively inserts all nodes into either <tree1> or <tree2> from the subtree starting at the first <node> and 
-     * traversing to the end of each path inserting each node. <tree1> has the nodes less than <pivot>, and <tree2> has the rest.
-     * 
-     * @param node The targeted node of the current recursive call.
-     * @param pivot The value which the tree is being split about.
-     * @param tree1 The tree that contains all nodes less than the pivot.
-     * @param tree2 The tree that contains all nodes greater than or equal to the pivot.
-     */
-    static void split(node_ptr node, key_type pivot, RedBlackTree<key_type>* tree1, RedBlackTree<key_type>* tree2) {
-        if (node){
-            split(node->children_[0], pivot, tree1, tree2);
-            split(node->children_[1], pivot, tree1, tree2);
-            if (node->key_ < pivot){
-                tree1->insert(node);
-            }
-            else{
-                tree2->insert(node);
-            }
-        }
-    };
 
 //Rotation
 private:
@@ -775,7 +840,6 @@ private:
         //  / \         <-->           / \
         // D   E                      E   C
         //
-
         if (root->parent_ == nullptr) {
             auto parent = root->children_[side ^ 1];
 
@@ -799,7 +863,7 @@ private:
 
             
             node_ptr grandchild = nullptr;
-            if(root->children_[side^1]){
+            if(/*root->children_[side^1]*/ true){
                 grandchild = root->children_[side ^ 1]->children_[side];
             }
             
@@ -814,12 +878,14 @@ private:
             parent->children_[parent->children_[1] == root] = root->parent_;
 
             root->parent_->parent_ = parent;
+
             return root->parent_;
         }
     };
 
 //Member getters
 public:
+
     /**
      * @brief Gives the size of the tree
      * 
@@ -834,7 +900,7 @@ public:
      * 
      * @return key_type The lower bound.
      */
-    static constexpr key_type upper_bound() {
+    static constexpr key_type upper_bound(){
         return upper_bound_;
     };
 
@@ -843,23 +909,151 @@ public:
      * 
      * @return key_type The upper bound.
      */
-    static constexpr key_type lower_bound() {
+    static constexpr key_type lower_bound(){
         return lower_bound_;
     };
 
 //Node accessors
 public:
-    
+
+    /**
+     * @brief Tries to put all of the nodes from the tree into a vector in inorder order. Returns an empty vector upon failure, and
+     * states that an error has occured.
+     * 
+     * @return std::vector<node_ptr> The vector of the tree's nodes. Empty if the allocation fails.
+     */
+    std::vector<node_ptr> nodes() {
+        try{
+            std::vector<node_ptr> node_vector = std::vector<node_ptr>();
+            nodes(root_,node_vector);
+            return node_vector;
+        } catch (...) {
+            std::cout << "Sorry, but there were too many nodes to be stored into an array. Returning an empty vector";
+            return (std::vector<node_ptr>());
+        }
+        
+    };
+
+//Debugging
+public:
     /**
      * @brief Checks if tree is empty.
      * 
      * @return true if tree is empty.
      * @return false if tree has one or more nodes.
      */
-    bool empty() {
+    bool empty(){
         return !root_;
     }
 
-public:
-    template <typename> friend class Node;
+
+    /**
+     * @brief Generates a DOT file (a format for GraphViz) which can be used to visualize the tree.
+     * 
+     * @param out_fpath The full path of the created destination file, which includes the directory and the file name.
+     */
+    std::string to_dot()  noexcept {
+        std::string text;
+        if (!root_){
+            text += "digraph RBTree0x00000000 {\n\n\n}";
+        }
+        else{
+            std::stringstream sstream;
+            sstream << root_;
+            std::string root_ptr = sstream.str();
+            sstream.str("");
+
+            std::string colors[2] = {"black","red"};
+
+            text += "digraph RBTree" + root_ptr + " {\n\n";
+            text += "\tn" + root_ptr + " [label=\"" + std::to_string(root_->key_) + "\", color=black, fillcolor=\"#bebebe\", style=filled];\n";
+
+            //Most of this method is done in a recursive submethod, so see that for details on the implementation.
+            text = write_dot(root_,text);
+            text += "\n}\n\n";
+        }
+        return text;        
+    };
+
+    /**
+     * @brief Recursively generates the text for the DOT file
+     * 
+     * @param node The node of the current recursive call.
+     * @param text The return text as it is during the current recursive call.
+     * @return std::string 
+     */
+    std::string write_dot(node_ptr node, std::string text = "")  noexcept {
+        if (node){
+            //Gets the text representation of the node's memory address
+            std::stringstream sstream;
+            sstream << node;
+            //The id of each node is the memory address preceeded by 'n'.
+            std::string node_id = 'n' + sstream.str();
+            sstream.str("");
+
+            //For converting color booleans to color words.
+            std::string colors[2] = {"black","red"};
+            std::string fill_colors[3] = {"\"#bebebe\"","\"#ff6a6a\""};
+
+            if (node->children_[0]||node->children_[1]){
+                //Director is the string that represents the relationship to the node's children.
+                std::string director = "";
+                std::string left_id = "";
+                std::string right_id = "";
+                char left_color,right_color;
+                
+                //If there's a left child, make the definition for the left child, and add it to the parent's relationship.
+                if(node->children_[0]) {
+                    
+                    sstream << node->children_[0];
+                    left_id = 'n' + sstream.str();
+                    sstream.str("");
+
+                    left_color = node->children_[0]->color_;
+
+                    //Format: (tab) (left node id) [label="(left node's key)", color=(left node's color)];
+
+                    text += '\t' + left_id + " [label=\"" + std::to_string(node->children_[0]->key_)  + "\", color=" + colors[node->children_[0]->color_] +  ", fillcolor=" + fill_colors[left_color] + ", style=filled];\n";
+                    director += " -> {" + left_id;
+
+                    //If there's also a right child, define it and add it to the parent's relationship as well.
+                    if (node->children_[1]){
+                        sstream << node->children_[1];
+                        right_id = 'n' + sstream.str();
+                        sstream.str("");
+
+                        right_color = node->children_[1]->color_;
+                        
+                        //Format: (tab) (right node id) [label="(right node's key)", color=(right node's color)];
+                        text += '\t' + right_id + " [label=\"" + std::to_string(node->children_[1]->key_) + "\", color=" + colors[node->children_[1]->color_] + ", fillcolor=" + fill_colors[right_color] + ", style=filled];\n";
+                        director += ", " + right_id;
+                    }
+
+                }
+                //If there's only a right child define it and add it to the parent's relationship.
+                else{
+                    sstream << node->children_[1];
+                    right_id = 'n' + sstream.str();
+                    sstream.str("");
+
+                    right_color = node->children_[1]->color_;
+
+                    //Format: (tab) (right node id) [label="(right node's key)", color=(right node's color)];
+                    text += '\t' + right_id + " [label=\"" + std::to_string(node->children_[1]->key_) + "\", color=" + colors[node->children_[1]->color_] + ", fillcolor=" + fill_colors[right_color] + ", style=filled];\n";
+                    director += " -> {"+ right_id;
+                }
+                text += '\t' + node_id + director + "};\n";
+            }
+            //Do the same process for each child
+            if(node->children_[0]) {
+                text = write_dot(node->children_[0],text);
+            }
+            if(node->children_[1]) {
+                text = write_dot(node->children_[1],text);
+            }
+            
+        }
+        return text;
+    };
+
 };
