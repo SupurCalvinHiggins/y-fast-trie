@@ -25,12 +25,12 @@ private:
 
 private:
     /**
-	 * @brief Initialize the background.
-	 * 
-	 */
+     * @brief Initialize the background.
+     * 
+     */
     void initBackground() {
-        if (!this->background_image.loadFromFile("resource/image/background/about-state.png"))
-            throw std::runtime_error("Could not load About State background texture!");
+        if (!this->background_image.loadFromFile("resource/image/background/about.png"))
+            throw std::runtime_error("Could not load AboutState background texture!");
         
         this->background_texture.loadFromImage(this->background_image);
         this->background.setTexture(this->background_texture);
@@ -122,8 +122,15 @@ public:
         for (auto &it : this->buttons)
             it.second->update(this->mouse_pos_view);
 
-        if (this->buttons["GITHUB"]->isClicked() && this->getKeyTimer())
-            system("open https://github.com/SupurCalvinHiggins/y-fast-trie");
+        if (this->buttons["GITHUB"]->isClicked() && this->getKeyTimer()) {
+            #if __APPLE__
+                system("open https://github.com/SupurCalvinHiggins/y-fast-trie");
+            #elif _linux_
+                system("xdg-open https://github.com/SupurCalvinHiggins/y-fast-trie");
+            #elif _WIN32
+                system("start https://github.com/SupurCalvinHiggins/y-fast-trie");
+            #endif
+        }
         if (this->buttons["BACK"]->isClicked() && this->getKeyTimer())
             this->exitState();
     }

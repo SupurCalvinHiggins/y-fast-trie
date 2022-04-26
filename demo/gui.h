@@ -35,9 +35,9 @@ private:
 
 private:
     /**
-	 * @brief Initialize the window settings.
-	 * 
-	 */
+     * @brief Initialize the window settings.
+     * 
+     */
     void initWindow() {
         std::ifstream file("config/window.ini");
         
@@ -95,20 +95,20 @@ private:
     }
 
     /**
-	 * @brief Check if the current state is the visualizer state.
-	 * 
-	 * @return if the current state is the visualizer state.
+     * @brief Check if the current state is the visualizer state.
      * 
-	 */
+     * @return if the current state is the visualizer state.
+     * 
+     */
     const bool isVisualizerState() const {
         return states.top()->getStateID() == 2;
     }
 
 public:
     /**
-	 * @brief Construct a new Visualizer/GUI object.
-	 * 
-	 */
+     * @brief Construct a new Visualizer/GUI object.
+     * 
+     */
     Visualizer() {
         this->initWindow();
         this->initKeys();
@@ -116,9 +116,9 @@ public:
     }
 
     /**
-	 * @brief Destroy the Visualizer/GUI object.
-	 * 
-	 */
+     * @brief Destroy the Visualizer/GUI object.
+     * 
+     */
     ~Visualizer() {
         delete this->window;
 
@@ -128,14 +128,13 @@ public:
         }
     }
 
-
 public:
     /**
-	 * @brief Updates visualizer state background.
+     * @brief Updates visualizer state background.
      * 
      * @details Updates the background of the visualizer state if the current state is the visualizer state. The background update will update the y-fast trie that is being visualized.
      * 
-	 */
+     */
     void updateVisualizerBackground() {
         if (this->isVisualizerState()) {
             // Cast the current state to a VisualizerState if state is visualizer state.
@@ -145,17 +144,17 @@ public:
     }
 
     /**
-	 * @brief Updates the dt variable.
+     * @brief Updates the dt variable.
      * 
-	 */
+     */
     void updateDt() {
         this->dt = this->dt_clock.restart().asSeconds();
     }
 
     /**
-	 * @brief Updates the window's events.
+     * @brief Updates the window's events.
      * 
-	 */
+     */
     void updateEvents() {
         while (this->window->pollEvent(this->event)) {
             if (this->event.type == sf::Event::Closed)

@@ -1,5 +1,5 @@
 /**
- * @file gui.h
+ * @file state.h
  * @author Robert Oganesian (roganesian@uri.edu)
  * @brief Parent class for all states.
  * @version 1.0
@@ -34,9 +34,9 @@ protected:
     std::map<std::string, int> key_binds;
 
     /**
-	 * @brief Initialize keybinds for a specific state.
-	 * 
-	 */
+     * @brief Initialize keybinds for a specific state.
+     * 
+     */
     virtual void initKeyBinds() = 0;
 
 protected:
@@ -55,16 +55,14 @@ protected:
     sf::Vector2i mouse_pos_window;
     sf::Vector2f mouse_pos_view;
     
-
 public:
     /**
-	 * @brief Construct a new State object.
-	 * 
+     * @brief Construct a new State object.
+     * 
      * @param window Pointer to the GUI window.
      * @param valid_keys Pointer to the map of valid SFML keys.
      * @param states Pointer to the stack of states.
-     * 
-	 */
+     */
     State(sf::RenderWindow *window, std::map<std::string, int> *valid_keys, std::stack<State*> *states) {
         this->window = window;
         this->valid_keys = valid_keys;
@@ -75,25 +73,25 @@ public:
     }
 
     /**
-	 * @brief Destroy the State object. Base destructor.
-	 * 
-	 */
+     * @brief Destroy the State object. Base destructor.
+     * 
+     */
     virtual ~State() {}
 
     /**
-	 * @brief Gets exit status of a state.
-	 * 
+     * @brief Gets exit status of a state.
+     * 
      * @return if a state wants to be closed or not.
      * 
-	 */
+     */
     const bool &getExit() const {
         return this->exit;
     }
 
     /**
-	 * @brief Sets exit status of a state.
-	 * 
-	 */
+     * @brief Sets exit status of a state.
+     * 
+     */
     void exitState() {
         this->exit = true;
     }

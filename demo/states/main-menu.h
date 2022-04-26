@@ -29,9 +29,9 @@ private:
 
 private:
     /**
-	 * @brief Initialize the background.
-	 * 
-	 */
+     * @brief Initialize the background.
+     * 
+     */
     void initBackground() {
         if (!this->background_image.loadFromFile("resource/image/background/main-menu.png"))
             throw std::runtime_error("Could not load Main Menu background texture!");

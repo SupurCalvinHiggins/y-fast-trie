@@ -49,26 +49,26 @@ private:
     bool is_in_console;
 
     /**
-	 * @brief The user is currently displaying the console.
-	 * 
-	 */
+     * @brief The user is currently displaying the console.
+     * 
+     */
     void inConsoleMenu() {
         this->is_in_console = true;
     }
 
     /**
-	 * @brief The user is currently not displaying the console.
-	 * 
-	 */
+     * @brief The user is currently not displaying the console.
+     * 
+     */
     void outConsoleMenu() {
         this->is_in_console = false;
     }
 
 private:
     /**
-	 * @brief Initialize the background.
-	 * 
-	 */
+     * @brief Initialize the background.
+     * 
+     */
     void initBackground() {
         if (!this->background_image.loadFromFile("resource/image/background/visualizer-initial.png"))
             throw std::runtime_error("Could not load inital VisualizerState background texture!");
@@ -133,9 +133,6 @@ private:
         this->animation_status.setFont(this->font);
         this->animation_status.setCharacterSize(50);
 
-        // Positions the text at the center of the window.
-        this->animation_status.setPosition(this->window->getSize().x / 2.f - this->animation_status.getGlobalBounds().width / 2.f, this->window->getSize().y / 2.f - this->animation_status.getGlobalBounds().height / 2.f);
-
         if (this->is_animated) {
             this->animation_status.setString("Animation: ON");
             this->animation_status.setFillColor(sf::Color::Green);
@@ -143,6 +140,9 @@ private:
             this->animation_status.setString("Animation: OFF");
             this->animation_status.setFillColor(sf::Color::Red);
         }
+        
+        // Positions the text at the center of the window.
+        this->animation_status.setPosition(this->window->getSize().x / 2.f - this->animation_status.getGlobalBounds().width / 2.f, this->window->getSize().y / 2.f - this->animation_status.getGlobalBounds().height / 2.f);
         
         this->window->draw(this->animation_status);
         this->window->display();
