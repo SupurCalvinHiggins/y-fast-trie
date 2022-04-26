@@ -1,9 +1,9 @@
 /**
- * @file console-menu.h
+ * @file console.h
  * @author Robert Oganesian (roganesian@uri.edu)
- * @brief Console menu for the GUI.
+ * @brief Console for the GUI.
  * @version 1.0
- * @date 2022-04-25
+ * @date 2022-04-26
  * 
  */
 
@@ -20,11 +20,11 @@
 #include <SFML/Audio.hpp>
 #include "gui-tools.h"
 
-class ConsoleMenu {
+class Console {
 private:
     // Required SFML variables.
     sf::RectangleShape background;
-    sf::RectangleShape console;
+    sf::RectangleShape console_background;
     sf::Font &font;
     sf::Text title_text;
     sf::Text text_box_names;
@@ -47,25 +47,25 @@ private:
         this->title_text.setFillColor(sf::Color(255, 255, 255, 200));
         this->title_text.setCharacterSize(60);
         this->title_text.setString("Trie Editor");
-        this->title_text.setPosition(this->console.getPosition().x + this->console.getSize().x / 2.f - this->title_text.getGlobalBounds().width / 2.f, this->console.getPosition().y + 15.f);
+        this->title_text.setPosition(this->console_background.getPosition().x + this->console_background.getSize().x / 2.f - this->title_text.getGlobalBounds().width / 2.f, this->console_background.getPosition().y + 15.f);
 
         // Create the text labels for the text boxes.
         this->text_box_names.setFont(font);
         this->text_box_names.setFillColor(sf::Color(255, 255, 255, 200));
         this->text_box_names.setCharacterSize(45);
         this->text_box_names.setString("Insert: \n\nRemove: \n\nPredecessor: \n\nSuccessor: \n\nContains:");
-        this->text_box_names.setPosition(this->console.getPosition().x + this->console.getSize().x / 2.f - this->title_text.getGlobalBounds().width / 2.f - 25.f, this->console.getPosition().y + 120.f);
+        this->text_box_names.setPosition(this->console_background.getPosition().x + this->console_background.getSize().x / 2.f - this->title_text.getGlobalBounds().width / 2.f - 25.f, this->console_background.getPosition().y + 120.f);
     }
 
 public:
     /**
-     * @brief Construct a new Console Menu object
+     * @brief Construct a new console object
      * 
      * @param window The window to draw to.
      * @param font The font for the text.
      * 
      */
-    ConsoleMenu(sf::RenderWindow &window, sf::Font &font) : font(font) {
+    Console(sf::RenderWindow &window, sf::Font &font) : font(font) {
         this->text_box_active = false;
 
         // Creates a background that displays when in the console.
@@ -73,15 +73,15 @@ public:
         this->background.setFillColor(sf::Color(20, 20, 20, 100));
 
         // Creates the console shape.
-        this->console.setSize(sf::Vector2f(window.getSize().x / 4.f, window.getSize().y - 100.f));
-        this->console.setFillColor(sf::Color(20, 20, 20, 200));
-        this->console.setPosition(window.getSize().x / 2.f - this->console.getSize().x / 2.f, 30.f);
+        this->console_background.setSize(sf::Vector2f(window.getSize().x / 4.f, window.getSize().y - 100.f));
+        this->console_background.setFillColor(sf::Color(20, 20, 20, 200));
+        this->console_background.setPosition(window.getSize().x / 2.f - this->console_background.getSize().x / 2.f, 30.f);
 
         this->initText();
     }
 
     
-    virtual ~ConsoleMenu() {
+    virtual ~Console() {
         delete exit_button;
 
         for (auto it = this->text_boxes.begin(); it != this->text_boxes.end(); it++)
@@ -99,7 +99,7 @@ public:
     void addButton(float y, const std::string text) {
         float width = 150.f;
         float height = 50.f;
-        float x = this->console.getPosition().x + this->console.getSize().x / 2.f - width / 2.f;
+        float x = this->console_background.getPosition().x + this->console_background.getSize().x / 2.f - width / 2.f;
 
         this->exit_button = new GUI::Button(x, y, width, height, &this->font, text, 50, sf::Color(212, 17, 17, 200), sf::Color::Red, sf::Color(20, 20, 20, 50), sf::Color::Transparent, sf::Color::Transparent, sf::Color::Transparent);
     }
@@ -114,7 +114,7 @@ public:
     void addTextBox(const std::string key, float y) {
         float width = 300.f;
         float height = 50.f;
-        float x = this->console.getPosition().x + this->console.getSize().x / 2.f - width / 2.f;
+        float x = this->console_background.getPosition().x + this->console_background.getSize().x / 2.f - width / 2.f;
 
         this->text_boxes[key] = new GUI::TextBox(x, y, width, height, 20, 30, 48, 57, this->font, sf::Color::Black, sf::Color::White, sf::Color::Blue);
     }
@@ -149,7 +149,7 @@ public:
      * @param user_input Holds the user input from the text box.
      * 
      */
-    void update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input) {
+    void update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event &event, std::string &user_input) {
         this->exit_button->update(mouse_pos);
 
         for (auto &it : this->text_boxes)
@@ -164,7 +164,7 @@ public:
      */
     void render(sf::RenderTarget &target) {
         target.draw(this->background);
-        target.draw(this->console);
+        target.draw(this->console_background);
 
         this->exit_button->render(target);
 

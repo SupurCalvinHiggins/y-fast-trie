@@ -3,7 +3,7 @@
  * @author Robert Oganesian (roganesian@uri.edu)
  * @brief Parent class for all states.
  * @version 1.0
- * @date 2022-04-25
+ * @date 2022-04-26
  * 
  */
 
@@ -157,7 +157,7 @@ public:
      * @param event Holds the current event from gui.h.
      * 
      */
-    virtual void update(const float &dt, sf::Event event) = 0;
+    virtual void update(const float &dt, sf::Event &event) = 0;
 
     /**
      * @brief Render any graphics within a state.

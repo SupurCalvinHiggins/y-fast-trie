@@ -39,7 +39,7 @@ private:
      * 
      */
     void initWindow() {
-        std::ifstream file("config/window.ini");
+        std::ifstream file("demo/config/window.ini");
         
         this->videoModes = sf::VideoMode::getFullscreenModes();
 
@@ -69,7 +69,7 @@ private:
      * 
      */
     void initKeys() {
-        std::ifstream file("config/valid-keys.ini");
+        std::ifstream file("demo/config/valid-keys.ini");
 
         if (file.is_open()) {
             std::string key_name;

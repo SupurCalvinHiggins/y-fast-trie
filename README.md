@@ -151,7 +151,7 @@ The library implements a complete Y-Fast Trie visualizer using the Simple and Fa
 ### Executing Demo
 The run.py Python script provides an easy method of compiling the demo.
 
-To run the visualizer, execute
+To run the demo, execute
 ```
 python3 run.py demo
 ```

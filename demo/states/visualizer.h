@@ -3,14 +3,14 @@
  * @author Robert Oganesian (roganesian@uri.edu)
  * @brief Visualizer state (state 2).
  * @version 1.0
- * @date 2022-04-25
+ * @date 2022-04-26
  * 
  */
 
 #pragma once
 
 #include "state.h"
-#include "../tools/console-menu.h"
+#include "../tools/console.h"
 #include "../src/y-fast-trie/y-fast-trie.h"
 #include <random>
 
@@ -39,8 +39,8 @@ private:
     YFastTrie<uint64_t> yfast_64;
 
 private:
-    // Creates a ConsoleMenu object for the state.
-    ConsoleMenu *console_menu;
+    // Creates a Console object for the state.
+    Console *console_menu;
 
     // Holds user input from the text boxes in the console.
     std::string user_input;
@@ -52,7 +52,7 @@ private:
      * @brief The user is currently displaying the console.
      * 
      */
-    void inConsoleMenu() {
+    void inConsole() {
         this->is_in_console = true;
     }
 
@@ -60,7 +60,7 @@ private:
      * @brief The user is currently not displaying the console.
      * 
      */
-    void outConsoleMenu() {
+    void outConsole() {
         this->is_in_console = false;
     }
 
@@ -70,7 +70,7 @@ private:
      * 
      */
     void initBackground() {
-        if (!this->background_image.loadFromFile("resource/image/background/visualizer-initial.png"))
+        if (!this->background_image.loadFromFile("demo/resource/image/background/visualizer-initial.png"))
             throw std::runtime_error("Could not load inital VisualizerState background texture!");
         
         this->background_texture.loadFromImage(this->background_image);
@@ -83,7 +83,7 @@ private:
      * 
      */
     void initFonts() {
-        if (!this->font.loadFromFile("resource/font/Dosis-Medium.ttf"))
+        if (!this->font.loadFromFile("demo/resource/font/Dosis-Medium.ttf"))
             throw std::runtime_error("Could not load Dosis-Medium.ttf (VisualizerState Font)");
     }
 
@@ -92,7 +92,7 @@ private:
      * 
      */
     void initKeyBinds() {
-        std::ifstream file("config/visualizer-state-keys.ini");
+        std::ifstream file("demo/config/visualizer-state-keys.ini");
 
         if (file.is_open()) {
             std::string key_name;
@@ -108,13 +108,13 @@ private:
     }
 
     /**
-     * @brief Initialize the console menu object.
+     * @brief Initialize the console object.
      * 
      */
-    void initConsoleMenu() {
+    void initConsole() {
         this->is_in_console = false;
 
-        this->console_menu = new ConsoleMenu(*this->window, this->font);
+        this->console_menu = new Console(*this->window, this->font);
 
         this->console_menu->addButton(900.f, "Exit");
 
@@ -166,7 +166,7 @@ public:
         this->initBackground();
         this->initKeyBinds();
         this->initFonts();
-        this->initConsoleMenu();
+        this->initConsole();
         
         this->trie_type = trie_type;
         this->is_animated = true;
@@ -200,9 +200,9 @@ public:
         // Updates if console is displayed or not.
         if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("OPEN_CONSOLE"))) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key(this->key_binds.at("OPEN_CONSOLE2")))) && this->getKeyTimer()) {
             if (!this->is_in_console)
-                this->inConsoleMenu();
+                this->inConsole();
             else
-                this->outConsoleMenu();
+                this->outConsole();
         }
 
         // Updates animation mode.
@@ -260,7 +260,7 @@ public:
             if (this->user_input.empty())
                 return;
 
-            this->outConsoleMenu();
+            this->outConsole();
             if (this->trie_type == 0) {
                 // Checks if user input is a valid 8-bit unsigned integer.
                 if (std::stoul(this->user_input) <= yfast_8.upper_bound())
@@ -294,7 +294,7 @@ public:
             if (this->user_input.empty())
                 return;
 
-            this->outConsoleMenu();
+            this->outConsole();
             if (this->trie_type == 0) {
                 // Checks if user input is a valid 8-bit unsigned integer.
                 if (std::stoul(this->user_input) <= yfast_8.upper_bound())
@@ -328,7 +328,7 @@ public:
             if (this->user_input.empty())
                 return;
 
-            this->outConsoleMenu();
+            this->outConsole();
             if (this->trie_type == 0) {
                 // Checks if user input is a valid 8-bit unsigned integer.
                 if (std::stoul(this->user_input) <= yfast_8.upper_bound())
@@ -362,7 +362,7 @@ public:
             if (this->user_input.empty())
                 return;
 
-            this->outConsoleMenu();
+            this->outConsole();
             if (this->trie_type == 0) {
                 // Checks if user input is a valid 8-bit unsigned integer.
                 if (std::stoul(this->user_input) <= yfast_8.upper_bound())
@@ -396,7 +396,7 @@ public:
             if (this->user_input.empty())
                 return;
                 
-            this->outConsoleMenu();
+            this->outConsole();
             if (this->trie_type == 0) {
                 // Checks if user input is a valid 8-bit unsigned integer.
                 if (std::stoul(this->user_input) <= yfast_8.upper_bound())
@@ -448,14 +448,14 @@ public:
             to_dot_str = yfast_64.to_dot();
     
         // Writes the dot string to the dot file.
-        std::ofstream output_file("resource/image/visualizer.dot");
+        std::ofstream output_file("demo/resource/image/visualizer.dot");
         output_file << to_dot_str;
         output_file.close();
 
         // Convert dot file to png using Graphviz.
-        system("dot -Tpng -Gsize=1920,1080\! -Gdpi=1 resource/image/visualizer.dot -o resource/image/background/visualizer.png");
+        system("dot -Tpng -Gsize=1920,1080\! -Gdpi=1 demo/resource/image/visualizer.dot -o demo/resource/image/visualizer.png");
 
-        if (!this->trie_image.loadFromFile("resource/image/background/visualizer.png"))
+        if (!this->trie_image.loadFromFile("demo/resource/image/visualizer.png"))
             throw std::runtime_error("Could not load Y-Fast Trie PNG!");
 
         // Pads the image with whitespace to meet the window size.
@@ -473,17 +473,17 @@ public:
      * @param event Holds the current event from gui.h.
      * 
      */
-    void update(const float &dt, sf::Event event) {
+    void update(const float &dt, sf::Event &event) {
         this->updateMousePositions();
         this->updateKeyTime(dt);
         this->updateInput(dt);
         
-        // If console menu is open, update the console menu.
+        // If console is open, update the console.
         if (this->is_in_console) {
             this->console_menu->update(this->mouse_pos_view, dt, event, this->user_input);
             this->updateConsoleInput();
         }
-        // If the console menu is closed, allow random insertion.
+        // If the console is closed, allow random insertion.
         else {
             this->updateRandomInsert();
         }
@@ -500,7 +500,7 @@ public:
 
         target->draw(this->background);
 
-        // If console menu is open, render the console menu.
+        // If console is open, render the console.
         if (this->is_in_console)
             this->console_menu->render(*target);
     }

@@ -3,7 +3,7 @@
  * @author Robert Oganesian (roganesian@uri.edu)
  * @brief Main menu state (state 0).
  * @version 1.0
- * @date 2022-04-25
+ * @date 2022-04-26
  * 
  */
 
@@ -33,7 +33,7 @@ private:
      * 
      */
     void initBackground() {
-        if (!this->background_image.loadFromFile("resource/image/background/main-menu.png"))
+        if (!this->background_image.loadFromFile("demo/resource/image/background/main-menu.png"))
             throw std::runtime_error("Could not load Main Menu background texture!");
         
         this->background_texture.loadFromImage(this->background_image);
@@ -45,7 +45,7 @@ private:
      * 
      */
     void initFonts() {
-        if (!this->button_font.loadFromFile("resource/font/Dosis-Medium.ttf"))
+        if (!this->button_font.loadFromFile("demo/resource/font/Dosis-Medium.ttf"))
             throw std::runtime_error("Could not load Dosis-Medium.ttf (MainMenuState Font)");
     }
 
@@ -54,7 +54,7 @@ private:
      * 
      */
     void initKeyBinds() {
-        std::ifstream file("config/main-menu-state-keys.ini");
+        std::ifstream file("demo/config/main-menu-state-keys.ini");
 
         if (file.is_open()) {
             std::string key_name;
@@ -163,7 +163,7 @@ public:
      * @param event Holds the current event from gui.h.
      * 
      */
-    void update(const float &dt, sf::Event event) {
+    void update(const float &dt, sf::Event &event) {
         this->updateMousePositions();
         this->updateKeyTime(dt);
         this->updateInput(dt);

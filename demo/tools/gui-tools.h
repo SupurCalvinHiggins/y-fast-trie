@@ -3,7 +3,7 @@
  * @author Robert Oganesian (roganesian@uri.edu)
  * @brief GUI tools library.
  * @version 1.0
- * @date 2022-04-25
+ * @date 2022-04-26
  * 
  */
 
@@ -476,10 +476,12 @@ namespace GUI
             if (this->cursor_timer < this->cursor_timer_max)
                 this->cursor_timer += dt;
             else {
+                // Change the cursor's visibility and reset the timer.
                 show_cursor = !show_cursor;
                 this->cursor_timer = 0.f;
             }
 
+            // Update if the cursor is visible.
             text.setString(text_str + (show_cursor ? '_' : ' '));
         }
 
@@ -539,14 +541,14 @@ namespace GUI
          * @param other_box_active Indicates if another text box object is active.
          * 
          */
-        void updateInput(const float &dt, sf::Event event, std::string &user_input, bool &other_box_active) {
+        void updateInput(const float &dt, sf::Event &event, std::string &user_input, bool &other_box_active) {
             this->animateCursor(dt);
 
             // If backspace is pressed, delete the last character.
-            if (event.text.unicode == 8 && this->getKeyTimer())
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Backspace) && this->getKeyTimer())
                 this->deleteCharacter();
             // If return/enter is pressed, get the text from the text box, then delete it.
-            else if (event.key.code == sf::Keyboard::Return && this->getKeyTimer()) {
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && this->getKeyTimer()) {
                 this->is_active = false;
                 this->is_entered = true;
                 other_box_active = false;
@@ -556,7 +558,7 @@ namespace GUI
             // Checks if the text in the text box is less than the character limit.
             else if (this->text_str.size() < this->char_limit) {
                 // Checks if the user has pressed a key that is within the given ASCII range.
-                if (event.text.unicode >= this->ascii_range_min && event.text.unicode <= this->ascii_range_max && this->getKeyTimer()) {
+                if (event.type == sf::Event::TextEntered && (event.text.unicode >= this->ascii_range_min && event.text.unicode <= this->ascii_range_max) && this->getKeyTimer()) {
                     this->text_str.push_back(event.text.unicode);
                     this->text.setString(this->text_str);
                 }
@@ -573,7 +575,7 @@ namespace GUI
          * @param other_box_active Indicates if another text box object is active.
          * 
          */
-        void update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event event, std::string &user_input, bool &other_box_active) {
+        void update(const sf::Vector2f &mouse_pos, const float &dt, sf::Event &event, std::string &user_input, bool &other_box_active) {
             this->updateKeyTime(dt);
 
             // Checks if the mouse is hovering over the text box.
