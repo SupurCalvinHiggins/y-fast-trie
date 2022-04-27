@@ -625,7 +625,7 @@ public:
      * @return some_key_type The maximum of the tree, which may be none if the tree is empty.
      */
     some_key_type max() {
-        if (max_) return some_key_type(max_->key());
+        // if (max_) return some_key_type(max_->key());
         if (!root_) return some_key_type();
         auto max_ = root_;
         while (max_->children_[1]) max_ = max_->children_[1];
@@ -640,7 +640,7 @@ public:
      * @return some_key_type The minimum of the tree, which may be none if the tree is empty.
      */
     some_key_type min() {
-        if (min_) return some_key_type(min_->key());
+        // if (min_) return some_key_type(min_->key());
         if (!root_) return some_key_type();
         auto min_ = root_;
         while (min_->children_[0]) min_ = min_->children_[0];

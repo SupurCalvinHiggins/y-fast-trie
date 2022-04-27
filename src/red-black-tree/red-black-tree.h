@@ -88,12 +88,8 @@ public:
         bool dir;
         node_ptr parent = nullptr;
         bool color;
-        if (max_ && key == max_->key_){
-            min_ = nullptr;  
-        }
-        if (min_ && key == min_->key_){
-            min_ = nullptr;            
-        }
+        max_ = nullptr;
+        min_ = nullptr;
         
         if (node != root_) {
             //"node->parent_->children_[1] == node" will always return the direction of the node relative to its parent, so is used
@@ -213,17 +209,14 @@ private:
         node->children_[1] = nullptr;
         node->parent_ = nullptr;
 
+        max_ = nullptr;
+        min_ = nullptr;
+
         //Case 1: Tree has no root, so replace root with node.
         if (root_ == nullptr) {
             root_ = node;
             root_->color_ = black_;
             size_++;
-            if (!max_ || key > max_->key_){
-                max_ = node;
-            }
-            if (!min_ || key < min_->key_){
-                min_ = node;
-            }
         }
         //Case 2: Tree has root, so binary search for the right spot to insert the node into.
         else {
@@ -237,13 +230,6 @@ private:
                     node->parent_ = target_node;
                     size_++;
                     insert_check(node);
-
-                    if (!max_ || key > max_->key_){
-                        max_ = node;
-                    }
-                    if (!min_ || key < min_->key_){
-                        min_ = node;
-                    }
                     return;
                 }
                 else {
@@ -435,7 +421,7 @@ public:
      * @return some_key_type The maximum of the tree, which may be none if the tree is empty.
      */
     some_key_type max() {
-        if (max_) return some_key_type(max_->key());
+        // if (max_) return some_key_type(max_->key());
         if (!root_) return some_key_type();
         auto max_ = root_;
         while (max_->children_[1]) max_ = max_->children_[1];
@@ -450,7 +436,7 @@ public:
      * @return some_key_type The minimum of the tree, which may be none if the tree is empty.
      */
     some_key_type min() {
-        if (min_) return some_key_type(min_->key());
+        // if (min_) return some_key_type(min_->key());
         if (!root_) return some_key_type();
         auto min_ = root_;
         while (min_->children_[0]) min_ = min_->children_[0];
