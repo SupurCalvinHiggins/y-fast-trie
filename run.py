@@ -18,7 +18,7 @@ import subprocess
 ###############################################################################
 
 
-colored = lambda x : x
+colored = lambda *x : x
 
 
 def ok(string):
@@ -55,7 +55,7 @@ except:
         warn('*** WARNING ***')
         print('failed to install termcolor')
         print('try running "pip3 install termcolor"')
-        colored = lambda x : x
+        colored = lambda *x : x
 
 
 ###############################################################################
