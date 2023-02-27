@@ -549,3 +549,25 @@ In: ACM Comput. Surv. 53.5 (Sept. 2020). issn: 0360-0300. doi: 10.
 [DFH21] Patrick Dinklage, Johannes Fischer, and Alexander Herlez. “Engi
 neering Predecessor Data Structures for Dynamic Integer Sets”. In:
 CoRR abs/2104.06740 (2021). arXiv: 2104.06740. url: https://arxiv.org/abs/2104.06740.
+
+
+## Other Projects
+
+These other projects were additionally examined for performance comparisons and optimization ideas. 
+
+| Project | x-fast-trie | y-fast-trie |
+| --- | --- | --- |
+| https://github.com/vaganov/y-fast | Yes | No |
+| https://github.com/Akigeor/Y-Fast-Trie | Yes | No |
+| https://github.com/samyvilar/y_fast_trie | No | No |
+| https://github.com/vaibhav-97/Y-Fast-Trie | Yes | Yes |
+| https://github.com/lukaszWroc/y-fast-trie | Yes | Yes |
+| https://github.com/anilanar/alpha-fast-trie-- | Yes | No |
+| https://github.com/6851-2021/predecessor-java | Yes | Yes |
+| https://github.com/escofresco/howfast | Yes | No |
+| https://github.com/Parth-Jain-2002/Analysis_and_Implementation_of__X-and-Y-fast-trie | Yes | Yes |
+| https://github.com/mateuszlewko/ads | Yes | Yes |
+| https://github.com/nishantgta/2020csb1103_2020csb1101_2020csb1106_X-and-Y-fast-trie | Yes | Yes |
+| https://github.com/vosen/kora | Yes | Yes |
+| https://github.com/mischif/py-fast-trie | Yes | Yes |
+
