@@ -553,7 +553,7 @@ CoRR abs/2104.06740 (2021). arXiv: 2104.06740. url: https://arxiv.org/abs/2104.0
 
 ## Other Projects
 
-These other projects were additionally examined for performance comparisons and optimization ideas. 
+These other projects were also examined for performance comparisons and optimization ideas. 
 
 | Project | x-fast-trie | y-fast-trie |
 | --- | --- | --- |
